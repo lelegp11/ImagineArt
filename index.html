@@ -154,15 +154,15 @@
     function currency(v){ return new Intl.NumberFormat('pt-BR',{style:'currency',currency: state.config.moeda || 'BRL'}).format(Number(v || 0)); }
     function setSetupStatus(msg){ document.getElementById('setupStatus').textContent = msg; }
 
-    function restoreConfig(){
-      const raw = localStorage.getItem(STORAGE_KEY);
-      if(!raw) return;
-      try{
-        const parsed = JSON.parse(raw);
-        'https://xwaflarqkooltziusmbl.supabase.co' = parsed.url || '';
-        'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inh3YWZsYXJxa29vbHR6aXVzbWJsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzU0ODkyNDgsImV4cCI6MjA5MTA2NTI0OH0.v4YFHMEc8Ryu_97J5UV5nVU7wPjFKetd10WP9MJ60u4' = parsed.anon || '';
-      }catch{}
-    }
+    //function restoreConfig(){
+    //  const raw = localStorage.getItem(STORAGE_KEY);
+    //  if(!raw) return;
+    //  try{
+    //    const parsed = JSON.parse(raw);
+    //    'https://xwaflarqkooltziusmbl.supabase.co' = parsed.url || '';
+    //    'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inh3YWZsYXJxa29vbHR6aXVzbWJsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzU0ODkyNDgsImV4cCI6MjA5MTA2NTI0OH0.v4YFHMEc8Ryu_97J5UV5nVU7wPjFKetd10WP9MJ60u4' = parsed.anon || '';
+    //  }catch{}
+    //}
 
     function storeConfig(){
       localStorage.setItem(STORAGE_KEY, JSON.stringify({
@@ -329,7 +329,7 @@
       }
     }
 
-    restoreConfig();
+    //restoreConfig();
     initEvents();
   </script>
 </body>
