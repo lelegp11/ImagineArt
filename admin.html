@@ -5,143 +5,1064 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Personaliza Hub — Admin</title>
   <style>
-    :root{--bg:#f7f7fb;--card:#ffffff;--text:#1f2430;--muted:#6b7280;--line:#e5e7eb;--primary:#6d28d9;--primary-2:#8b5cf6;--accent:#ec4899;--success:#16a34a;--danger:#dc2626;--shadow:0 16px 40px rgba(22,27,45,.08);--radius:20px}
-    *{box-sizing:border-box} html,body{margin:0;padding:0;background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Inter,Arial,sans-serif}
-    .hidden{display:none!important}.topbar{position:sticky;top:0;z-index:50;backdrop-filter:saturate(180%) blur(16px);background:rgba(247,247,251,.82);border-bottom:1px solid rgba(229,231,235,.7)}
-    .topbar-inner{display:flex;align-items:center;gap:16px;justify-content:space-between;padding:14px 20px;max-width:1380px;margin:0 auto}
-    .brand{display:flex;align-items:center;gap:14px;font-weight:800}.logo{width:44px;height:44px;border-radius:14px;background:linear-gradient(135deg,var(--primary),var(--accent));box-shadow:var(--shadow)}.brand small{display:block;font-weight:600;color:var(--muted)}
-    .nav{display:flex;gap:10px;flex-wrap:wrap}.nav button,.btn{border:none;background:#fff;color:var(--text);padding:11px 16px;border-radius:999px;box-shadow:var(--shadow);cursor:pointer;font-weight:700}
-    .nav button.active{background:linear-gradient(135deg,var(--primary),var(--primary-2));color:#fff}.btn.primary{background:linear-gradient(135deg,var(--primary),var(--primary-2));color:#fff}.btn.success{background:linear-gradient(135deg,#16a34a,#22c55e);color:#fff}.btn.ghost{background:#fff}.btn.danger{background:linear-gradient(135deg,#dc2626,#ef4444);color:#fff}.btn.small{padding:8px 12px;border-radius:12px;font-size:13px}
-    .container{max-width:1380px;margin:0 auto;padding:20px}.section{margin-top:26px}.section h2{margin:0 0 14px;font-size:24px}.grid{display:grid;gap:18px}.grid-4{grid-template-columns:repeat(4,1fr)}.grid-2{grid-template-columns:repeat(2,1fr)}
-    .card{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);padding:18px}.kpi .k{font-size:13px;color:var(--muted);text-transform:uppercase;letter-spacing:.06em}.kpi .v{font-size:30px;font-weight:800;margin-top:8px}.kpi .s{margin-top:6px;color:var(--muted);font-size:13px}
-    .toolbar{display:flex;gap:10px;flex-wrap:wrap;align-items:center}.toolbar .spacer{flex:1}.input, select, textarea{width:100%;padding:12px 14px;border-radius:14px;border:1px solid var(--line);background:#fff;font:inherit;color:var(--text)}
-    label{font-size:13px;font-weight:700;color:#4b5563;margin-bottom:6px;display:block}.form-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:14px}.form-grid-2{display:grid;grid-template-columns:repeat(2,1fr);gap:14px}.form-grid-3{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
-    .table-wrap{overflow:auto;border:1px solid var(--line);border-radius:18px}table{width:100%;border-collapse:collapse;background:#fff}th,td{padding:12px 14px;border-bottom:1px solid var(--line);text-align:left;font-size:14px;vertical-align:top}th{background:#fafafa;color:#4b5563;position:sticky;top:0}
-    .mini{font-size:12px;color:var(--muted)}.tag{display:inline-block;padding:6px 10px;background:#f3e8ff;color:#6d28d9;border-radius:999px;font-size:12px;font-weight:800}
-    .hero{margin-top:24px;border-radius:32px;overflow:hidden;position:relative;background:radial-gradient(circle at 20% 20%, rgba(255,255,255,.28), transparent 30%),linear-gradient(135deg, #111827 0%, #4c1d95 42%, #db2777 100%);color:#fff;box-shadow:var(--shadow)}
-    .hero-content{display:grid;grid-template-columns:1.2fr .8fr;gap:20px;padding:36px}.hero h1{font-size:40px;line-height:1.05;margin:0 0 12px}.hero p{font-size:17px;color:rgba(255,255,255,.86);max-width:760px}.hero-panel{background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.14);border-radius:24px;padding:20px}
-    .hero-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:12px;margin-top:10px}.stat{background:rgba(255,255,255,.12);padding:16px;border-radius:18px;border:1px solid rgba(255,255,255,.12)}.stat .label{font-size:12px;text-transform:uppercase;letter-spacing:.06em;color:rgba(255,255,255,.72)}.stat .value{font-size:28px;font-weight:800;margin-top:6px}
-    .smallcaps{font-size:12px;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);font-weight:800}.status{margin-top:10px;padding:12px 14px;border-radius:14px;border:1px solid var(--line);background:#fff}.status.ok{color:#166534;border-color:#bbf7d0;background:#f0fdf4}.status.warn{color:#92400e;border-color:#fde68a;background:#fffbeb}.status.error{color:#991b1b;border-color:#fecaca;background:#fef2f2}
-    .thumb{width:64px;height:64px;border-radius:12px;object-fit:contain;border:1px solid var(--line);background:#f8f8fb;padding:4px}.right{margin-left:auto}
-    @media (max-width:1200px){.grid-4,.form-grid{grid-template-columns:repeat(2,1fr)}.hero-content,.grid-2{grid-template-columns:1fr}}
-    @media (max-width:700px){.container{padding:14px}.topbar-inner{padding:12px 14px}.hero-content{padding:22px}.hero h1{font-size:30px}.grid-2,.grid-4,.form-grid,.form-grid-2,.form-grid-3{grid-template-columns:1fr}.nav{display:none}}
+    :root{
+      --bg:#f7f7fb;
+      --card:#ffffff;
+      --text:#1f2430;
+      --muted:#6b7280;
+      --line:#e5e7eb;
+      --primary:#6d28d9;
+      --primary-2:#8b5cf6;
+      --accent:#ec4899;
+      --success:#16a34a;
+      --danger:#dc2626;
+      --shadow:0 16px 40px rgba(22,27,45,.08);
+      --radius:20px;
+    }
+    *{box-sizing:border-box}
+    html,body{
+      margin:0;padding:0;background:var(--bg);color:var(--text);
+      font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Inter,Arial,sans-serif
+    }
+    .hidden{display:none!important}
+    .topbar{
+      position:sticky;top:0;z-index:50;
+      backdrop-filter:saturate(180%) blur(16px);
+      background:rgba(247,247,251,.82);
+      border-bottom:1px solid rgba(229,231,235,.7)
+    }
+    .topbar-inner{
+      display:flex;align-items:center;gap:16px;justify-content:space-between;
+      padding:14px 20px;max-width:1380px;margin:0 auto
+    }
+    .brand{display:flex;align-items:center;gap:14px;font-weight:800}
+    .logo{
+      width:44px;height:44px;border-radius:14px;
+      background:linear-gradient(135deg,var(--primary),var(--accent));
+      box-shadow:var(--shadow)
+    }
+    .brand small{display:block;font-weight:600;color:var(--muted)}
+    .nav{display:flex;gap:10px;flex-wrap:wrap}
+    .nav button,.btn{
+      border:none;background:#fff;color:var(--text);padding:11px 16px;border-radius:999px;
+      box-shadow:var(--shadow);cursor:pointer;font-weight:700
+    }
+    .nav button.active{background:linear-gradient(135deg,var(--primary),var(--primary-2));color:#fff}
+    .btn.primary{background:linear-gradient(135deg,var(--primary),var(--primary-2));color:#fff}
+    .btn.success{background:linear-gradient(135deg,#16a34a,#22c55e);color:#fff}
+    .btn.ghost{background:#fff}
+    .btn.danger{background:linear-gradient(135deg,#dc2626,#ef4444);color:#fff}
+    .btn.small{padding:8px 12px;border-radius:12px;font-size:13px}
+    .container{max-width:1380px;margin:0 auto;padding:20px}
+    .section{margin-top:26px}
+    .section h2{margin:0 0 14px;font-size:24px}
+    .grid{display:grid;gap:18px}
+    .grid-4{grid-template-columns:repeat(4,1fr)}
+    .grid-2{grid-template-columns:repeat(2,1fr)}
+    .card{
+      background:var(--card);border:1px solid var(--line);border-radius:var(--radius);
+      box-shadow:var(--shadow);padding:18px
+    }
+    .kpi .k{font-size:13px;color:var(--muted);text-transform:uppercase;letter-spacing:.06em}
+    .kpi .v{font-size:30px;font-weight:800;margin-top:8px}
+    .kpi .s{margin-top:6px;color:var(--muted);font-size:13px}
+    .toolbar{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+    .toolbar .spacer{flex:1}
+    .input, select, textarea{
+      width:100%;padding:12px 14px;border-radius:14px;border:1px solid var(--line);
+      background:#fff;font:inherit;color:var(--text)
+    }
+    label{font-size:13px;font-weight:700;color:#4b5563;margin-bottom:6px;display:block}
+    .form-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:14px}
+    .form-grid-2{display:grid;grid-template-columns:repeat(2,1fr);gap:14px}
+    .form-grid-3{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
+    .table-wrap{overflow:auto;border:1px solid var(--line);border-radius:18px}
+    table{width:100%;border-collapse:collapse;background:#fff}
+    th,td{padding:12px 14px;border-bottom:1px solid var(--line);text-align:left;font-size:14px;vertical-align:top}
+    th{background:#fafafa;color:#4b5563;position:sticky;top:0}
+    .mini{font-size:12px;color:var(--muted)}
+    .tag{display:inline-block;padding:6px 10px;background:#f3e8ff;color:#6d28d9;border-radius:999px;font-size:12px;font-weight:800}
+    .hero{
+      margin-top:24px;border-radius:32px;overflow:hidden;position:relative;background:
+      radial-gradient(circle at 20% 20%, rgba(255,255,255,.28), transparent 30%),
+      linear-gradient(135deg, #111827 0%, #4c1d95 42%, #db2777 100%);
+      color:#fff;box-shadow:var(--shadow)
+    }
+    .hero-content{display:grid;grid-template-columns:1.2fr .8fr;gap:20px;padding:36px}
+    .hero h1{font-size:40px;line-height:1.05;margin:0 0 12px}
+    .hero p{font-size:17px;color:rgba(255,255,255,.86);max-width:760px}
+    .hero-panel{background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.14);border-radius:24px;padding:20px}
+    .hero-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:12px;margin-top:10px}
+    .stat{background:rgba(255,255,255,.12);padding:16px;border-radius:18px;border:1px solid rgba(255,255,255,.12)}
+    .stat .label{font-size:12px;text-transform:uppercase;letter-spacing:.06em;color:rgba(255,255,255,.72)}
+    .stat .value{font-size:28px;font-weight:800;margin-top:6px}
+    .smallcaps{font-size:12px;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);font-weight:800}
+    .status{
+      margin-top:10px;padding:12px 14px;border-radius:14px;border:1px solid var(--line);background:#fff
+    }
+    .status.ok{color:#166534;border-color:#bbf7d0;background:#f0fdf4}
+    .status.warn{color:#92400e;border-color:#fde68a;background:#fffbeb}
+    .status.error{color:#991b1b;border-color:#fecaca;background:#fef2f2}
+    .thumb{
+      width:64px;height:64px;border-radius:12px;object-fit:contain;border:1px solid var(--line);
+      background:#f8f8fb;padding:4px
+    }
+    .right{margin-left:auto}
+    @media (max-width:1200px){
+      .grid-4,.form-grid{grid-template-columns:repeat(2,1fr)}
+      .hero-content,.grid-2{grid-template-columns:1fr}
+    }
+    @media (max-width:700px){
+      .container{padding:14px}
+      .topbar-inner{padding:12px 14px}
+      .hero-content{padding:22px}
+      .hero h1{font-size:30px}
+      .grid-2,.grid-4,.form-grid,.form-grid-2,.form-grid-3{grid-template-columns:1fr}
+      .nav{display:none}
+    }
   </style>
 </head>
 <body>
-  <div class="topbar"><div class="topbar-inner">
-    <div class="brand"><div class="logo"></div><div><div>Personaliza Hub</div><small>Painel administrativo</small></div></div>
-    <div class="nav">
-      <button class="active" data-view="inicio">Início</button><button data-view="dashboard">Dashboard</button><button data-view="cadastro">Cadastro</button><button data-view="pedidos">Pedidos</button><button data-view="config">Configurações</button>
+  <div class="topbar">
+    <div class="topbar-inner">
+      <div class="brand">
+        <div class="logo"></div>
+        <div>
+          <div>Personaliza Hub</div>
+          <small>Painel administrativo</small>
+        </div>
+      </div>
+
+      <div class="nav">
+        <button class="active" data-view="inicio">Início</button>
+        <button data-view="dashboard">Dashboard</button>
+        <button data-view="cadastro">Cadastro</button>
+        <button data-view="pedidos">Pedidos</button>
+        <button data-view="config">Configurações</button>
+      </div>
+
+      <div class="toolbar">
+        <button class="btn ghost small" id="btnPreviewCliente">Visualização do cliente</button>
+        <button class="btn ghost small" id="btnExportJson">Exportar JSON</button>
+        <button class="btn primary small" id="btnImportOpen">Importar JSON</button>
+        <input type="file" id="fileInput" class="hidden" accept=".json" />
+      </div>
     </div>
-    <div class="toolbar">
-      <button class="btn ghost small" id="btnPreviewCliente">Visualização do cliente</button>
-      <button class="btn ghost small" id="btnExportCatalogPortable">Exportar catálogo p/ cliente</button>
-      <button class="btn ghost small" id="btnCleanOldPhotos">Limpar fotos antigas</button>
-      <button class="btn ghost small" id="btnExportJson">Exportar JSON</button>
-      <button class="btn primary small" id="btnImportOpen">Importar JSON</button>
-      <input type="file" id="fileInput" class="hidden" accept=".json" />
-    </div>
-  </div></div>
+  </div>
 
   <div class="container">
-    <section id="inicio" class="view"><div class="hero"><div class="hero-content"><div><div class="smallcaps" style="color:#ddd">Gestão interna</div><h1>Cadastre produtos e publique no catálogo.</h1><p>As fotos são salvas em IndexedDB. Use “Exportar catálogo p/ cliente” para abrir o catálogo no celular e em outros aparelhos.</p></div><div class="hero-panel"><div class="smallcaps" style="color:#e9d5ff">Resumo rápido</div><div class="hero-grid"><div class="stat"><div class="label">Produtos</div><div class="value" id="heroProdutos">0</div></div><div class="stat"><div class="label">Pedidos</div><div class="value" id="heroPedidos">0</div></div><div class="stat"><div class="label">Receita</div><div class="value" id="heroReceita">R$ 0,00</div></div><div class="stat"><div class="label">Lucro</div><div class="value" id="heroLucro">R$ 0,00</div></div></div></div></div></div></section>
+    <section id="inicio" class="view">
+      <div class="hero">
+        <div class="hero-content">
+          <div>
+            <div class="smallcaps" style="color:#ddd">Gestão interna</div>
+            <h1>Cadastre produtos e publique no catálogo.</h1>
+            <p>As fotos são salvas em IndexedDB e os dados dos produtos no localStorage. Assim você evita o erro de quota no navegador.</p>
+          </div>
+          <div class="hero-panel">
+            <div class="smallcaps" style="color:#e9d5ff">Resumo rápido</div>
+            <div class="hero-grid">
+              <div class="stat"><div class="label">Produtos</div><div class="value" id="heroProdutos">0</div></div>
+              <div class="stat"><div class="label">Pedidos</div><div class="value" id="heroPedidos">0</div></div>
+              <div class="stat"><div class="label">Receita</div><div class="value" id="heroReceita">R$ 0,00</div></div>
+              <div class="stat"><div class="label">Lucro</div><div class="value" id="heroLucro">R$ 0,00</div></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
 
-    <section id="dashboard" class="view hidden"><div class="grid grid-4"><div class="card kpi"><div class="k">Receita total</div><div class="v" id="kpiReceita">R$ 0,00</div><div class="s">Soma de todos os pedidos</div></div><div class="card kpi"><div class="k">Lucro estimado</div><div class="v" id="kpiLucro">R$ 0,00</div><div class="s">Receita menos custo</div></div><div class="card kpi"><div class="k">Ticket médio</div><div class="v" id="kpiTicket">R$ 0,00</div><div class="s">Valor médio por pedido</div></div><div class="card kpi"><div class="k">Margem média</div><div class="v" id="kpiMargem">0%</div><div class="s">Média dos itens vendidos</div></div></div></section>
+    <section id="dashboard" class="view hidden">
+      <div class="grid grid-4">
+        <div class="card kpi"><div class="k">Receita total</div><div class="v" id="kpiReceita">R$ 0,00</div><div class="s">Soma de todos os pedidos</div></div>
+        <div class="card kpi"><div class="k">Lucro estimado</div><div class="v" id="kpiLucro">R$ 0,00</div><div class="s">Receita menos custo</div></div>
+        <div class="card kpi"><div class="k">Ticket médio</div><div class="v" id="kpiTicket">R$ 0,00</div><div class="s">Valor médio por pedido</div></div>
+        <div class="card kpi"><div class="k">Margem média</div><div class="v" id="kpiMargem">0%</div><div class="s">Média dos itens vendidos</div></div>
+      </div>
+    </section>
 
     <section id="cadastro" class="view hidden">
       <div class="grid grid-2">
         <div class="card">
-          <div class="toolbar"><h2 style="margin:0">Cadastro de produto</h2><span class="spacer"></span><button class="btn ghost small" id="resetProduto">Limpar</button></div>
+          <div class="toolbar">
+            <h2 style="margin:0">Cadastro de produto</h2>
+            <span class="spacer"></span>
+            <button class="btn ghost small" id="resetProduto">Limpar</button>
+          </div>
+
           <div class="form-grid" style="margin-top:12px">
             <div><label>Nome</label><input class="input" id="pNome"></div>
             <div><label>Categoria</label><input class="input" id="pCategoria" placeholder="Ex.: Canecas"></div>
             <div><label>Preço de venda</label><input class="input" id="pPreco" type="number" step="0.01"></div>
             <div><label>Custo</label><input class="input" id="pCusto" type="number" step="0.01"></div>
             <div><label>Tempo de produção (min)</label><input class="input" id="pTempo" type="number" step="1"></div>
-            <div><label>Foto do produto</label><input class="input" id="pFoto" type="file" accept="image/*"><div class="mini" style="margin-top:6px">Imagem convertida para 500x500 e salva fora do localStorage.</div></div>
+
+            <div>
+              <label>Foto do produto</label>
+              <input class="input" id="pFoto" type="file" accept="image/*">
+              <div class="mini" style="margin-top:6px">Imagem convertida para 500px por 500px e salva fora do localStorage.</div>
+            </div>
+
             <div><label>SKU</label><input class="input" id="pSku"></div>
-            <div><label>Ativo</label><select id="pAtivo" class="input"><option value="true">Sim</option><option value="false">Não</option></select></div>
+
+            <div><label>Ativo</label>
+              <select id="pAtivo" class="input">
+                <option value="true">Sim</option>
+                <option value="false">Não</option>
+              </select>
+            </div>
           </div>
-          <div style="margin-top:14px"><label>Descrição</label><textarea id="pDescricao" rows="4" class="input"></textarea></div>
-          <div style="margin-top:14px"><label>Campos de personalização (separados por vírgula)</label><input class="input" id="pCampos" placeholder="Nome, Tema, Cor, Tamanho, Turma"></div>
-          <div style="margin-top:14px" class="toolbar"><div id="previewFotoBox" class="hidden"><img id="previewFoto" class="thumb" alt="Prévia da foto"></div><span class="spacer"></span><button class="btn primary" id="salvarProduto">Salvar produto</button><button class="btn success" id="exportProdutosJson">Exportar produtos JSON</button><button class="btn ghost" id="exportProdutosCsv">Exportar produtos CSV</button></div>
+
+          <div style="margin-top:14px">
+            <label>Descrição</label>
+            <textarea id="pDescricao" rows="4" class="input"></textarea>
+          </div>
+
+          <div style="margin-top:14px">
+            <label>Campos de personalização (separados por vírgula)</label>
+            <input class="input" id="pCampos" placeholder="Nome, Tema, Cor, Tamanho, Turma">
+          </div>
+
+          <div style="margin-top:14px" class="toolbar">
+            <div id="previewFotoBox" class="hidden">
+              <img id="previewFoto" class="thumb" alt="Prévia da foto">
+            </div>
+            <span class="spacer"></span>
+            <button class="btn primary" id="salvarProduto">Salvar produto</button>
+            <button class="btn success" id="exportProdutosJson">Exportar produtos JSON</button>
+            <button class="btn ghost" id="exportProdutosCsv">Exportar produtos CSV</button>
+          </div>
+
           <div id="statusProduto" class="status">Preencha os dados e clique em salvar.</div>
         </div>
 
         <div class="card">
           <h2>Cadastro rápido de pedido</h2>
+
           <div class="form-grid-2">
             <div><label>Cliente</label><input class="input" id="oCliente"></div>
             <div><label>Telefone</label><input class="input" id="oTelefone"></div>
             <div><label>Data</label><input class="input" id="oData" type="date"></div>
-            <div><label>Forma de pagamento</label><select class="input" id="oPagamento"><option value="PIX">PIX</option><option value="Crédito (+ R$5,00 da taxa do Mercado Pago)">Crédito (+ R$5,00 da taxa do Mercado Pago)</option></select></div>
+            <div>
+              <label>Forma de pagamento</label>
+              <select class="input" id="oPagamento">
+                <option value="PIX">PIX</option>
+                <option value="Crédito (+ R$5,00 da taxa do Mercado Pago)">Crédito (+ R$5,00 da taxa do Mercado Pago)</option>
+              </select>
+            </div>
           </div>
-          <div class="form-grid-3" style="margin-top:12px"><div><label>Produto</label><select id="oProduto" class="input"></select></div><div><label>Quantidade</label><input class="input" id="oQtd" type="number" value="1" min="1"></div><div><label>Personalização</label><input class="input" id="oPers" placeholder="Nome, tema..."></div></div>
-          <div class="toolbar" style="margin-top:14px"><button class="btn primary" id="addOrderItem">Adicionar item</button><button class="btn ghost" id="clearOrderDraft">Limpar rascunho</button></div>
-          <div class="table-wrap" style="margin-top:14px"><table><thead><tr><th>Produto</th><th>Qtd</th><th>Personalização</th><th>Subtotal</th></tr></thead><tbody id="draftOrderTable"></tbody></table></div>
-          <div class="toolbar" style="margin-top:14px"><div class="tag">Total do pedido: <span id="draftTotal">R$ 0,00</span></div><button class="btn success right" id="saveOrder">Salvar pedido</button></div>
+
+          <div class="form-grid-3" style="margin-top:12px">
+            <div><label>Produto</label><select id="oProduto" class="input"></select></div>
+            <div><label>Quantidade</label><input class="input" id="oQtd" type="number" value="1" min="1"></div>
+            <div><label>Personalização</label><input class="input" id="oPers" placeholder="Nome, tema..."></div>
+          </div>
+
+          <div class="toolbar" style="margin-top:14px">
+            <button class="btn primary" id="addOrderItem">Adicionar item</button>
+            <button class="btn ghost" id="clearOrderDraft">Limpar rascunho</button>
+          </div>
+
+          <div class="table-wrap" style="margin-top:14px">
+            <table>
+              <thead><tr><th>Produto</th><th>Qtd</th><th>Personalização</th><th>Subtotal</th></tr></thead>
+              <tbody id="draftOrderTable"></tbody>
+            </table>
+          </div>
+
+          <div class="toolbar" style="margin-top:14px">
+            <div class="tag">Total do pedido: <span id="draftTotal">R$ 0,00</span></div>
+            <button class="btn success right" id="saveOrder">Salvar pedido</button>
+          </div>
         </div>
       </div>
 
-      <div class="section card"><div class="toolbar"><h2 style="margin:0">Produtos cadastrados</h2><span class="spacer"></span><input class="input" id="buscaProduto" placeholder="Buscar produto" style="max-width:280px"></div><div class="table-wrap" style="margin-top:14px"><table><thead><tr><th>Foto</th><th>Nome</th><th>Categoria</th><th>Preço</th><th>Custo</th><th>Margem</th><th>Ativo</th><th>Ações</th></tr></thead><tbody id="productsTable"></tbody></table></div></div>
+      <div class="section card">
+        <div class="toolbar">
+          <h2 style="margin:0">Produtos cadastrados</h2>
+          <span class="spacer"></span>
+          <input class="input" id="buscaProduto" placeholder="Buscar produto" style="max-width:280px">
+        </div>
+
+        <div class="table-wrap" style="margin-top:14px">
+          <table>
+            <thead>
+              <tr>
+                <th>Foto</th>
+                <th>Nome</th>
+                <th>Categoria</th>
+                <th>Preço</th>
+                <th>Custo</th>
+                <th>Margem</th>
+                <th>Ativo</th>
+                <th>Ações</th>
+              </tr>
+            </thead>
+            <tbody id="productsTable"></tbody>
+          </table>
+        </div>
+      </div>
     </section>
 
-    <section id="pedidos" class="view hidden"><div class="card"><h2>Pedidos cadastrados</h2><div class="table-wrap"><table><thead><tr><th>Cliente</th><th>Telefone</th><th>Data</th><th>Pagamento</th><th>Itens</th><th>Total</th><th>Ação</th></tr></thead><tbody id="ordersTable"></tbody></table></div></div></section>
+    <section id="pedidos" class="view hidden">
+      <div class="card">
+        <h2>Pedidos cadastrados</h2>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Cliente</th><th>Telefone</th><th>Data</th><th>Pagamento</th><th>Itens</th><th>Total</th><th>Ação</th></tr></thead>
+            <tbody id="ordersTable"></tbody>
+          </table>
+        </div>
+      </div>
+    </section>
 
-    <section id="config" class="view hidden"><div class="grid grid-2"><div class="card"><h2>Configurações da loja</h2><div class="form-grid-2"><div><label>Nome da loja</label><input class="input" id="cfgLoja"></div><div><label>WhatsApp principal</label><input class="input" id="cfgWhatsapp" placeholder="5511999999999"></div><div><label>Mensagem inicial</label><input class="input" id="cfgMsg"></div><div><label>Moeda</label><input class="input" id="cfgMoeda" value="BRL"></div></div><div style="margin-top:12px"><label>Texto do banner</label><textarea class="input" id="cfgBanner" rows="3"></textarea></div><div class="toolbar" style="margin-top:14px"><button class="btn success" id="saveConfig">Salvar configurações</button></div></div><div class="card"><h2>Observação</h2><div class="status ok">Use “Limpar fotos antigas” para apagar imagens órfãs do IndexedDB e manter tudo organizado.</div></div></div></section>
+    <section id="config" class="view hidden">
+      <div class="grid grid-2">
+        <div class="card">
+          <h2>Configurações da loja</h2>
+          <div class="form-grid-2">
+            <div><label>Nome da loja</label><input class="input" id="cfgLoja"></div>
+            <div><label>WhatsApp principal</label><input class="input" id="cfgWhatsapp" placeholder="5511999999999"></div>
+            <div><label>Mensagem inicial</label><input class="input" id="cfgMsg"></div>
+            <div><label>Moeda</label><input class="input" id="cfgMoeda" value="BRL"></div>
+          </div>
+          <div style="margin-top:12px">
+            <label>Texto do banner</label>
+            <textarea class="input" id="cfgBanner" rows="3"></textarea>
+          </div>
+          <div class="toolbar" style="margin-top:14px">
+            <button class="btn success" id="saveConfig">Salvar configurações</button>
+          </div>
+        </div>
+
+        <div class="card">
+          <h2>Observação</h2>
+          <div class="status ok">
+            Esta versão evita o erro de quota porque as imagens não são gravadas no localStorage.
+          </div>
+        </div>
+      </div>
+    </section>
   </div>
 
   <script>
-    const STORAGE_KEY='personaliza_hub_store_v6'; const DB_NAME='personaliza_hub_images_db'; const DB_VERSION=1; const STORE_NAME='product_images';
-    let db=null;
-    let state={config:{loja:'Minha Loja',whatsapp:'5511999999999',mensagem:'Olá! Gostaria de fazer este pedido:',moeda:'BRL',banner:'Coleção personalizada pronta para encantar seus clientes.'},products:[],orders:[],draftOrder:{items:[]},editingProductId:null,currentPhotoBlob:null,currentPhotoPreview:''};
-    const uid=()=>Math.random().toString(36).slice(2,10);
-    const escapeHtml=(str='')=>String(str).replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[m]));
-    const currency=v=>new Intl.NumberFormat('pt-BR',{style:'currency',currency:state.config.moeda||'BRL'}).format(Number(v||0));
-    const pct=v=>`${(Number(v||0)*100).toFixed(1)}%`;
-    function openDb(){return new Promise((resolve,reject)=>{const req=indexedDB.open(DB_NAME,DB_VERSION);req.onupgradeneeded=e=>{const database=e.target.result;if(!database.objectStoreNames.contains(STORE_NAME))database.createObjectStore(STORE_NAME)};req.onsuccess=()=>{db=req.result;resolve(db)};req.onerror=()=>reject(req.error)})}
-    async function ensureDb(){if(db) return db; return await openDb();}
-    async function saveImageToDb(key,blob){const database=await ensureDb(); return new Promise((resolve,reject)=>{const tx=database.transaction(STORE_NAME,'readwrite'); const req=tx.objectStore(STORE_NAME).put(blob,key); req.onsuccess=()=>resolve(); req.onerror=()=>reject(req.error);})}
-    async function getImageFromDb(key){const database=await ensureDb(); return new Promise((resolve,reject)=>{const tx=database.transaction(STORE_NAME,'readonly'); const req=tx.objectStore(STORE_NAME).get(key); req.onsuccess=()=>resolve(req.result||null); req.onerror=()=>reject(req.error);})}
-    async function deleteImageFromDb(key){const database=await ensureDb(); return new Promise((resolve,reject)=>{const tx=database.transaction(STORE_NAME,'readwrite'); const req=tx.objectStore(STORE_NAME).delete(key); req.onsuccess=()=>resolve(); req.onerror=()=>reject(req.error);})}
-    async function listImageKeys(){const database=await ensureDb(); return new Promise((resolve,reject)=>{const tx=database.transaction(STORE_NAME,'readonly'); const req=tx.objectStore(STORE_NAME).getAllKeys(); req.onsuccess=()=>resolve(req.result||[]); req.onerror=()=>reject(req.error);})}
-    function blobToDataUrl(blob){return new Promise((resolve,reject)=>{const reader=new FileReader(); reader.onload=()=>resolve(reader.result); reader.onerror=reject; reader.readAsDataURL(blob);})}
-    function resizeImageTo500Blob(file){return new Promise((resolve,reject)=>{const reader=new FileReader(); reader.onload=e=>{const img=new Image(); img.onload=()=>{const canvas=document.createElement('canvas'); canvas.width=500; canvas.height=500; const ctx=canvas.getContext('2d'); ctx.fillStyle='#ffffff'; ctx.fillRect(0,0,500,500); const scale=Math.min(500/img.width,500/img.height); const newWidth=img.width*scale; const newHeight=img.height*scale; const x=(500-newWidth)/2; const y=(500-newHeight)/2; ctx.drawImage(img,x,y,newWidth,newHeight); canvas.toBlob(blob=>blob?resolve(blob):reject(new Error('Falha ao gerar blob')),'image/jpeg',0.82)}; img.onerror=reject; img.src=e.target.result}; reader.onerror=reject; reader.readAsDataURL(file);})}
-    function saveState(){localStorage.setItem(STORAGE_KEY,JSON.stringify({config:state.config,products:state.products,orders:state.orders,draftOrder:state.draftOrder})); renderAll();}
-    function loadState(){const raw=localStorage.getItem(STORAGE_KEY); if(!raw) return; try{const parsed=JSON.parse(raw); state={config:{...state.config,...(parsed.config||{})},products:parsed.products||[],orders:parsed.orders||[],draftOrder:parsed.draftOrder||{items:[]},editingProductId:null,currentPhotoBlob:null,currentPhotoPreview:''}}catch(e){console.error(e)}}
-    function setStatus(msg,type=''){const el=document.getElementById('statusProduto'); el.textContent=msg; el.className='status'; if(type) el.classList.add(type)}
-    function showPhotoPreview(src){const box=document.getElementById('previewFotoBox'); const img=document.getElementById('previewFoto'); if(src){img.src=src; box.classList.remove('hidden')}else{img.src=''; box.classList.add('hidden')}}
-    function clearProductForm(){['pNome','pCategoria','pPreco','pCusto','pTempo','pSku','pDescricao','pCampos'].forEach(id=>document.getElementById(id).value=''); document.getElementById('pAtivo').value='true'; document.getElementById('pFoto').value=''; state.editingProductId=null; state.currentPhotoBlob=null; state.currentPhotoPreview=''; showPhotoPreview(''); document.getElementById('salvarProduto').textContent='Salvar produto'; setStatus('Preencha os dados e clique em salvar.')}
-    function renderSelects(){const select=document.getElementById('oProduto'); const active=state.products.filter(p=>p.ativo); select.innerHTML='<option value="">Selecione</option>'+active.map(p=>`<option value="${p.id}">${escapeHtml(p.nome)}</option>`).join('')}
-    async function renderProductsTable(){const tbody=document.getElementById('productsTable'); const q=(document.getElementById('buscaProduto')?.value||'').toLowerCase().trim(); tbody.innerHTML=''; const filtered=state.products.filter(p=>p.nome.toLowerCase().includes(q)||(p.categoria||'').toLowerCase().includes(q)||(p.sku||'').toLowerCase().includes(q)); if(!filtered.length){tbody.innerHTML='<tr><td colspan="8" class="mini">Nenhum produto cadastrado.</td></tr>'; return;} for(const p of filtered){let imgHtml='<div class="mini">sem foto</div>'; if(p.imageKey){try{const blob=await getImageFromDb(p.imageKey); if(blob){const url=URL.createObjectURL(blob); imgHtml=`<img src="${url}" class="thumb" alt="Foto">`;}}catch(e){console.error(e)}} const margem=p.preco?(Number(p.preco)-Number(p.custo||0))/Number(p.preco):0; tbody.insertAdjacentHTML('beforeend',`<tr><td>${imgHtml}</td><td><strong>${escapeHtml(p.nome)}</strong><div class="mini">${escapeHtml(p.sku||'')}</div></td><td>${escapeHtml(p.categoria||'')}</td><td>${currency(p.preco)}</td><td>${currency(p.custo)}</td><td>${pct(margem)}</td><td>${p.ativo?'Sim':'Não'}</td><td><div class="toolbar"><button class="btn ghost small" onclick="editProduct('${p.id}')">Editar</button><button class="btn danger small" onclick="removeProduct('${p.id}')">Excluir</button></div></td></tr>`)} }
-    function renderDraftOrder(){const tbody=document.getElementById('draftOrderTable'); tbody.innerHTML=''; let total=0; if(!state.draftOrder.items.length){tbody.innerHTML='<tr><td colspan="4" class="mini">Nenhum item no rascunho.</td></tr>'} else {state.draftOrder.items.forEach((item,index)=>{const subtotal=Number(item.preco||0)*Number(item.qtd||0); total+=subtotal; tbody.insertAdjacentHTML('beforeend',`<tr><td>${escapeHtml(item.nome)}</td><td>${item.qtd}</td><td>${escapeHtml(item.personalizacao||'')}</td><td>${currency(subtotal)}<div style="margin-top:8px"><button class="btn ghost small" onclick="removeDraftItem(${index})">Remover</button></div></td></tr>`);})} document.getElementById('draftTotal').textContent=currency(total)}
-    function renderOrders(){const tbody=document.getElementById('ordersTable'); tbody.innerHTML=''; if(!state.orders.length){tbody.innerHTML='<tr><td colspan="7" class="mini">Nenhum pedido salvo.</td></tr>'; return;} [...state.orders].reverse().forEach(order=>{const total=order.items.reduce((sum,item)=>sum+Number(item.preco||0)*Number(item.qtd||0),0); const itens=order.items.map(item=>`${item.qtd}x ${escapeHtml(item.nome)}`).join('<br>'); tbody.insertAdjacentHTML('beforeend',`<tr><td>${escapeHtml(order.cliente||'Cliente')}</td><td>${escapeHtml(order.telefone||'')}</td><td>${escapeHtml(order.data||'')}</td><td>${escapeHtml(order.pagamento||'')}</td><td>${itens}</td><td>${currency(total)}</td><td><button class="btn danger small" onclick="removeOrder('${order.id}')">Excluir</button></td></tr>`);})}
-    function renderDashboard(){let receita=0,custo=0,margins=[]; state.orders.forEach(order=>order.items.forEach(item=>{const rec=Number(item.preco||0)*Number(item.qtd||0); const cus=Number(item.custo||0)*Number(item.qtd||0); receita+=rec; custo+=cus; if(Number(item.preco||0)>0) margins.push((Number(item.preco)-Number(item.custo||0))/Number(item.preco));})); const lucro=receita-custo; const ticket=state.orders.length?receita/state.orders.length:0; const margem=margins.length?margins.reduce((a,b)=>a+b,0)/margins.length:0; document.getElementById('heroProdutos').textContent=state.products.length; document.getElementById('heroPedidos').textContent=state.orders.length; document.getElementById('heroReceita').textContent=currency(receita); document.getElementById('heroLucro').textContent=currency(lucro); document.getElementById('kpiReceita').textContent=currency(receita); document.getElementById('kpiLucro').textContent=currency(lucro); document.getElementById('kpiTicket').textContent=currency(ticket); document.getElementById('kpiMargem').textContent=pct(margem)}
-    function renderConfig(){document.getElementById('cfgLoja').value=state.config.loja||''; document.getElementById('cfgWhatsapp').value=state.config.whatsapp||''; document.getElementById('cfgMsg').value=state.config.mensagem||''; document.getElementById('cfgMoeda').value=state.config.moeda||'BRL'; document.getElementById('cfgBanner').value=state.config.banner||''}
-    async function renderAll(){renderSelects(); await renderProductsTable(); renderDraftOrder(); renderOrders(); renderDashboard(); renderConfig();}
-    function setView(view){document.querySelectorAll('.view').forEach(v=>v.classList.add('hidden')); document.getElementById(view).classList.remove('hidden'); document.querySelectorAll('.nav button').forEach(btn=>btn.classList.toggle('active',btn.dataset.view===view));}
-    function exportJson(filename,data){const blob=new Blob([JSON.stringify(data,null,2)],{type:'application/json'}); const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download=filename; a.click(); setTimeout(()=>URL.revokeObjectURL(a.href),500)}
-    function exportCsv(filename,rows){if(!rows.length){alert('Não há dados para exportar.'); return;} const headers=Object.keys(rows[0]); const csv=[headers.join(','),...rows.map(row=>headers.map(h=>`"${String(row[h]??'').replace(/"/g,'""')}"`).join(','))].join('\n'); const blob=new Blob([csv],{type:'text/csv;charset=utf-8;'}); const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download=filename; a.click(); setTimeout(()=>URL.revokeObjectURL(a.href),500)}
-    async function handlePhotoUpload(){const file=document.getElementById('pFoto').files[0]; if(!file){state.currentPhotoBlob=null; state.currentPhotoPreview=''; showPhotoPreview(''); return;} try{setStatus('Processando foto...','warn'); const blob=await resizeImageTo500Blob(file); const preview=await blobToDataUrl(blob); state.currentPhotoBlob=blob; state.currentPhotoPreview=preview; showPhotoPreview(preview); setStatus('Foto carregada e preparada para salvar.','ok');}catch(err){console.error(err); state.currentPhotoBlob=null; state.currentPhotoPreview=''; showPhotoPreview(''); setStatus('Erro ao processar a foto.','error');}}
-    async function handleSaveProduct(){try{const nome=document.getElementById('pNome').value.trim(); const categoria=document.getElementById('pCategoria').value.trim()||'Sem categoria'; const preco=Number(document.getElementById('pPreco').value||0); const custo=Number(document.getElementById('pCusto').value||0); const tempo=Number(document.getElementById('pTempo').value||0); const sku=document.getElementById('pSku').value.trim(); const ativo=document.getElementById('pAtivo').value==='true'; const descricao=document.getElementById('pDescricao').value.trim(); const campos=document.getElementById('pCampos').value.split(',').map(s=>s.trim()).filter(Boolean); if(!nome){setStatus('Informe o nome do produto.','error'); return;} if(preco<0||custo<0||tempo<0){setStatus('Preço, custo e tempo não podem ser negativos.','error'); return;} let productId=state.editingProductId||uid(); let imageKey=null; const existing=state.products.find(p=>p.id===productId); if(existing?.imageKey) imageKey=existing.imageKey; if(state.currentPhotoBlob){imageKey=`img_${productId}`; await saveImageToDb(imageKey,state.currentPhotoBlob);} const produto={id:productId,nome,categoria,preco,custo,tempo,sku,ativo,descricao,campos,imageKey:imageKey||null}; if(state.editingProductId){const idx=state.products.findIndex(p=>p.id===state.editingProductId); if(idx!==-1) state.products[idx]=produto; setStatus('Produto atualizado com sucesso.','ok')} else {state.products.push(produto); setStatus('Produto cadastrado com sucesso.','ok')} saveState(); clearProductForm();}catch(err){console.error(err); setStatus(`Erro ao salvar o produto: ${err?.message||'erro desconhecido'}`,'error')}}
-    async function exportPortableCatalog(){try{setStatus('Montando catálogo para cliente...','warn'); const portable={config:state.config,products:[]}; for(const p of state.products.filter(x=>x.ativo)){let imageData=''; if(p.imageKey){const blob=await getImageFromDb(p.imageKey); if(blob) imageData=await blobToDataUrl(blob);} portable.products.push({...p,imageData});} exportJson('catalogo_cliente_portatil.json',portable); setStatus('Catálogo portátil exportado com sucesso.','ok');}catch(err){console.error(err); setStatus('Erro ao exportar catálogo portátil.','error')}}
-    async function cleanOldPhotos(){try{const keys=await listImageKeys(); const used=new Set(state.products.map(p=>p.imageKey).filter(Boolean)); let removed=0; for(const key of keys){if(!used.has(key)){await deleteImageFromDb(key); removed++;}} alert(`Limpeza concluída. ${removed} foto(s) antiga(s) removida(s).`);}catch(err){console.error(err); alert('Não foi possível limpar as fotos antigas.');}}
-    window.editProduct=async function(id){const p=state.products.find(x=>x.id===id); if(!p) return; state.editingProductId=id; document.getElementById('pNome').value=p.nome||''; document.getElementById('pCategoria').value=p.categoria||''; document.getElementById('pPreco').value=p.preco??''; document.getElementById('pCusto').value=p.custo??''; document.getElementById('pTempo').value=p.tempo??''; document.getElementById('pSku').value=p.sku||''; document.getElementById('pAtivo').value=String(!!p.ativo); document.getElementById('pDescricao').value=p.descricao||''; document.getElementById('pCampos').value=Array.isArray(p.campos)?p.campos.join(', '):''; document.getElementById('pFoto').value=''; state.currentPhotoBlob=null; state.currentPhotoPreview=''; if(p.imageKey){try{const blob=await getImageFromDb(p.imageKey); if(blob){const preview=await blobToDataUrl(blob); state.currentPhotoPreview=preview; showPhotoPreview(preview);} else showPhotoPreview('')}catch(e){console.error(e); showPhotoPreview('')}} else showPhotoPreview(''); document.getElementById('salvarProduto').textContent='Atualizar produto'; setStatus(`Editando: ${p.nome}`,'warn'); setView('cadastro'); window.scrollTo({top:0,behavior:'smooth'})}
-    window.removeProduct=async function(id){if(!confirm('Excluir este produto?')) return; const product=state.products.find(p=>p.id===id); if(product?.imageKey){try{await deleteImageFromDb(product.imageKey);}catch(e){console.error(e)}} state.products=state.products.filter(p=>p.id!==id); saveState(); setStatus('Produto excluído.','ok');}
-    window.removeDraftItem=function(index){state.draftOrder.items.splice(index,1); renderDraftOrder()}
-    window.removeOrder=function(id){if(!confirm('Excluir este pedido?')) return; state.orders=state.orders.filter(o=>o.id!==id); saveState()}
-    function initEvents(){document.querySelectorAll('.nav button').forEach(btn=>btn.addEventListener('click',()=>setView(btn.dataset.view))); document.getElementById('btnPreviewCliente').addEventListener('click',()=>window.open('index_mobile_import.html','_blank')); document.getElementById('btnExportCatalogPortable').addEventListener('click',exportPortableCatalog); document.getElementById('btnCleanOldPhotos').addEventListener('click',cleanOldPhotos); document.getElementById('resetProduto').addEventListener('click',clearProductForm); document.getElementById('pFoto').addEventListener('change',handlePhotoUpload); document.getElementById('salvarProduto').addEventListener('click',handleSaveProduct); document.getElementById('buscaProduto').addEventListener('input',renderProductsTable);
-      document.getElementById('addOrderItem').addEventListener('click',()=>{const pid=document.getElementById('oProduto').value; const p=state.products.find(x=>x.id===pid); if(!p){alert('Selecione um produto.'); return;} const qtd=Math.max(1,Number(document.getElementById('oQtd').value||1)); state.draftOrder.items.push({productId:pid,nome:p.nome,qtd,personalizacao:document.getElementById('oPers').value||'',preco:Number(p.preco||0),custo:Number(p.custo||0)}); renderDraftOrder();});
-      document.getElementById('clearOrderDraft').addEventListener('click',()=>{state.draftOrder.items=[]; renderDraftOrder();});
-      document.getElementById('saveOrder').addEventListener('click',()=>{if(!state.draftOrder.items.length){alert('Adicione itens ao pedido.'); return;} state.orders.push({id:uid(),cliente:document.getElementById('oCliente').value||'Cliente',telefone:document.getElementById('oTelefone').value||'',data:document.getElementById('oData').value||new Date().toISOString().slice(0,10),pagamento:document.getElementById('oPagamento').value||'PIX',items:[...state.draftOrder.items]}); state.draftOrder.items=[]; document.getElementById('oCliente').value=''; document.getElementById('oTelefone').value=''; document.getElementById('oData').value=''; document.getElementById('oPagamento').value='PIX'; document.getElementById('oQtd').value=1; document.getElementById('oPers').value=''; saveState(); alert('Pedido salvo com sucesso.');});
-      document.getElementById('saveConfig').addEventListener('click',()=>{state.config.loja=document.getElementById('cfgLoja').value.trim()||'Minha Loja'; state.config.whatsapp=document.getElementById('cfgWhatsapp').value.trim()||''; state.config.mensagem=document.getElementById('cfgMsg').value.trim()||'Olá! Gostaria de fazer este pedido:'; state.config.moeda=document.getElementById('cfgMoeda').value.trim()||'BRL'; state.config.banner=document.getElementById('cfgBanner').value.trim()||''; saveState(); alert('Configurações salvas.');});
-      document.getElementById('btnExportJson').addEventListener('click',()=>exportJson('personaliza-hub-store.json',{config:state.config,products:state.products,orders:state.orders,draftOrder:state.draftOrder}));
-      document.getElementById('exportProdutosJson').addEventListener('click',()=>exportJson('produtos.json',state.products));
-      document.getElementById('exportProdutosCsv').addEventListener('click',()=>exportCsv('produtos.csv',state.products.map(p=>({nome:p.nome,categoria:p.categoria,preco:p.preco,custo:p.custo,tempo:p.tempo,sku:p.sku,ativo:p.ativo,descricao:p.descricao,campos:Array.isArray(p.campos)?p.campos.join(' | '):'',imageKey:p.imageKey||''}))));
-      document.getElementById('btnImportOpen').addEventListener('click',()=>document.getElementById('fileInput').click());
-      document.getElementById('fileInput').addEventListener('change',async e=>{const file=e.target.files[0]; if(!file) return; try{const text=await file.text(); const parsed=JSON.parse(text); if(parsed.products||parsed.orders||parsed.config){state.config={...state.config,...(parsed.config||{})}; state.products=Array.isArray(parsed.products)?parsed.products:[]; state.orders=Array.isArray(parsed.orders)?parsed.orders:[];} else if(Array.isArray(parsed)){state.products=parsed;} else throw new Error('Formato inválido'); state.draftOrder={items:[]}; state.editingProductId=null; state.currentPhotoBlob=null; state.currentPhotoPreview=''; saveState(); clearProductForm(); alert('Importação concluída.');}catch(err){console.error(err); alert('Não foi possível importar esse JSON.');}finally{e.target.value='';}})
+    const STORAGE_KEY = 'personaliza_hub_store_v5';
+    const DB_NAME = 'personaliza_hub_images_db';
+    const DB_VERSION = 1;
+    const STORE_NAME = 'product_images';
+
+    let state = {
+      config: {
+        loja: 'Minha Loja',
+        whatsapp: '5511999999999',
+        mensagem: 'Olá! Gostaria de fazer este pedido:',
+        moeda: 'BRL',
+        banner: 'Coleção personalizada pronta para encantar seus clientes.'
+      },
+      products: [],
+      orders: [],
+      draftOrder: { items: [] },
+      editingProductId: null,
+      currentPhotoBlob: null,
+      currentPhotoPreview: ''
+    };
+
+    let db = null;
+
+    function uid(){
+      return Math.random().toString(36).slice(2,10);
     }
-    (async function init(){await ensureDb(); loadState(); initEvents(); await renderAll(); setView('inicio');})();
+
+    function escapeHtml(str=''){
+      return String(str).replace(/[&<>"']/g, m => ({
+        '&':'&amp;',
+        '<':'&lt;',
+        '>':'&gt;',
+        '"':'&quot;',
+        "'":'&#039;'
+      }[m]));
+    }
+
+    function currency(v){
+      return new Intl.NumberFormat('pt-BR', {
+        style:'currency',
+        currency: state.config.moeda || 'BRL'
+      }).format(Number(v || 0));
+    }
+
+    function pct(v){
+      return `${(Number(v || 0) * 100).toFixed(1)}%`;
+    }
+
+    function openDb(){
+      return new Promise((resolve, reject) => {
+        const req = indexedDB.open(DB_NAME, DB_VERSION);
+        req.onupgradeneeded = event => {
+          const database = event.target.result;
+          if(!database.objectStoreNames.contains(STORE_NAME)){
+            database.createObjectStore(STORE_NAME);
+          }
+        };
+        req.onsuccess = () => {
+          db = req.result;
+          resolve(db);
+        };
+        req.onerror = () => reject(req.error);
+      });
+    }
+
+    async function ensureDb(){
+      if(db) return db;
+      return await openDb();
+    }
+
+    async function saveImageToDb(key, blob){
+      const database = await ensureDb();
+      return new Promise((resolve, reject) => {
+        const tx = database.transaction(STORE_NAME, 'readwrite');
+        const store = tx.objectStore(STORE_NAME);
+        const req = store.put(blob, key);
+        req.onsuccess = () => resolve();
+        req.onerror = () => reject(req.error);
+      });
+    }
+
+    async function getImageFromDb(key){
+      const database = await ensureDb();
+      return new Promise((resolve, reject) => {
+        const tx = database.transaction(STORE_NAME, 'readonly');
+        const store = tx.objectStore(STORE_NAME);
+        const req = store.get(key);
+        req.onsuccess = () => resolve(req.result || null);
+        req.onerror = () => reject(req.error);
+      });
+    }
+
+    async function deleteImageFromDb(key){
+      const database = await ensureDb();
+      return new Promise((resolve, reject) => {
+        const tx = database.transaction(STORE_NAME, 'readwrite');
+        const store = tx.objectStore(STORE_NAME);
+        const req = store.delete(key);
+        req.onsuccess = () => resolve();
+        req.onerror = () => reject(req.error);
+      });
+    }
+
+    function blobToDataUrl(blob){
+      return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = () => resolve(reader.result);
+        reader.onerror = reject;
+        reader.readAsDataURL(blob);
+      });
+    }
+
+    function resizeImageTo500Blob(file){
+      return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = e => {
+          const img = new Image();
+          img.onload = () => {
+            const canvas = document.createElement('canvas');
+            canvas.width = 500;
+            canvas.height = 500;
+            const ctx = canvas.getContext('2d');
+
+            ctx.fillStyle = '#ffffff';
+            ctx.fillRect(0, 0, 500, 500);
+
+            const scale = Math.min(500 / img.width, 500 / img.height);
+            const newWidth = img.width * scale;
+            const newHeight = img.height * scale;
+            const x = (500 - newWidth) / 2;
+            const y = (500 - newHeight) / 2;
+
+            ctx.drawImage(img, x, y, newWidth, newHeight);
+
+            canvas.toBlob(blob => {
+              if(blob) resolve(blob);
+              else reject(new Error('Falha ao gerar blob da imagem'));
+            }, 'image/jpeg', 0.82);
+          };
+          img.onerror = reject;
+          img.src = e.target.result;
+        };
+        reader.onerror = reject;
+        reader.readAsDataURL(file);
+      });
+    }
+
+    function saveState(){
+      localStorage.setItem(STORAGE_KEY, JSON.stringify({
+        config: state.config,
+        products: state.products,
+        orders: state.orders,
+        draftOrder: state.draftOrder
+      }));
+      renderAll();
+    }
+
+    function loadState(){
+      const raw = localStorage.getItem(STORAGE_KEY);
+      if(!raw) return;
+      try{
+        const parsed = JSON.parse(raw);
+        state = {
+          config: { ...state.config, ...(parsed.config || {}) },
+          products: parsed.products || [],
+          orders: parsed.orders || [],
+          draftOrder: parsed.draftOrder || { items: [] },
+          editingProductId: null,
+          currentPhotoBlob: null,
+          currentPhotoPreview: ''
+        };
+      }catch(e){
+        console.error(e);
+      }
+    }
+
+    function setStatus(msg, type=''){
+      const el = document.getElementById('statusProduto');
+      el.textContent = msg;
+      el.className = 'status';
+      if(type) el.classList.add(type);
+    }
+
+    function showPhotoPreview(src){
+      const box = document.getElementById('previewFotoBox');
+      const img = document.getElementById('previewFoto');
+      if(src){
+        img.src = src;
+        box.classList.remove('hidden');
+      } else {
+        img.src = '';
+        box.classList.add('hidden');
+      }
+    }
+
+    function clearProductForm(){
+      ['pNome','pCategoria','pPreco','pCusto','pTempo','pSku','pDescricao','pCampos'].forEach(id => {
+        document.getElementById(id).value = '';
+      });
+      document.getElementById('pAtivo').value = 'true';
+      document.getElementById('pFoto').value = '';
+      state.editingProductId = null;
+      state.currentPhotoBlob = null;
+      state.currentPhotoPreview = '';
+      showPhotoPreview('');
+      document.getElementById('salvarProduto').textContent = 'Salvar produto';
+      setStatus('Preencha os dados e clique em salvar.');
+    }
+
+    function renderSelects(){
+      const select = document.getElementById('oProduto');
+      const activeProducts = state.products.filter(p => p.ativo);
+      select.innerHTML = `<option value="">Selecione</option>` +
+        activeProducts.map(p => `<option value="${p.id}">${escapeHtml(p.nome)}</option>`).join('');
+    }
+
+    async function renderProductsTable(){
+      const tbody = document.getElementById('productsTable');
+      const q = (document.getElementById('buscaProduto')?.value || '').toLowerCase().trim();
+      tbody.innerHTML = '';
+
+      const filtered = state.products.filter(p =>
+        p.nome.toLowerCase().includes(q) ||
+        (p.categoria || '').toLowerCase().includes(q) ||
+        (p.sku || '').toLowerCase().includes(q)
+      );
+
+      if(!filtered.length){
+        tbody.innerHTML = `<tr><td colspan="8" class="mini">Nenhum produto cadastrado.</td></tr>`;
+        return;
+      }
+
+      for(const p of filtered){
+        let imgHtml = '<div class="mini">sem foto</div>';
+        if(p.imageKey){
+          try{
+            const blob = await getImageFromDb(p.imageKey);
+            if(blob){
+              const url = URL.createObjectURL(blob);
+              imgHtml = `<img src="${url}" class="thumb" alt="Foto">`;
+            }
+          }catch(e){
+            console.error(e);
+          }
+        }
+
+        const margem = p.preco ? (Number(p.preco) - Number(p.custo || 0)) / Number(p.preco) : 0;
+        tbody.insertAdjacentHTML('beforeend', `
+          <tr>
+            <td>${imgHtml}</td>
+            <td><strong>${escapeHtml(p.nome)}</strong><div class="mini">${escapeHtml(p.sku || '')}</div></td>
+            <td>${escapeHtml(p.categoria || '')}</td>
+            <td>${currency(p.preco)}</td>
+            <td>${currency(p.custo)}</td>
+            <td>${pct(margem)}</td>
+            <td>${p.ativo ? 'Sim' : 'Não'}</td>
+            <td>
+              <div class="toolbar">
+                <button class="btn ghost small" onclick="editProduct('${p.id}')">Editar</button>
+                <button class="btn danger small" onclick="removeProduct('${p.id}')">Excluir</button>
+              </div>
+            </td>
+          </tr>
+        `);
+      }
+    }
+
+    function renderDraftOrder(){
+      const tbody = document.getElementById('draftOrderTable');
+      tbody.innerHTML = '';
+      let total = 0;
+
+      if(!state.draftOrder.items.length){
+        tbody.innerHTML = `<tr><td colspan="4" class="mini">Nenhum item no rascunho.</td></tr>`;
+      } else {
+        state.draftOrder.items.forEach((item, index) => {
+          const subtotal = Number(item.preco || 0) * Number(item.qtd || 0);
+          total += subtotal;
+          tbody.insertAdjacentHTML('beforeend', `
+            <tr>
+              <td>${escapeHtml(item.nome)}</td>
+              <td>${item.qtd}</td>
+              <td>${escapeHtml(item.personalizacao || '')}</td>
+              <td>
+                ${currency(subtotal)}
+                <div style="margin-top:8px">
+                  <button class="btn ghost small" onclick="removeDraftItem(${index})">Remover</button>
+                </div>
+              </td>
+            </tr>
+          `);
+        });
+      }
+
+      document.getElementById('draftTotal').textContent = currency(total);
+    }
+
+    function renderOrders(){
+      const tbody = document.getElementById('ordersTable');
+      tbody.innerHTML = '';
+
+      if(!state.orders.length){
+        tbody.innerHTML = `<tr><td colspan="7" class="mini">Nenhum pedido salvo.</td></tr>`;
+        return;
+      }
+
+      [...state.orders].reverse().forEach(order => {
+        const total = order.items.reduce((sum, item) => sum + Number(item.preco || 0) * Number(item.qtd || 0), 0);
+        const itens = order.items.map(item => `${item.qtd}x ${escapeHtml(item.nome)}`).join('<br>');
+
+        tbody.insertAdjacentHTML('beforeend', `
+          <tr>
+            <td>${escapeHtml(order.cliente || 'Cliente')}</td>
+            <td>${escapeHtml(order.telefone || '')}</td>
+            <td>${escapeHtml(order.data || '')}</td>
+            <td>${escapeHtml(order.pagamento || '')}</td>
+            <td>${itens}</td>
+            <td>${currency(total)}</td>
+            <td><button class="btn danger small" onclick="removeOrder('${order.id}')">Excluir</button></td>
+          </tr>
+        `);
+      });
+    }
+
+    function renderDashboard(){
+      let receita = 0;
+      let custo = 0;
+      let margins = [];
+
+      state.orders.forEach(order => {
+        order.items.forEach(item => {
+          const rec = Number(item.preco || 0) * Number(item.qtd || 0);
+          const cus = Number(item.custo || 0) * Number(item.qtd || 0);
+          receita += rec;
+          custo += cus;
+          if(Number(item.preco || 0) > 0){
+            margins.push((Number(item.preco) - Number(item.custo || 0)) / Number(item.preco));
+          }
+        });
+      });
+
+      const lucro = receita - custo;
+      const ticket = state.orders.length ? receita / state.orders.length : 0;
+      const margem = margins.length ? margins.reduce((a,b)=>a+b,0)/margins.length : 0;
+
+      document.getElementById('heroProdutos').textContent = state.products.length;
+      document.getElementById('heroPedidos').textContent = state.orders.length;
+      document.getElementById('heroReceita').textContent = currency(receita);
+      document.getElementById('heroLucro').textContent = currency(lucro);
+
+      document.getElementById('kpiReceita').textContent = currency(receita);
+      document.getElementById('kpiLucro').textContent = currency(lucro);
+      document.getElementById('kpiTicket').textContent = currency(ticket);
+      document.getElementById('kpiMargem').textContent = pct(margem);
+    }
+
+    function renderConfig(){
+      document.getElementById('cfgLoja').value = state.config.loja || '';
+      document.getElementById('cfgWhatsapp').value = state.config.whatsapp || '';
+      document.getElementById('cfgMsg').value = state.config.mensagem || '';
+      document.getElementById('cfgMoeda').value = state.config.moeda || 'BRL';
+      document.getElementById('cfgBanner').value = state.config.banner || '';
+    }
+
+    async function renderAll(){
+      renderSelects();
+      await renderProductsTable();
+      renderDraftOrder();
+      renderOrders();
+      renderDashboard();
+      renderConfig();
+    }
+
+    function setView(view){
+      document.querySelectorAll('.view').forEach(v => v.classList.add('hidden'));
+      document.getElementById(view).classList.remove('hidden');
+      document.querySelectorAll('.nav button').forEach(btn => {
+        btn.classList.toggle('active', btn.dataset.view === view);
+      });
+    }
+
+    function exportJson(filename, data){
+      const blob = new Blob([JSON.stringify(data, null, 2)], { type:'application/json' });
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(blob);
+      a.download = filename;
+      a.click();
+      setTimeout(() => URL.revokeObjectURL(a.href), 500);
+    }
+
+    function exportCsv(filename, rows){
+      if(!rows.length){
+        alert('Não há dados para exportar.');
+        return;
+      }
+      const headers = Object.keys(rows[0]);
+      const csv = [
+        headers.join(','),
+        ...rows.map(row => headers.map(h => `"${String(row[h] ?? '').replace(/"/g,'""')}"`).join(','))
+      ].join('\n');
+
+      const blob = new Blob([csv], { type:'text/csv;charset=utf-8;' });
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(blob);
+      a.download = filename;
+      a.click();
+      setTimeout(() => URL.revokeObjectURL(a.href), 500);
+    }
+
+    async function handlePhotoUpload(){
+      const file = document.getElementById('pFoto').files[0];
+      if(!file){
+        state.currentPhotoBlob = null;
+        state.currentPhotoPreview = '';
+        showPhotoPreview('');
+        return;
+      }
+
+      try{
+        setStatus('Processando foto...', 'warn');
+        const blob = await resizeImageTo500Blob(file);
+        const preview = await blobToDataUrl(blob);
+        state.currentPhotoBlob = blob;
+        state.currentPhotoPreview = preview;
+        showPhotoPreview(preview);
+        setStatus('Foto carregada e preparada para salvar.', 'ok');
+      }catch(err){
+        console.error(err);
+        state.currentPhotoBlob = null;
+        state.currentPhotoPreview = '';
+        showPhotoPreview('');
+        setStatus('Erro ao processar a foto.', 'error');
+      }
+    }
+
+    async function handleSaveProduct(){
+      try{
+        const nome = document.getElementById('pNome').value.trim();
+        const categoria = document.getElementById('pCategoria').value.trim() || 'Sem categoria';
+        const preco = Number(document.getElementById('pPreco').value || 0);
+        const custo = Number(document.getElementById('pCusto').value || 0);
+        const tempo = Number(document.getElementById('pTempo').value || 0);
+        const sku = document.getElementById('pSku').value.trim();
+        const ativo = document.getElementById('pAtivo').value === 'true';
+        const descricao = document.getElementById('pDescricao').value.trim();
+        const campos = document.getElementById('pCampos').value
+          .split(',')
+          .map(s => s.trim())
+          .filter(Boolean);
+
+        if(!nome){
+          setStatus('Informe o nome do produto.', 'error');
+          return;
+        }
+
+        if(preco < 0 || custo < 0 || tempo < 0){
+          setStatus('Preço, custo e tempo não podem ser negativos.', 'error');
+          return;
+        }
+
+        let productId = state.editingProductId || uid();
+        let imageKey = null;
+
+        const existing = state.products.find(p => p.id === productId);
+        if(existing?.imageKey){
+          imageKey = existing.imageKey;
+        }
+
+        if(state.currentPhotoBlob){
+          imageKey = `img_${productId}`;
+          await saveImageToDb(imageKey, state.currentPhotoBlob);
+        }
+
+        const produto = {
+          id: productId,
+          nome,
+          categoria,
+          preco,
+          custo,
+          tempo,
+          sku,
+          ativo,
+          descricao,
+          campos,
+          imageKey: imageKey || null
+        };
+
+        if(state.editingProductId){
+          const idx = state.products.findIndex(p => p.id === state.editingProductId);
+          if(idx !== -1) state.products[idx] = produto;
+          setStatus('Produto atualizado com sucesso.', 'ok');
+        } else {
+          state.products.push(produto);
+          setStatus('Produto cadastrado com sucesso.', 'ok');
+        }
+
+        saveState();
+        clearProductForm();
+      }catch(err){
+        console.error(err);
+        setStatus(`Erro ao salvar o produto: ${err?.message || 'erro desconhecido'}`, 'error');
+      }
+    }
+
+    window.editProduct = async function(id){
+      const p = state.products.find(x => x.id === id);
+      if(!p) return;
+
+      state.editingProductId = id;
+      document.getElementById('pNome').value = p.nome || '';
+      document.getElementById('pCategoria').value = p.categoria || '';
+      document.getElementById('pPreco').value = p.preco ?? '';
+      document.getElementById('pCusto').value = p.custo ?? '';
+      document.getElementById('pTempo').value = p.tempo ?? '';
+      document.getElementById('pSku').value = p.sku || '';
+      document.getElementById('pAtivo').value = String(!!p.ativo);
+      document.getElementById('pDescricao').value = p.descricao || '';
+      document.getElementById('pCampos').value = Array.isArray(p.campos) ? p.campos.join(', ') : '';
+      document.getElementById('pFoto').value = '';
+      state.currentPhotoBlob = null;
+      state.currentPhotoPreview = '';
+
+      if(p.imageKey){
+        try{
+          const blob = await getImageFromDb(p.imageKey);
+          if(blob){
+            const preview = await blobToDataUrl(blob);
+            state.currentPhotoPreview = preview;
+            showPhotoPreview(preview);
+          } else {
+            showPhotoPreview('');
+          }
+        }catch(e){
+          console.error(e);
+          showPhotoPreview('');
+        }
+      } else {
+        showPhotoPreview('');
+      }
+
+      document.getElementById('salvarProduto').textContent = 'Atualizar produto';
+      setStatus(`Editando: ${p.nome}`, 'warn');
+      setView('cadastro');
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    };
+
+    window.removeProduct = async function(id){
+      if(!confirm('Excluir este produto?')) return;
+      const product = state.products.find(p => p.id === id);
+      if(product?.imageKey){
+        try{ await deleteImageFromDb(product.imageKey); } catch(e){ console.error(e); }
+      }
+      state.products = state.products.filter(p => p.id !== id);
+      saveState();
+      setStatus('Produto excluído.', 'ok');
+    };
+
+    window.removeDraftItem = function(index){
+      state.draftOrder.items.splice(index, 1);
+      renderDraftOrder();
+    };
+
+    window.removeOrder = function(id){
+      if(!confirm('Excluir este pedido?')) return;
+      state.orders = state.orders.filter(o => o.id !== id);
+      saveState();
+    };
+
+    function initEvents(){
+      document.querySelectorAll('.nav button').forEach(btn => {
+        btn.addEventListener('click', () => setView(btn.dataset.view));
+      });
+
+      document.getElementById('btnPreviewCliente').addEventListener('click', () => {
+        window.open('index.html', '_blank');
+      });
+
+      document.getElementById('resetProduto').addEventListener('click', clearProductForm);
+      document.getElementById('pFoto').addEventListener('change', handlePhotoUpload);
+      document.getElementById('salvarProduto').addEventListener('click', handleSaveProduct);
+      document.getElementById('buscaProduto').addEventListener('input', renderProductsTable);
+
+      document.getElementById('addOrderItem').addEventListener('click', () => {
+        const pid = document.getElementById('oProduto').value;
+        const p = state.products.find(x => x.id === pid);
+        if(!p){
+          alert('Selecione um produto.');
+          return;
+        }
+
+        const qtd = Math.max(1, Number(document.getElementById('oQtd').value || 1));
+        state.draftOrder.items.push({
+          productId: pid,
+          nome: p.nome,
+          qtd,
+          personalizacao: document.getElementById('oPers').value || '',
+          preco: Number(p.preco || 0),
+          custo: Number(p.custo || 0)
+        });
+        renderDraftOrder();
+      });
+
+      document.getElementById('clearOrderDraft').addEventListener('click', () => {
+        state.draftOrder.items = [];
+        renderDraftOrder();
+      });
+
+      document.getElementById('saveOrder').addEventListener('click', () => {
+        if(!state.draftOrder.items.length){
+          alert('Adicione itens ao pedido.');
+          return;
+        }
+
+        state.orders.push({
+          id: uid(),
+          cliente: document.getElementById('oCliente').value || 'Cliente',
+          telefone: document.getElementById('oTelefone').value || '',
+          data: document.getElementById('oData').value || new Date().toISOString().slice(0,10),
+          pagamento: document.getElementById('oPagamento').value || 'PIX',
+          items: [...state.draftOrder.items]
+        });
+
+        state.draftOrder.items = [];
+        document.getElementById('oCliente').value = '';
+        document.getElementById('oTelefone').value = '';
+        document.getElementById('oData').value = '';
+        document.getElementById('oPagamento').value = 'PIX';
+        document.getElementById('oQtd').value = 1;
+        document.getElementById('oPers').value = '';
+
+        saveState();
+        alert('Pedido salvo com sucesso.');
+      });
+
+      document.getElementById('saveConfig').addEventListener('click', () => {
+        state.config.loja = document.getElementById('cfgLoja').value.trim() || 'Minha Loja';
+        state.config.whatsapp = document.getElementById('cfgWhatsapp').value.trim() || '';
+        state.config.mensagem = document.getElementById('cfgMsg').value.trim() || 'Olá! Gostaria de fazer este pedido:';
+        state.config.moeda = document.getElementById('cfgMoeda').value.trim() || 'BRL';
+        state.config.banner = document.getElementById('cfgBanner').value.trim() || '';
+        saveState();
+        alert('Configurações salvas.');
+      });
+
+      document.getElementById('btnExportJson').addEventListener('click', () => {
+        exportJson('personaliza-hub-store.json', {
+          config: state.config,
+          products: state.products,
+          orders: state.orders,
+          draftOrder: state.draftOrder
+        });
+      });
+
+      document.getElementById('exportProdutosJson').addEventListener('click', () => {
+        exportJson('produtos.json', state.products);
+      });
+
+      document.getElementById('exportProdutosCsv').addEventListener('click', () => {
+        exportCsv('produtos.csv', state.products.map(p => ({
+          nome: p.nome,
+          categoria: p.categoria,
+          preco: p.preco,
+          custo: p.custo,
+          tempo: p.tempo,
+          sku: p.sku,
+          ativo: p.ativo,
+          descricao: p.descricao,
+          campos: Array.isArray(p.campos) ? p.campos.join(' | ') : '',
+          imageKey: p.imageKey || ''
+        })));
+      });
+
+      document.getElementById('btnImportOpen').addEventListener('click', () => {
+        document.getElementById('fileInput').click();
+      });
+
+      document.getElementById('fileInput').addEventListener('change', async e => {
+        const file = e.target.files[0];
+        if(!file) return;
+
+        try{
+          const text = await file.text();
+          const parsed = JSON.parse(text);
+
+          if(parsed.products || parsed.orders || parsed.config){
+            state.config = { ...state.config, ...(parsed.config || {}) };
+            state.products = Array.isArray(parsed.products) ? parsed.products : [];
+            state.orders = Array.isArray(parsed.orders) ? parsed.orders : [];
+          } else if(Array.isArray(parsed)){
+            state.products = parsed;
+          } else {
+            throw new Error('Formato inválido');
+          }
+
+          state.draftOrder = { items: [] };
+          state.editingProductId = null;
+          state.currentPhotoBlob = null;
+          state.currentPhotoPreview = '';
+          saveState();
+          clearProductForm();
+          alert('Importação concluída.');
+        }catch(err){
+          console.error(err);
+          alert('Não foi possível importar esse JSON.');
+        }finally{
+          e.target.value = '';
+        }
+      });
+    }
+
+    (async function init(){
+      await ensureDb();
+      loadState();
+      initEvents();
+      await renderAll();
+      setView('inicio');
+    })();
   </script>
 </body>
 </html>
