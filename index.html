@@ -75,7 +75,7 @@
   <div class="container">
     <section id="setupArea" class="setup">
       <div class="card">
-        <h2>Bem-vindo!</h2>
+        <h2>Bem Vindo!</h2>
         <div class="toolbar" style="margin-top:14px"><button class="btn primary" id="btnConnect">Entre Aqui!</button></div>
       </div>
     </section>
@@ -159,15 +159,15 @@
       if(!raw) return;
       try{
         const parsed = JSON.parse(raw);
-        document.getElementById('sbUrl').value = parsed.url || '';
-        document.getElementById('sbAnon').value = parsed.anon || '';
+        'https://xwaflarqkooltziusmbl.supabase.co' = parsed.url || '';
+        'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inh3YWZsYXJxa29vbHR6aXVzbWJsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzU0ODkyNDgsImV4cCI6MjA5MTA2NTI0OH0.v4YFHMEc8Ryu_97J5UV5nVU7wPjFKetd10WP9MJ60u4' = parsed.anon || '';
       }catch{}
     }
 
     function storeConfig(){
       localStorage.setItem(STORAGE_KEY, JSON.stringify({
-        url: document.getElementById('sbUrl').value.trim(),
-        anon: document.getElementById('sbAnon').value.trim()
+        url: 'https://xwaflarqkooltziusmbl.supabase.co',
+        anon: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inh3YWZsYXJxa29vbHR6aXVzbWJsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzU0ODkyNDgsImV4cCI6MjA5MTA2NTI0OH0.v4YFHMEc8Ryu_97J5UV5nVU7wPjFKetd10WP9MJ60u4'
       }));
     }
 
