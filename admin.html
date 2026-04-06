@@ -327,7 +327,7 @@
   </div>
 
   <script>
-    let supabase = null;
+    let supabaseClient = null;
     let sessionUser = null;
     let state = {
       config: {
@@ -397,7 +397,7 @@
       const url = document.getElementById('sbUrl').value.trim();
       const anon = document.getElementById('sbAnon').value.trim();
       if(!url || !anon) throw new Error('Preencha a URL e a anon key.');
-      supabase = window.supabase.createClient(url, anon);
+      supabaseClient = window.supabase.createClient(url, anon);
       storeConfig();
     }
 
@@ -435,20 +435,20 @@
     async function uploadImage(file){
       if(!file) return { image_url: null, image_path: null };
       const filename = `products/${Date.now()}-${Math.random().toString(36).slice(2,8)}.jpg`;
-      const { error: uploadError } = await supabase.storage.from('product-images').upload(filename, file, { upsert: true, contentType: 'image/jpeg' });
+      const { error: uploadError } = await supabaseClient.storage.from('product-images').upload(filename, file, { upsert: true, contentType: 'image/jpeg' });
       if(uploadError) throw uploadError;
-      const { data } = supabase.storage.from('product-images').getPublicUrl(filename);
+      const { data } = supabaseClient.storage.from('product-images').getPublicUrl(filename);
       return { image_url: data.publicUrl, image_path: filename };
     }
 
     async function deleteImage(path){
       if(!path) return;
-      const { error } = await supabase.storage.from('product-images').remove([path]);
+      const { error } = await supabaseClient.storage.from('product-images').remove([path]);
       if(error) console.error(error);
     }
 
     async function fetchConfig(){
-      const { data, error } = await supabase.from('store_config').select('*').limit(1).maybeSingle();
+      const { data, error } = await supabaseClient.from('store_config').select('*').limit(1).maybeSingle();
       if(error) throw error;
       if(data) state.config = { ...state.config, ...data };
     }
@@ -462,19 +462,19 @@
         moeda: document.getElementById('cfgMoeda').value.trim() || 'BRL',
         banner: document.getElementById('cfgBanner').value.trim() || ''
       };
-      const { error } = await supabase.from('store_config').upsert(payload);
+      const { error } = await supabaseClient.from('store_config').upsert(payload);
       if(error) throw error;
       state.config = payload;
     }
 
     async function fetchProducts(){
-      const { data, error } = await supabase.from('products').select('*').order('created_at', { ascending:false });
+      const { data, error } = await supabaseClient.from('products').select('*').order('created_at', { ascending:false });
       if(error) throw error;
       state.products = data || [];
     }
 
     async function fetchOrders(){
-      const { data, error } = await supabase.from('orders').select('*').order('created_at', { ascending:false });
+      const { data, error } = await supabaseClient.from('orders').select('*').order('created_at', { ascending:false });
       if(error) throw error;
       state.orders = data || [];
     }
@@ -586,7 +586,7 @@
         initClient();
         const email = document.getElementById('adminEmail').value.trim();
         const password = document.getElementById('adminPassword').value;
-        const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+        const { data, error } = await supabaseClient.auth.signInWithPassword({ email, password });
         if(error) throw error;
         sessionUser = data.user;
         document.getElementById('loginArea').classList.add('hidden');
@@ -604,7 +604,7 @@
         initClient();
         const email = document.getElementById('adminEmail').value.trim();
         const password = document.getElementById('adminPassword').value;
-        const { error } = await supabase.auth.signUp({ email, password });
+        const { error } = await supabaseClient.auth.signUp({ email, password });
         if(error) throw error;
         setAuthStatus('Conta criada. Se o projeto exigir confirmação por e-mail, confirme antes de entrar.', 'ok');
       }catch(err){
@@ -615,7 +615,7 @@
 
     async function handleLogout(){
       if(!supabase) return;
-      await supabase.auth.signOut();
+      await supabaseClient.auth.signOut();
       sessionUser = null;
       document.getElementById('appArea').classList.add('hidden');
       document.getElementById('loginArea').classList.remove('hidden');
@@ -683,11 +683,11 @@
 
         const payload = { name, category, sale_price, cost, production_time, sku, active, description, custom_fields, image_url, image_path };
         if(state.editingProductId){
-          const { error } = await supabase.from('products').update(payload).eq('id', state.editingProductId);
+          const { error } = await supabaseClient.from('products').update(payload).eq('id', state.editingProductId);
           if(error) throw error;
           setStatus('Produto atualizado com sucesso.', 'ok');
         } else {
-          const { error } = await supabase.from('products').insert(payload);
+          const { error } = await supabaseClient.from('products').insert(payload);
           if(error) throw error;
           setStatus('Produto cadastrado com sucesso.', 'ok');
         }
@@ -727,7 +727,7 @@
       if(!confirm('Excluir este produto?')) return;
       const p = state.products.find(x => x.id === id);
       if(p?.image_path) await deleteImage(p.image_path);
-      const { error } = await supabase.from('products').delete().eq('id', id);
+      const { error } = await supabaseClient.from('products').delete().eq('id', id);
       if(error){ alert(error.message); return; }
       await refreshAll();
       setStatus('Produto excluído.', 'ok');
@@ -749,7 +749,7 @@
         items: state.draftOrder.items,
         total_amount
       };
-      const { error } = await supabase.from('orders').insert(payload);
+      const { error } = await supabaseClient.from('orders').insert(payload);
       if(error){ alert(error.message); return; }
       state.draftOrder.items = [];
       ['oCliente','oTelefone','oData','oPers'].forEach(id => document.getElementById(id).value = '');
@@ -762,7 +762,7 @@
     async function initSessionIfPossible(){
       try{
         initClient();
-        const { data } = await supabase.auth.getSession();
+        const { data } = await supabaseClient.auth.getSession();
         if(data.session){
           sessionUser = data.session.user;
           document.getElementById('loginArea').classList.add('hidden');
