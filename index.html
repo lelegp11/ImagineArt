@@ -217,7 +217,10 @@
   </div>
 
   <script>
-    const STORAGE_KEY = 'personaliza_hub_store_v4';
+    const STORAGE_KEY = 'personaliza_hub_store_v5';
+    const DB_NAME = 'personaliza_hub_images_db';
+    const DB_VERSION = 1;
+    const STORE_NAME = 'product_images';
 
     let state = {
       config: {
@@ -230,6 +233,8 @@
       products: [],
       cart: []
     };
+
+    let db = null;
 
     function escapeHtml(str=''){
       return String(str).replace(/[&<>"']/g, m => ({
@@ -246,6 +251,39 @@
         style:'currency',
         currency:state.config.moeda || 'BRL'
       }).format(Number(v || 0));
+    }
+
+    function openDb(){
+      return new Promise((resolve, reject) => {
+        const req = indexedDB.open(DB_NAME, DB_VERSION);
+        req.onupgradeneeded = event => {
+          const database = event.target.result;
+          if(!database.objectStoreNames.contains(STORE_NAME)){
+            database.createObjectStore(STORE_NAME);
+          }
+        };
+        req.onsuccess = () => {
+          db = req.result;
+          resolve(db);
+        };
+        req.onerror = () => reject(req.error);
+      });
+    }
+
+    async function ensureDb(){
+      if(db) return db;
+      return await openDb();
+    }
+
+    async function getImageFromDb(key){
+      const database = await ensureDb();
+      return new Promise((resolve, reject) => {
+        const tx = database.transaction(STORE_NAME, 'readonly');
+        const store = tx.objectStore(STORE_NAME);
+        const req = store.get(key);
+        req.onsuccess = () => resolve(req.result || null);
+        req.onerror = () => reject(req.error);
+      });
     }
 
     function loadState(){
@@ -282,7 +320,7 @@
         cats.map(c => `<option value="${escapeHtml(c)}">${escapeHtml(c)}</option>`).join('');
     }
 
-    function renderCatalog(){
+    async function renderCatalog(){
       const grid = document.getElementById('catalogGrid');
       const products = getFilteredProducts();
       grid.innerHTML = '';
@@ -292,7 +330,20 @@
         return;
       }
 
-      products.forEach(p => {
+      for(const p of products){
+        let imageHtml = `<div class="muted">Sem imagem</div>`;
+        if(p.imageKey){
+          try{
+            const blob = await getImageFromDb(p.imageKey);
+            if(blob){
+              const url = URL.createObjectURL(blob);
+              imageHtml = `<img src="${url}" class="product-image" alt="${escapeHtml(p.nome)}">`;
+            }
+          }catch(e){
+            console.error(e);
+          }
+        }
+
         const fields = Array.isArray(p.campos) ? p.campos : [];
         const fieldsHtml = fields.map((field, idx) => `
           <div>
@@ -304,7 +355,7 @@
         grid.insertAdjacentHTML('beforeend', `
           <div class="product-card">
             <div class="product-image-wrap">
-              ${p.foto ? `<img src="${p.foto}" class="product-image" alt="${escapeHtml(p.nome)}">` : `<div class="muted">Sem imagem</div>`}
+              ${imageHtml}
             </div>
             <div class="product-info">
               <div class="smallcaps">${escapeHtml(p.categoria || 'Produto')}</div>
@@ -325,7 +376,7 @@
             </div>
           </div>
         `);
-      });
+      }
     }
 
     window.changeQty = function(id, delta){
@@ -451,12 +502,15 @@
       });
     }
 
-    loadState();
-    initEvents();
-    buildCategoryFilter();
-    applyConfig();
-    renderCatalog();
-    renderCart();
+    (async function init(){
+      await ensureDb();
+      loadState();
+      initEvents();
+      buildCategoryFilter();
+      applyConfig();
+      await renderCatalog();
+      renderCart();
+    })();
   </script>
 </body>
 </html>
