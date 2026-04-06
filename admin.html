@@ -15,7 +15,6 @@
       --primary-2:#8b5cf6;
       --accent:#ec4899;
       --success:#16a34a;
-      --warning:#f59e0b;
       --danger:#dc2626;
       --shadow:0 16px 40px rgba(22,27,45,.08);
       --radius:20px;
@@ -59,7 +58,6 @@
     .section h2{margin:0 0 14px;font-size:24px}
     .grid{display:grid;gap:18px}
     .grid-4{grid-template-columns:repeat(4,1fr)}
-    .grid-3{grid-template-columns:repeat(3,1fr)}
     .grid-2{grid-template-columns:repeat(2,1fr)}
     .card{
       background:var(--card);border:1px solid var(--line);border-radius:var(--radius);
@@ -76,15 +74,14 @@
     }
     label{font-size:13px;font-weight:700;color:#4b5563;margin-bottom:6px;display:block}
     .form-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:14px}
-    .form-grid-3{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
     .form-grid-2{display:grid;grid-template-columns:repeat(2,1fr);gap:14px}
+    .form-grid-3{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
     .table-wrap{overflow:auto;border:1px solid var(--line);border-radius:18px}
     table{width:100%;border-collapse:collapse;background:#fff}
     th,td{padding:12px 14px;border-bottom:1px solid var(--line);text-align:left;font-size:14px;vertical-align:top}
     th{background:#fafafa;color:#4b5563;position:sticky;top:0}
     .mini{font-size:12px;color:var(--muted)}
     .tag{display:inline-block;padding:6px 10px;background:#f3e8ff;color:#6d28d9;border-radius:999px;font-size:12px;font-weight:800}
-    .notice{padding:14px 16px;border-radius:16px;background:#fdf2f8;border:1px solid #fbcfe8;color:#9d174d;font-size:14px}
     .hero{
       margin-top:24px;border-radius:32px;overflow:hidden;position:relative;background:
       radial-gradient(circle at 20% 20%, rgba(255,255,255,.28), transparent 30%),
@@ -99,6 +96,7 @@
     .stat{background:rgba(255,255,255,.12);padding:16px;border-radius:18px;border:1px solid rgba(255,255,255,.12)}
     .stat .label{font-size:12px;text-transform:uppercase;letter-spacing:.06em;color:rgba(255,255,255,.72)}
     .stat .value{font-size:28px;font-weight:800;margin-top:6px}
+    .smallcaps{font-size:12px;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);font-weight:800}
     .status{
       margin-top:10px;padding:12px 14px;border-radius:14px;border:1px solid var(--line);background:#fff
     }
@@ -106,12 +104,12 @@
     .status.warn{color:#92400e;border-color:#fde68a;background:#fffbeb}
     .status.error{color:#991b1b;border-color:#fecaca;background:#fef2f2}
     .thumb{
-      width:56px;height:56px;border-radius:12px;object-fit:contain;border:1px solid var(--line);background:#f3f4f6;padding:4px
+      width:64px;height:64px;border-radius:12px;object-fit:contain;border:1px solid var(--line);
+      background:#f8f8fb;padding:4px
     }
-    .smallcaps{font-size:12px;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);font-weight:800}
     .right{margin-left:auto}
     @media (max-width:1200px){
-      .grid-4,.form-grid,.grid-3{grid-template-columns:repeat(2,1fr)}
+      .grid-4,.form-grid{grid-template-columns:repeat(2,1fr)}
       .hero-content,.grid-2{grid-template-columns:1fr}
     }
     @media (max-width:700px){
@@ -119,7 +117,7 @@
       .topbar-inner{padding:12px 14px}
       .hero-content{padding:22px}
       .hero h1{font-size:30px}
-      .grid-2,.grid-3,.grid-4,.form-grid,.form-grid-2,.form-grid-3{grid-template-columns:1fr}
+      .grid-2,.grid-4,.form-grid,.form-grid-2,.form-grid-3{grid-template-columns:1fr}
       .nav{display:none}
     }
   </style>
@@ -159,7 +157,7 @@
           <div>
             <div class="smallcaps" style="color:#ddd">Gestão interna</div>
             <h1>Cadastre produtos e publique no catálogo.</h1>
-            <p>Agora a foto usa URL e não upload local, evitando o erro ao salvar no navegador.</p>
+            <p>As fotos enviadas aqui são convertidas para 500px por 500px para reduzir peso e evitar erro ao salvar.</p>
           </div>
           <div class="hero-panel">
             <div class="smallcaps" style="color:#e9d5ff">Resumo rápido</div>
@@ -200,9 +198,9 @@
             <div><label>Tempo de produção (min)</label><input class="input" id="pTempo" type="number" step="1"></div>
 
             <div>
-              <label>Foto do produto (URL)</label>
-              <input class="input" id="pFotoUrl" type="url" placeholder="https://..." />
-              <div class="mini" style="margin-top:6px">Tamanho mínimo recomendado: 1280px</div>
+              <label>Foto do produto</label>
+              <input class="input" id="pFoto" type="file" accept="image/*">
+              <div class="mini" style="margin-top:6px">Imagem convertida automaticamente para 500px por 500px.</div>
             </div>
 
             <div><label>SKU</label><input class="input" id="pSku"></div>
@@ -227,7 +225,7 @@
 
           <div style="margin-top:14px" class="toolbar">
             <div id="previewFotoBox" class="hidden">
-              <img id="previewFoto" class="thumb" alt="Prévia da foto" />
+              <img id="previewFoto" class="thumb" alt="Prévia da foto">
             </div>
             <span class="spacer"></span>
             <button class="btn primary" id="salvarProduto">Salvar produto</button>
@@ -245,7 +243,13 @@
             <div><label>Cliente</label><input class="input" id="oCliente"></div>
             <div><label>Telefone</label><input class="input" id="oTelefone"></div>
             <div><label>Data</label><input class="input" id="oData" type="date"></div>
-            <div><label>Forma de pagamento</label><input class="input" id="oPagamento" placeholder="PIX, cartão, dinheiro"></div>
+            <div>
+              <label>Forma de pagamento</label>
+              <select class="input" id="oPagamento">
+                <option value="PIX">PIX</option>
+                <option value="Crédito (+ R$5,00 da taxa do Mercado Pago)">Crédito (+ R$5,00 da taxa do Mercado Pago)</option>
+              </select>
+            </div>
           </div>
 
           <div class="form-grid-3" style="margin-top:12px">
@@ -333,8 +337,8 @@
 
         <div class="card">
           <h2>Observação</h2>
-          <div class="notice">
-            Este painel usa URL da foto em vez de upload local. Assim, o produto salva normalmente e aparece no catálogo sem estourar o armazenamento do navegador.
+          <div class="status warn">
+            Se você cadastrar muitas fotos grandes, o navegador ainda pode atingir o limite do armazenamento local. Esta versão já reduz a foto para 500x500 para diminuir bastante esse risco.
           </div>
         </div>
       </div>
@@ -342,7 +346,7 @@
   </div>
 
   <script>
-    const STORAGE_KEY = 'personaliza_hub_store_v3';
+    const STORAGE_KEY = 'personaliza_hub_store_v4';
 
     let state = {
       config: {
@@ -355,7 +359,8 @@
       products: [],
       orders: [],
       draftOrder: { items: [] },
-      editingProductId: null
+      editingProductId: null,
+      currentPhotoData: ''
     };
 
     function uid(){
@@ -398,7 +403,8 @@
           products: parsed.products || [],
           orders: parsed.orders || [],
           draftOrder: parsed.draftOrder || { items: [] },
-          editingProductId: null
+          editingProductId: null,
+          currentPhotoData: ''
         };
       }catch(e){
         console.error(e);
@@ -412,16 +418,47 @@
       if(type) el.classList.add(type);
     }
 
-    function showPhotoPreview(url){
+    function showPhotoPreview(src){
       const box = document.getElementById('previewFotoBox');
       const img = document.getElementById('previewFoto');
-      if(url){
-        img.src = url;
+      if(src){
+        img.src = src;
         box.classList.remove('hidden');
       } else {
         img.src = '';
         box.classList.add('hidden');
       }
+    }
+
+    function resizeImageTo500(file){
+      return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = e => {
+          const img = new Image();
+          img.onload = () => {
+            const canvas = document.createElement('canvas');
+            canvas.width = 500;
+            canvas.height = 500;
+            const ctx = canvas.getContext('2d');
+
+            ctx.fillStyle = '#ffffff';
+            ctx.fillRect(0, 0, 500, 500);
+
+            const scale = Math.min(500 / img.width, 500 / img.height);
+            const newWidth = img.width * scale;
+            const newHeight = img.height * scale;
+            const x = (500 - newWidth) / 2;
+            const y = (500 - newHeight) / 2;
+
+            ctx.drawImage(img, x, y, newWidth, newHeight);
+            resolve(canvas.toDataURL('image/jpeg', 0.82));
+          };
+          img.onerror = reject;
+          img.src = e.target.result;
+        };
+        reader.onerror = reject;
+        reader.readAsDataURL(file);
+      });
     }
 
     function getMetrics(){
@@ -452,11 +489,13 @@
     }
 
     function clearProductForm(){
-      ['pNome','pCategoria','pPreco','pCusto','pTempo','pFotoUrl','pSku','pDescricao','pCampos'].forEach(id => {
+      ['pNome','pCategoria','pPreco','pCusto','pTempo','pSku','pDescricao','pCampos'].forEach(id => {
         document.getElementById(id).value = '';
       });
       document.getElementById('pAtivo').value = 'true';
+      document.getElementById('pFoto').value = '';
       state.editingProductId = null;
+      state.currentPhotoData = '';
       showPhotoPreview('');
       document.getElementById('salvarProduto').textContent = 'Salvar produto';
       setStatus('Preencha os dados e clique em salvar.');
@@ -629,6 +668,28 @@
       setTimeout(() => URL.revokeObjectURL(a.href), 500);
     }
 
+    async function handlePhotoUpload(){
+      const file = document.getElementById('pFoto').files[0];
+      if(!file){
+        state.currentPhotoData = '';
+        showPhotoPreview('');
+        return;
+      }
+
+      try{
+        setStatus('Processando foto...', 'warn');
+        const base64 = await resizeImageTo500(file);
+        state.currentPhotoData = base64;
+        showPhotoPreview(base64);
+        setStatus('Foto carregada e redimensionada para 500x500.', 'ok');
+      }catch(err){
+        console.error(err);
+        state.currentPhotoData = '';
+        showPhotoPreview('');
+        setStatus('Erro ao processar a foto.', 'error');
+      }
+    }
+
     function handleSaveProduct(){
       try{
         const nome = document.getElementById('pNome').value.trim();
@@ -636,7 +697,6 @@
         const preco = Number(document.getElementById('pPreco').value || 0);
         const custo = Number(document.getElementById('pCusto').value || 0);
         const tempo = Number(document.getElementById('pTempo').value || 0);
-        const foto = document.getElementById('pFotoUrl').value.trim();
         const sku = document.getElementById('pSku').value.trim();
         const ativo = document.getElementById('pAtivo').value === 'true';
         const descricao = document.getElementById('pDescricao').value.trim();
@@ -655,26 +715,35 @@
           return;
         }
 
-        const base = {
+        let foto = state.currentPhotoData || '';
+
+        if(state.editingProductId){
+          const atual = state.products.find(p => p.id === state.editingProductId);
+          if(atual && !foto){
+            foto = atual.foto || '';
+          }
+        }
+
+        const produto = {
           id: state.editingProductId || uid(),
           nome,
           categoria,
           preco,
           custo,
           tempo,
-          foto,
           sku,
           ativo,
           descricao,
-          campos
+          campos,
+          foto
         };
 
         if(state.editingProductId){
           const idx = state.products.findIndex(p => p.id === state.editingProductId);
-          if(idx !== -1) state.products[idx] = base;
+          if(idx !== -1) state.products[idx] = produto;
           setStatus('Produto atualizado com sucesso.', 'ok');
         } else {
-          state.products.push(base);
+          state.products.push(produto);
           setStatus('Produto cadastrado com sucesso.', 'ok');
         }
 
@@ -696,11 +765,12 @@
       document.getElementById('pPreco').value = p.preco ?? '';
       document.getElementById('pCusto').value = p.custo ?? '';
       document.getElementById('pTempo').value = p.tempo ?? '';
-      document.getElementById('pFotoUrl').value = p.foto || '';
       document.getElementById('pSku').value = p.sku || '';
       document.getElementById('pAtivo').value = String(!!p.ativo);
       document.getElementById('pDescricao').value = p.descricao || '';
       document.getElementById('pCampos').value = Array.isArray(p.campos) ? p.campos.join(', ') : '';
+      document.getElementById('pFoto').value = '';
+      state.currentPhotoData = p.foto || '';
       showPhotoPreview(p.foto || '');
       document.getElementById('salvarProduto').textContent = 'Atualizar produto';
       setStatus(`Editando: ${p.nome}`, 'warn');
@@ -736,10 +806,8 @@
       });
 
       document.getElementById('resetProduto').addEventListener('click', clearProductForm);
+      document.getElementById('pFoto').addEventListener('change', handlePhotoUpload);
       document.getElementById('salvarProduto').addEventListener('click', handleSaveProduct);
-      document.getElementById('pFotoUrl').addEventListener('input', e => {
-        showPhotoPreview(e.target.value.trim());
-      });
       document.getElementById('buscaProduto').addEventListener('input', renderProductsTable);
 
       document.getElementById('addOrderItem').addEventListener('click', () => {
@@ -778,7 +846,7 @@
           cliente: document.getElementById('oCliente').value || 'Cliente',
           telefone: document.getElementById('oTelefone').value || '',
           data: document.getElementById('oData').value || new Date().toISOString().slice(0,10),
-          pagamento: document.getElementById('oPagamento').value || '',
+          pagamento: document.getElementById('oPagamento').value || 'PIX',
           items: [...state.draftOrder.items]
         });
 
@@ -786,7 +854,7 @@
         document.getElementById('oCliente').value = '';
         document.getElementById('oTelefone').value = '';
         document.getElementById('oData').value = '';
-        document.getElementById('oPagamento').value = '';
+        document.getElementById('oPagamento').value = 'PIX';
         document.getElementById('oQtd').value = 1;
         document.getElementById('oPers').value = '';
 
@@ -819,7 +887,6 @@
           preco: p.preco,
           custo: p.custo,
           tempo: p.tempo,
-          foto: p.foto,
           sku: p.sku,
           ativo: p.ativo,
           descricao: p.descricao,
@@ -851,6 +918,7 @@
 
           state.draftOrder = { items: [] };
           state.editingProductId = null;
+          state.currentPhotoData = '';
           saveState();
           clearProductForm();
           alert('Importação concluída.');
