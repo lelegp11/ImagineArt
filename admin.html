@@ -1,0 +1,690 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Personaliza Hub — Admin</title>
+  <style>
+    :root{
+      --bg:#f7f7fb;
+      --card:#ffffff;
+      --text:#1f2430;
+      --muted:#6b7280;
+      --line:#e5e7eb;
+      --primary:#6d28d9;
+      --primary-2:#8b5cf6;
+      --accent:#ec4899;
+      --success:#16a34a;
+      --warning:#f59e0b;
+      --danger:#dc2626;
+      --shadow:0 16px 40px rgba(22,27,45,.08);
+      --radius:20px;
+    }
+    *{box-sizing:border-box}
+    html,body{margin:0;padding:0;background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Inter,Arial,sans-serif}
+    .hidden{display:none!important}
+    .topbar{
+      position:sticky;top:0;z-index:30;
+      backdrop-filter:saturate(180%) blur(16px);
+      background:rgba(247,247,251,.82);
+      border-bottom:1px solid rgba(229,231,235,.7)
+    }
+    .topbar-inner{display:flex;align-items:center;gap:16px;justify-content:space-between;padding:14px 20px;max-width:1380px;margin:0 auto}
+    .brand{display:flex;align-items:center;gap:14px;font-weight:800}
+    .logo{width:44px;height:44px;border-radius:14px;background:linear-gradient(135deg,var(--primary),var(--accent));box-shadow:var(--shadow)}
+    .brand small{display:block;font-weight:600;color:var(--muted)}
+    .nav{display:flex;gap:10px;flex-wrap:wrap}
+    .nav button,.btn{border:none;background:#fff;color:var(--text);padding:11px 16px;border-radius:999px;box-shadow:var(--shadow);cursor:pointer;font-weight:700}
+    .nav button.active{background:linear-gradient(135deg,var(--primary),var(--primary-2));color:#fff}
+    .btn.primary{background:linear-gradient(135deg,var(--primary),var(--primary-2));color:#fff}
+    .btn.success{background:linear-gradient(135deg,#16a34a,#22c55e);color:#fff}
+    .btn.danger{background:linear-gradient(135deg,#dc2626,#ef4444);color:#fff}
+    .btn.ghost{background:#fff}
+    .btn.small{padding:8px 12px;border-radius:12px;font-size:13px}
+    .container{max-width:1380px;margin:0 auto;padding:20px}
+    .hero{margin-top:24px;border-radius:32px;overflow:hidden;position:relative;background:radial-gradient(circle at 20% 20%, rgba(255,255,255,.28), transparent 30%),linear-gradient(135deg,#111827 0%,#4c1d95 42%,#db2777 100%);color:#fff;box-shadow:var(--shadow)}
+    .hero-content{display:grid;grid-template-columns:1.2fr .8fr;gap:20px;padding:36px}
+    .hero h1{font-size:40px;line-height:1.05;margin:0 0 12px}
+    .hero p{font-size:17px;color:rgba(255,255,255,.86);max-width:760px}
+    .hero-panel{background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.14);border-radius:24px;padding:20px}
+    .hero-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:12px;margin-top:10px}
+    .stat{background:rgba(255,255,255,.12);padding:16px;border-radius:18px;border:1px solid rgba(255,255,255,.12)}
+    .stat .label{font-size:12px;text-transform:uppercase;letter-spacing:.06em;color:rgba(255,255,255,.72)}
+    .stat .value{font-size:28px;font-weight:800;margin-top:6px}
+    .section{margin-top:26px}
+    .section h2{margin:0 0 14px;font-size:24px}
+    .grid{display:grid;gap:18px}
+    .grid-4{grid-template-columns:repeat(4,1fr)}
+    .grid-3{grid-template-columns:repeat(3,1fr)}
+    .grid-2{grid-template-columns:repeat(2,1fr)}
+    .card{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);padding:18px}
+    .kpi .k{font-size:13px;color:var(--muted);text-transform:uppercase;letter-spacing:.06em}
+    .kpi .v{font-size:30px;font-weight:800;margin-top:8px}
+    .kpi .s{margin-top:6px;color:var(--muted);font-size:13px}
+    .toolbar{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+    .toolbar .spacer{flex:1}
+    .input, select, textarea{width:100%;padding:12px 14px;border-radius:14px;border:1px solid var(--line);background:#fff;font:inherit;color:var(--text)}
+    label{font-size:13px;font-weight:700;color:#4b5563;margin-bottom:6px;display:block}
+    .form-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:14px}
+    .form-grid-3{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
+    .form-grid-2{display:grid;grid-template-columns:repeat(2,1fr);gap:14px}
+    .table-wrap{overflow:auto;border:1px solid var(--line);border-radius:18px}
+    table{width:100%;border-collapse:collapse;background:#fff}
+    th,td{padding:12px 14px;border-bottom:1px solid var(--line);text-align:left;font-size:14px;vertical-align:top}
+    th{background:#fafafa;color:#4b5563;position:sticky;top:0}
+    .mini{font-size:12px;color:var(--muted)}
+    .tag{display:inline-block;padding:6px 10px;background:#f3e8ff;color:#6d28d9;border-radius:999px;font-size:12px;font-weight:800}
+    .notice{padding:14px 16px;border-radius:16px;background:#fdf2f8;border:1px solid #fbcfe8;color:#9d174d;font-size:14px}
+    .status{margin-top:12px;padding:12px 14px;border-radius:14px;background:#fff;border:1px solid var(--line)}
+    .ok{color:var(--success);font-weight:700}
+    .warning{color:var(--warning);font-weight:700}
+    .danger-text{color:var(--danger);font-weight:700}
+    .smallcaps{font-size:12px;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);font-weight:800}
+    .img-thumb{width:54px;height:54px;border-radius:14px;object-fit:cover;background:#f3f4f6}
+    .actions-inline{display:flex;gap:8px;flex-wrap:wrap}
+    .footer-note{margin-top:12px;color:var(--muted);font-size:13px}
+    @media (max-width:1200px){.grid-4,.grid-3,.form-grid{grid-template-columns:repeat(2,1fr)}.grid-2,.hero-content{grid-template-columns:1fr}}
+    @media (max-width:700px){.container{padding:14px}.topbar-inner{padding:12px 14px}.hero-content{padding:22px}.hero h1{font-size:30px}.grid-2,.grid-3,.grid-4,.form-grid,.form-grid-2,.form-grid-3{grid-template-columns:1fr}.nav{display:none}}
+  </style>
+</head>
+<body>
+  <div class="topbar">
+    <div class="topbar-inner">
+      <div class="brand">
+        <div class="logo"></div>
+        <div>
+          <div>Personaliza Hub</div>
+          <small>Admin • Produtos • Pedidos • Configurações</small>
+        </div>
+      </div>
+      <div class="nav">
+        <button class="active" data-view="inicio">Início</button>
+        <button data-view="dashboard">Dashboard</button>
+        <button data-view="cadastro">Cadastro</button>
+        <button data-view="pedidos">Pedidos</button>
+        <button data-view="config">Configurações</button>
+      </div>
+      <div class="toolbar">
+        <button class="btn ghost small" id="btnExportState">Exportar JSON</button>
+        <button class="btn primary small" id="btnImportState">Importar JSON</button>
+        <input type="file" id="fileState" class="hidden" accept=".json" />
+      </div>
+    </div>
+  </div>
+
+  <div class="container">
+    <section id="inicio" class="view">
+      <div class="hero">
+        <div class="hero-content">
+          <div>
+            <div class="smallcaps" style="color:#ddd">Painel administrativo</div>
+            <h1>Cadastre produtos e publique seu catálogo.</h1>
+            <p>Este admin foi refeito para garantir que o produto seja salvo corretamente, apareça na tabela e também fique disponível no <strong>index.html</strong> quando os dois estiverem no mesmo domínio.</p>
+          </div>
+          <div class="hero-panel">
+            <div class="smallcaps" style="color:#e9d5ff">Resumo rápido</div>
+            <div class="hero-grid">
+              <div class="stat"><div class="label">Produtos</div><div class="value" id="heroProdutos">0</div></div>
+              <div class="stat"><div class="label">Pedidos</div><div class="value" id="heroPedidos">0</div></div>
+              <div class="stat"><div class="label">Receita</div><div class="value" id="heroReceita">R$ 0,00</div></div>
+              <div class="stat"><div class="label">Lucro</div><div class="value" id="heroLucro">R$ 0,00</div></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="dashboard" class="view hidden">
+      <div class="grid grid-4">
+        <div class="card kpi"><div class="k">Receita total</div><div class="v" id="kpiReceita">R$ 0,00</div><div class="s">Soma de todos os pedidos</div></div>
+        <div class="card kpi"><div class="k">Lucro estimado</div><div class="v" id="kpiLucro">R$ 0,00</div><div class="s">Receita menos custo</div></div>
+        <div class="card kpi"><div class="k">Ticket médio</div><div class="v" id="kpiTicket">R$ 0,00</div><div class="s">Valor médio por pedido</div></div>
+        <div class="card kpi"><div class="k">Margem média</div><div class="v" id="kpiMargem">0%</div><div class="s">Itens vendidos</div></div>
+      </div>
+    </section>
+
+    <section id="cadastro" class="view hidden">
+      <div class="grid grid-2">
+        <div class="card">
+          <div class="toolbar">
+            <h2 style="margin:0">Cadastro de produto</h2>
+            <span class="spacer"></span>
+            <button class="btn ghost small" id="btnClearForm">Limpar</button>
+          </div>
+
+          <div class="form-grid" style="margin-top:12px">
+            <div><label>Nome</label><input class="input" id="pNome" /></div>
+            <div><label>Categoria</label><input class="input" id="pCategoria" placeholder="Ex.: Canecas" /></div>
+            <div><label>Preço de venda</label><input class="input" id="pPreco" type="number" step="0.01" /></div>
+            <div><label>Custo</label><input class="input" id="pCusto" type="number" step="0.01" /></div>
+            <div><label>Tempo de produção (min)</label><input class="input" id="pTempo" type="number" step="1" /></div>
+            <div><label>SKU</label><input class="input" id="pSku" /></div>
+            <div><label>Imagem (arquivo)</label><input class="input" id="pFoto" type="file" accept="image/*" /></div>
+            <div><label>Ativo</label><select class="input" id="pAtivo"><option value="true">Sim</option><option value="false">Não</option></select></div>
+          </div>
+
+          <div style="margin-top:14px">
+            <label>Descrição</label>
+            <textarea class="input" id="pDescricao" rows="4"></textarea>
+          </div>
+
+          <div style="margin-top:14px">
+            <label>Campos de personalização (separados por vírgula)</label>
+            <input class="input" id="pCampos" placeholder="Nome, Tema, Cor, Tamanho" />
+          </div>
+
+          <div class="toolbar" style="margin-top:14px">
+            <button class="btn primary" id="btnSaveProduct">Salvar produto</button>
+            <button class="btn success" id="btnExportProductsJson">Exportar produtos JSON</button>
+            <button class="btn ghost" id="btnExportProductsCsv">Exportar produtos CSV</button>
+          </div>
+
+          <div id="statusProduto" class="status mini">Preencha os dados do produto e clique em salvar.</div>
+        </div>
+
+        <div class="card">
+          <h2>Cadastro rápido de pedido</h2>
+          <div class="form-grid-2">
+            <div><label>Cliente</label><input class="input" id="oCliente" /></div>
+            <div><label>Telefone</label><input class="input" id="oTelefone" /></div>
+            <div><label>Data</label><input class="input" id="oData" type="date" /></div>
+            <div><label>Pagamento</label><input class="input" id="oPagamento" placeholder="PIX, cartão, dinheiro" /></div>
+          </div>
+          <div class="form-grid-3" style="margin-top:12px">
+            <div><label>Produto</label><select class="input" id="oProduto"></select></div>
+            <div><label>Quantidade</label><input class="input" id="oQtd" type="number" min="1" value="1" /></div>
+            <div><label>Personalização</label><input class="input" id="oPers" placeholder="Nome, tema..." /></div>
+          </div>
+          <div class="toolbar" style="margin-top:14px">
+            <button class="btn primary" id="btnAddOrderItem">Adicionar item</button>
+            <button class="btn ghost" id="btnClearOrder">Limpar rascunho</button>
+          </div>
+          <div class="table-wrap" style="margin-top:14px">
+            <table>
+              <thead><tr><th>Produto</th><th>Qtd</th><th>Personalização</th><th>Subtotal</th><th>Ação</th></tr></thead>
+              <tbody id="draftOrderTable"></tbody>
+            </table>
+          </div>
+          <div class="toolbar" style="margin-top:14px">
+            <div class="tag">Total do pedido: <span id="draftTotal">R$ 0,00</span></div>
+            <span class="spacer"></span>
+            <button class="btn success" id="btnSaveOrder">Salvar pedido</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="section card">
+        <div class="toolbar">
+          <h2 style="margin:0">Produtos cadastrados</h2>
+          <span class="spacer"></span>
+          <input class="input" id="buscaProduto" placeholder="Buscar produto" style="max-width:280px" />
+        </div>
+        <div class="table-wrap" style="margin-top:14px">
+          <table>
+            <thead>
+              <tr>
+                <th>Foto</th>
+                <th>Nome</th>
+                <th>Categoria</th>
+                <th>Preço</th>
+                <th>Custo</th>
+                <th>Margem</th>
+                <th>Ativo</th>
+                <th>Ações</th>
+              </tr>
+            </thead>
+            <tbody id="productsTable"></tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <section id="pedidos" class="view hidden">
+      <div class="card">
+        <h2>Pedidos cadastrados</h2>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Cliente</th><th>Telefone</th><th>Data</th><th>Pagamento</th><th>Itens</th><th>Total</th><th>Ação</th></tr></thead>
+            <tbody id="ordersTable"></tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <section id="config" class="view hidden">
+      <div class="grid grid-2">
+        <div class="card">
+          <h2>Configurações da loja</h2>
+          <div class="form-grid-2">
+            <div><label>Nome da loja</label><input class="input" id="cfgLoja" /></div>
+            <div><label>WhatsApp principal</label><input class="input" id="cfgWhatsapp" placeholder="5511999999999" /></div>
+            <div><label>Mensagem inicial</label><input class="input" id="cfgMsg" /></div>
+            <div><label>Moeda</label><input class="input" id="cfgMoeda" value="BRL" /></div>
+          </div>
+          <div style="margin-top:12px">
+            <label>Texto do banner</label>
+            <textarea class="input" id="cfgBanner" rows="3"></textarea>
+          </div>
+          <div class="toolbar" style="margin-top:14px">
+            <button class="btn success" id="btnSaveConfig">Salvar configurações</button>
+          </div>
+        </div>
+        <div class="card">
+          <h2>Observação</h2>
+          <div class="notice">Os dados são salvos no mesmo <strong>localStorage</strong> usado pelo <strong>index.html</strong>. Assim, o produto salvo aqui entra no catálogo automaticamente quando os dois arquivos estão no mesmo site/navegador.</div>
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <script>
+    const STORAGE_KEY = 'personaliza_hub_shared_v1';
+
+    const initialState = {
+      config: {
+        loja: 'Minha Loja',
+        whatsapp: '5511999999999',
+        mensagem: 'Olá! Gostaria de fazer este pedido:',
+        moeda: 'BRL',
+        banner: 'Coleção personalizada pronta para encantar seus clientes.'
+      },
+      products: [],
+      orders: [],
+      draftOrder: { items: [] },
+      editingProductId: null
+    };
+
+    let state = structuredClone(initialState);
+
+    const $ = id => document.getElementById(id);
+
+    function clone(obj){ return JSON.parse(JSON.stringify(obj)); }
+    function uid(){ return Math.random().toString(36).slice(2,10); }
+    function escapeHtml(str=''){ return String(str).replace(/[&<>\"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[m])); }
+    function currency(v){ return new Intl.NumberFormat('pt-BR',{style:'currency',currency:state.config.moeda || 'BRL'}).format(Number(v||0)); }
+    function pct(v){ return `${(Number(v||0)*100).toFixed(1)}%`; }
+
+    function setStatus(msg, kind='normal'){
+      const el = $('statusProduto');
+      el.textContent = msg;
+      el.className = 'status mini';
+      if(kind==='ok') el.classList.add('ok');
+      if(kind==='warning') el.classList.add('warning');
+      if(kind==='danger') el.classList.add('danger-text');
+    }
+
+    function loadState(){
+      const raw = localStorage.getItem(STORAGE_KEY);
+      if(!raw) return;
+      try{
+        const parsed = JSON.parse(raw);
+        state = {
+          config: { ...clone(initialState.config), ...(parsed.config||{}) },
+          products: Array.isArray(parsed.products) ? parsed.products : [],
+          orders: Array.isArray(parsed.orders) ? parsed.orders : [],
+          draftOrder: parsed.draftOrder && Array.isArray(parsed.draftOrder.items) ? parsed.draftOrder : { items: [] },
+          editingProductId: null
+        };
+      }catch(e){
+        console.error(e);
+      }
+    }
+
+    function saveState(){
+      const toSave = {
+        config: state.config,
+        products: state.products,
+        orders: state.orders,
+        draftOrder: state.draftOrder
+      };
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(toSave));
+      renderAll();
+    }
+
+    function getMetrics(){
+      let receita = 0, custo = 0, margins = [];
+      state.orders.forEach(order => {
+        order.items.forEach(item => {
+          const subReceita = Number(item.preco||0) * Number(item.qtd||0);
+          const subCusto = Number(item.custo||0) * Number(item.qtd||0);
+          receita += subReceita;
+          custo += subCusto;
+          if(Number(item.preco||0) > 0) margins.push((Number(item.preco)-Number(item.custo||0))/Number(item.preco));
+        });
+      });
+      const pedidos = state.orders.length;
+      return {
+        receita,
+        lucro: receita - custo,
+        ticket: pedidos ? receita / pedidos : 0,
+        margem: margins.length ? margins.reduce((a,b)=>a+b,0)/margins.length : 0,
+        produtos: state.products.length,
+        pedidos
+      };
+    }
+
+    function setView(view){
+      document.querySelectorAll('.view').forEach(v => v.classList.add('hidden'));
+      $(view).classList.remove('hidden');
+      document.querySelectorAll('.nav button').forEach(b => b.classList.toggle('active', b.dataset.view === view));
+    }
+
+    function clearProductForm(){
+      ['pNome','pCategoria','pPreco','pCusto','pTempo','pSku','pDescricao','pCampos'].forEach(id => $(id).value='');
+      $('pAtivo').value = 'true';
+      $('pFoto').value = '';
+      state.editingProductId = null;
+      $('btnSaveProduct').textContent = 'Salvar produto';
+      setStatus('Preencha os dados do produto e clique em salvar.');
+    }
+
+    function readImageFile(file){
+      return new Promise((resolve,reject)=>{
+        if(!file) return resolve(null);
+        const reader = new FileReader();
+        reader.onload = e => resolve(e.target.result);
+        reader.onerror = reject;
+        reader.readAsDataURL(file);
+      });
+    }
+
+    async function handleSaveProduct(){
+      try{
+        const nome = $('pNome').value.trim();
+        if(!nome){
+          setStatus('Informe o nome do produto.', 'danger');
+          return;
+        }
+
+        const categoria = $('pCategoria').value.trim() || 'Sem categoria';
+        const preco = Number($('pPreco').value || 0);
+        const custo = Number($('pCusto').value || 0);
+        const tempo = Number($('pTempo').value || 0);
+        const sku = $('pSku').value.trim();
+        const ativo = $('pAtivo').value === 'true';
+        const descricao = $('pDescricao').value.trim();
+        const campos = $('pCampos').value.split(',').map(s=>s.trim()).filter(Boolean);
+        const file = $('pFoto').files[0] || null;
+        const current = state.products.find(p => p.id === state.editingProductId);
+        const foto = file ? await readImageFile(file) : (current?.foto || '');
+
+        const product = {
+          id: state.editingProductId || uid(),
+          nome,
+          categoria,
+          preco,
+          custo,
+          tempo,
+          sku,
+          ativo,
+          descricao,
+          campos,
+          foto,
+          updatedAt: new Date().toISOString()
+        };
+
+        if(state.editingProductId){
+          const idx = state.products.findIndex(p => p.id === state.editingProductId);
+          if(idx >= 0) state.products[idx] = product;
+          setStatus('Produto atualizado com sucesso.', 'ok');
+        } else {
+          state.products.push(product);
+          setStatus('Produto cadastrado com sucesso.', 'ok');
+        }
+
+        saveState();
+        clearProductForm();
+        setView('cadastro');
+      }catch(err){
+        console.error(err);
+        setStatus('Erro ao salvar o produto.', 'danger');
+      }
+    }
+
+    function renderProductSelect(){
+      const activeProducts = state.products.filter(p => p.ativo);
+      $('oProduto').innerHTML = '<option value="">Selecione</option>' + activeProducts.map(p => `<option value="${p.id}">${escapeHtml(p.nome)}</option>`).join('');
+    }
+
+    function renderProductsTable(){
+      const q = ($('buscaProduto').value || '').toLowerCase().trim();
+      const rows = state.products.filter(p => {
+        return !q || p.nome.toLowerCase().includes(q) || (p.categoria||'').toLowerCase().includes(q) || (p.sku||'').toLowerCase().includes(q);
+      });
+      $('productsTable').innerHTML = rows.length ? rows.map(p => {
+        const margem = Number(p.preco||0) > 0 ? (Number(p.preco)-Number(p.custo||0))/Number(p.preco) : 0;
+        return `
+          <tr>
+            <td>${p.foto ? `<img src="${p.foto}" class="img-thumb">` : '<div class="mini">sem foto</div>'}</td>
+            <td><strong>${escapeHtml(p.nome)}</strong><div class="mini">${escapeHtml(p.sku||'')}</div></td>
+            <td>${escapeHtml(p.categoria||'')}</td>
+            <td>${currency(p.preco)}</td>
+            <td>${currency(p.custo)}</td>
+            <td>${pct(margem)}</td>
+            <td>${p.ativo ? 'Sim' : 'Não'}</td>
+            <td>
+              <div class="actions-inline">
+                <button class="btn ghost small" onclick="editProduct('${p.id}')">Editar</button>
+                <button class="btn danger small" onclick="removeProduct('${p.id}')">Excluir</button>
+              </div>
+            </td>
+          </tr>`;
+      }).join('') : '<tr><td colspan="8" class="mini">Nenhum produto cadastrado.</td></tr>';
+    }
+
+    function renderDraftOrder(){
+      let total = 0;
+      $('draftOrderTable').innerHTML = state.draftOrder.items.length ? state.draftOrder.items.map((item,index) => {
+        const sub = Number(item.preco||0) * Number(item.qtd||0);
+        total += sub;
+        return `
+          <tr>
+            <td>${escapeHtml(item.nome)}</td>
+            <td>${item.qtd}</td>
+            <td>${escapeHtml(item.personalizacao||'')}</td>
+            <td>${currency(sub)}</td>
+            <td><button class="btn ghost small" onclick="removeDraftItem(${index})">Remover</button></td>
+          </tr>`;
+      }).join('') : '<tr><td colspan="5" class="mini">Nenhum item no rascunho.</td></tr>';
+      $('draftTotal').textContent = currency(total);
+    }
+
+    function renderOrdersTable(){
+      $('ordersTable').innerHTML = state.orders.length ? [...state.orders].reverse().map(order => {
+        const total = order.items.reduce((acc,item)=>acc + Number(item.preco||0) * Number(item.qtd||0), 0);
+        const itens = order.items.map(item => `${item.qtd}x ${escapeHtml(item.nome)}`).join('<br>');
+        return `
+          <tr>
+            <td>${escapeHtml(order.cliente||'Cliente')}</td>
+            <td>${escapeHtml(order.telefone||'')}</td>
+            <td>${escapeHtml(order.data||'')}</td>
+            <td>${escapeHtml(order.pagamento||'')}</td>
+            <td>${itens}</td>
+            <td>${currency(total)}</td>
+            <td><button class="btn danger small" onclick="removeOrder('${order.id}')">Excluir</button></td>
+          </tr>`;
+      }).join('') : '<tr><td colspan="7" class="mini">Nenhum pedido salvo.</td></tr>';
+    }
+
+    function renderDashboard(){
+      const m = getMetrics();
+      $('heroProdutos').textContent = m.produtos;
+      $('heroPedidos').textContent = m.pedidos;
+      $('heroReceita').textContent = currency(m.receita);
+      $('heroLucro').textContent = currency(m.lucro);
+      $('kpiReceita').textContent = currency(m.receita);
+      $('kpiLucro').textContent = currency(m.lucro);
+      $('kpiTicket').textContent = currency(m.ticket);
+      $('kpiMargem').textContent = pct(m.margem);
+    }
+
+    function renderConfig(){
+      $('cfgLoja').value = state.config.loja || '';
+      $('cfgWhatsapp').value = state.config.whatsapp || '';
+      $('cfgMsg').value = state.config.mensagem || '';
+      $('cfgMoeda').value = state.config.moeda || 'BRL';
+      $('cfgBanner').value = state.config.banner || '';
+    }
+
+    function renderAll(){
+      renderProductSelect();
+      renderProductsTable();
+      renderDraftOrder();
+      renderOrdersTable();
+      renderDashboard();
+      renderConfig();
+    }
+
+    function exportJson(filename, data){
+      const blob = new Blob([JSON.stringify(data,null,2)], {type:'application/json'});
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(blob);
+      a.download = filename;
+      a.click();
+      setTimeout(()=>URL.revokeObjectURL(a.href), 500);
+    }
+
+    function exportCsv(filename, rows){
+      if(!rows.length){ alert('Não há dados para exportar.'); return; }
+      const headers = Object.keys(rows[0]);
+      const csv = [headers.join(',')].concat(rows.map(row => headers.map(h => `"${String(row[h] ?? '').replace(/"/g,'""')}"`).join(','))).join('\n');
+      const blob = new Blob([csv], {type:'text/csv;charset=utf-8;'});
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(blob);
+      a.download = filename;
+      a.click();
+      setTimeout(()=>URL.revokeObjectURL(a.href), 500);
+    }
+
+    window.editProduct = function(id){
+      const p = state.products.find(item => item.id === id);
+      if(!p) return;
+      state.editingProductId = id;
+      $('pNome').value = p.nome || '';
+      $('pCategoria').value = p.categoria || '';
+      $('pPreco').value = p.preco ?? '';
+      $('pCusto').value = p.custo ?? '';
+      $('pTempo').value = p.tempo ?? '';
+      $('pSku').value = p.sku || '';
+      $('pAtivo').value = String(!!p.ativo);
+      $('pDescricao').value = p.descricao || '';
+      $('pCampos').value = Array.isArray(p.campos) ? p.campos.join(', ') : '';
+      $('pFoto').value = '';
+      $('btnSaveProduct').textContent = 'Atualizar produto';
+      setStatus(`Editando: ${p.nome}`, 'warning');
+      setView('cadastro');
+      window.scrollTo({top:0, behavior:'smooth'});
+    }
+
+    window.removeProduct = function(id){
+      if(!confirm('Excluir este produto?')) return;
+      state.products = state.products.filter(p => p.id !== id);
+      saveState();
+    }
+
+    window.removeDraftItem = function(index){
+      state.draftOrder.items.splice(index,1);
+      renderDraftOrder();
+    }
+
+    window.removeOrder = function(id){
+      if(!confirm('Excluir este pedido?')) return;
+      state.orders = state.orders.filter(o => o.id !== id);
+      saveState();
+    }
+
+    function initEvents(){
+      document.querySelectorAll('.nav button').forEach(btn => btn.addEventListener('click', () => setView(btn.dataset.view)));
+      $('btnClearForm').addEventListener('click', clearProductForm);
+      $('btnSaveProduct').addEventListener('click', handleSaveProduct);
+      $('buscaProduto').addEventListener('input', renderProductsTable);
+
+      $('btnAddOrderItem').addEventListener('click', () => {
+        const pid = $('oProduto').value;
+        const product = state.products.find(p => p.id === pid);
+        if(!product){ alert('Selecione um produto.'); return; }
+        const qtd = Math.max(1, Number($('oQtd').value || 1));
+        state.draftOrder.items.push({
+          productId: product.id,
+          nome: product.nome,
+          qtd,
+          personalizacao: $('oPers').value || '',
+          preco: Number(product.preco||0),
+          custo: Number(product.custo||0)
+        });
+        renderDraftOrder();
+      });
+
+      $('btnClearOrder').addEventListener('click', () => {
+        state.draftOrder.items = [];
+        renderDraftOrder();
+      });
+
+      $('btnSaveOrder').addEventListener('click', () => {
+        if(!state.draftOrder.items.length){ alert('Adicione itens ao pedido.'); return; }
+        state.orders.push({
+          id: uid(),
+          cliente: $('oCliente').value || 'Cliente',
+          telefone: $('oTelefone').value || '',
+          data: $('oData').value || new Date().toISOString().slice(0,10),
+          pagamento: $('oPagamento').value || '',
+          items: clone(state.draftOrder.items)
+        });
+        state.draftOrder.items = [];
+        ['oCliente','oTelefone','oData','oPagamento','oPers'].forEach(id => $(id).value = '');
+        $('oQtd').value = 1;
+        saveState();
+        alert('Pedido salvo com sucesso.');
+      });
+
+      $('btnSaveConfig').addEventListener('click', () => {
+        state.config.loja = $('cfgLoja').value.trim() || 'Minha Loja';
+        state.config.whatsapp = $('cfgWhatsapp').value.trim() || '5511999999999';
+        state.config.mensagem = $('cfgMsg').value.trim() || 'Olá! Gostaria de fazer este pedido:';
+        state.config.moeda = $('cfgMoeda').value.trim() || 'BRL';
+        state.config.banner = $('cfgBanner').value.trim() || '';
+        saveState();
+        alert('Configurações salvas.');
+      });
+
+      $('btnExportState').addEventListener('click', () => exportJson('personaliza-hub-dados.json', {config:state.config, products:state.products, orders:state.orders}));
+      $('btnExportProductsJson').addEventListener('click', () => exportJson('produtos.json', state.products));
+      $('btnExportProductsCsv').addEventListener('click', () => exportCsv('produtos.csv', state.products.map(p => ({nome:p.nome,categoria:p.categoria,preco:p.preco,custo:p.custo,tempo:p.tempo,sku:p.sku,ativo:p.ativo,descricao:p.descricao,campos:Array.isArray(p.campos)?p.campos.join(' | '):''}))));
+      $('btnImportState').addEventListener('click', () => $('fileState').click());
+      $('fileState').addEventListener('change', async e => {
+        const file = e.target.files[0];
+        if(!file) return;
+        try{
+          const text = await file.text();
+          const parsed = JSON.parse(text);
+          if(Array.isArray(parsed)){
+            state.products = parsed;
+          } else {
+            state.config = { ...state.config, ...(parsed.config||{}) };
+            state.products = Array.isArray(parsed.products) ? parsed.products : state.products;
+            state.orders = Array.isArray(parsed.orders) ? parsed.orders : state.orders;
+          }
+          state.draftOrder = { items: [] };
+          state.editingProductId = null;
+          saveState();
+          alert('Importação concluída.');
+        }catch(err){
+          console.error(err);
+          alert('Erro ao importar JSON.');
+        } finally {
+          e.target.value = '';
+        }
+      });
+
+      window.addEventListener('storage', e => {
+        if(e.key === STORAGE_KEY){ loadState(); renderAll(); }
+      });
+    }
+
+    loadState();
+    initEvents();
+    renderAll();
+    setView('inicio');
+  </script>
+</body>
+</html>
