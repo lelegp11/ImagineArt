@@ -1,0 +1,443 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Personaliza Hub — Admin</title>
+<style>
+:root{
+  --bg:#f7f7fb;
+  --card:#ffffff;
+  --text:#1f2430;
+  --muted:#6b7280;
+  --line:#e5e7eb;
+  --primary:#6d28d9;
+  --primary-2:#8b5cf6;
+  --accent:#ec4899;
+  --success:#16a34a;
+  --warning:#f59e0b;
+  --danger:#dc2626;
+  --shadow:0 16px 40px rgba(22,27,45,.08);
+  --radius:20px;
+}
+*{box-sizing:border-box}
+html,body{margin:0;padding:0;background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Inter,Arial,sans-serif}
+.hidden{display:none!important}
+.container{max-width:1380px;margin:0 auto;padding:20px}
+.topbar{position:sticky;top:0;z-index:50;backdrop-filter:saturate(180%) blur(16px);background:rgba(247,247,251,.82);border-bottom:1px solid rgba(229,231,235,.7)}
+.topbar-inner{display:flex;align-items:center;gap:16px;justify-content:space-between;padding:14px 20px;max-width:1380px;margin:0 auto}
+.brand{display:flex;align-items:center;gap:14px;font-weight:800}
+.logo{width:44px;height:44px;border-radius:14px;background:linear-gradient(135deg,var(--primary),var(--accent));box-shadow:var(--shadow)}
+.brand small{display:block;font-weight:600;color:var(--muted)}
+.nav{display:flex;gap:10px;flex-wrap:wrap}
+.nav button,.btn{border:none;background:#fff;color:var(--text);padding:11px 16px;border-radius:999px;box-shadow:var(--shadow);cursor:pointer;font-weight:700}
+.nav button.active{background:linear-gradient(135deg,var(--primary),var(--primary-2));color:#fff}
+.btn.primary{background:linear-gradient(135deg,var(--primary),var(--primary-2));color:#fff}
+.btn.success{background:linear-gradient(135deg,#16a34a,#22c55e);color:#fff}
+.btn.ghost{background:#fff}
+.btn.danger{background:linear-gradient(135deg,#dc2626,#ef4444);color:#fff}
+.btn.small{padding:8px 12px;border-radius:12px;font-size:13px}
+.hero{margin-top:24px;border-radius:32px;overflow:hidden;position:relative;background:radial-gradient(circle at 20% 20%, rgba(255,255,255,.28), transparent 30%),linear-gradient(135deg, #111827 0%, #4c1d95 42%, #db2777 100%);color:#fff;box-shadow:var(--shadow)}
+.hero-content{display:grid;grid-template-columns:1.2fr .8fr;gap:20px;padding:36px}
+.hero h1{font-size:40px;line-height:1.05;margin:0 0 12px}.hero p{font-size:17px;color:rgba(255,255,255,.86);max-width:760px}
+.hero-actions,.badges,.toolbar,.row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}.badges{margin:16px 0}
+.badge{background:rgba(255,255,255,.14);border:1px solid rgba(255,255,255,.18);padding:10px 14px;border-radius:999px;font-weight:700}
+.hero-panel{background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.14);border-radius:24px;padding:20px;align-self:stretch}
+.hero-grid,.grid{display:grid;gap:18px}.hero-grid{grid-template-columns:repeat(2,1fr);margin-top:10px}.grid-4{grid-template-columns:repeat(4,1fr)}.grid-3{grid-template-columns:repeat(3,1fr)}.grid-2{grid-template-columns:repeat(2,1fr)}
+.stat{background:rgba(255,255,255,.12);padding:16px;border-radius:18px;border:1px solid rgba(255,255,255,.12)}
+.stat .label,.kpi .k,.smallcaps{font-size:12px;text-transform:uppercase;letter-spacing:.06em;color:rgba(255,255,255,.72)}
+.stat .value{font-size:28px;font-weight:800;margin-top:6px}
+.section{margin-top:26px}.section h2{margin:0 0 14px;font-size:24px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);padding:18px}
+.kpi .k{color:var(--muted)}.kpi .v{font-size:30px;font-weight:800;margin-top:8px}.kpi .s{margin-top:6px;color:var(--muted);font-size:13px}
+.input,select,textarea{width:100%;padding:12px 14px;border-radius:14px;border:1px solid var(--line);background:#fff;font:inherit;color:var(--text)}
+label{font-size:13px;font-weight:700;color:#4b5563;margin-bottom:6px;display:block}
+.form-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:14px}.form-grid-3{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}.form-grid-2{display:grid;grid-template-columns:repeat(2,1fr);gap:14px}
+.table-wrap{overflow:auto;border:1px solid var(--line);border-radius:18px}
+table{width:100%;border-collapse:collapse;background:#fff}th,td{padding:12px 14px;border-bottom:1px solid var(--line);text-align:left;font-size:14px;vertical-align:top}th{background:#fafafa;color:#4b5563;position:sticky;top:0}
+.tag{display:inline-block;padding:6px 10px;background:#f3e8ff;color:#6d28d9;border-radius:999px;font-size:12px;font-weight:800}
+.muted,.footer-note{color:var(--muted)} .footer-note{margin-top:12px;font-size:13px}
+.notice{padding:14px 16px;border-radius:16px;background:#fdf2f8;border:1px solid #fbcfe8;color:#9d174d;font-size:14px}
+.right{margin-left:auto}.spacer{flex:1}
+.view.hidden{display:none}
+.product-thumb{width:64px;height:64px;border-radius:14px;object-fit:cover;background:#f3f4f6}
+.canvas-wrap{height:260px;border:1px solid var(--line);border-radius:16px;background:linear-gradient(180deg,#fff,#fcfcff);padding:8px}
+canvas{width:100%;height:100%}
+@media (max-width:1200px){.grid-4,.form-grid,.grid-3{grid-template-columns:repeat(2,1fr)}.hero-content,.grid-2,.form-grid-2,.form-grid-3{grid-template-columns:1fr}}
+@media (max-width:700px){.container{padding:14px}.topbar-inner{padding:12px 14px}.hero-content{padding:22px}.hero h1{font-size:30px}.grid-4,.form-grid,.grid-2,.grid-3,.form-grid-2,.form-grid-3{grid-template-columns:1fr}.nav{display:none}}
+</style>
+</head>
+<body>
+<div class="topbar">
+  <div class="topbar-inner">
+    <div class="brand"><div class="logo"></div><div><div>Personaliza Hub</div><small>Painel administrativo</small></div></div>
+    <div class="nav" id="navAdmin">
+      <button class="active" data-view="inicio">Início</button>
+      <button data-view="dashboard">Dashboard</button>
+      <button data-view="cadastro">Cadastro</button>
+      <button data-view="pedidos">Pedidos</button>
+      <button data-view="relatorios">Relatórios</button>
+      <button data-view="config">Configurações</button>
+    </div>
+    <div class="row">
+      <a class="btn ghost small" href="index.html" target="_blank" rel="noopener">Abrir catálogo</a>
+      <button class="btn primary small" id="loadSample">Carregar exemplo</button>
+      <button class="btn ghost small" id="exportBackup">Backup JSON</button>
+      <input type="file" id="fileInput" class="hidden" accept=".json,.csv" />
+      <button class="btn ghost small" id="importBtn">Importar</button>
+    </div>
+  </div>
+</div>
+
+<div class="container">
+  <div id="statusBar" class="notice hidden" style="margin-bottom:16px"></div>
+  <section id="inicio" class="view">
+    <div class="hero">
+      <div class="hero-content">
+        <div>
+          <div class="smallcaps">Loja virtual + gestão interna</div>
+          <h1>Venda produtos personalizados com cara de e-commerce.</h1>
+          <p>Cadastre produtos com foto, organize categorias, acompanhe receita e lucro, crie relatórios exportáveis e compartilhe um catálogo com pedido direto no WhatsApp.</p>
+          <div class="badges">
+            <span class="badge">Catálogo com fotos</span>
+            <span class="badge">Pedido com personalização</span>
+            <span class="badge">WhatsApp integrado</span>
+            <span class="badge">Relatórios exportáveis</span>
+          </div>
+          <div class="hero-actions">
+            <button class="btn primary" data-go="cadastro">Cadastrar produtos</button>
+            <button class="btn success" data-go="dashboard">Ver relatórios</button>
+            <button class="btn ghost" data-go="pedidos">Abrir pedidos</button>
+          </div>
+        </div>
+        <div class="hero-panel">
+          <div class="smallcaps">Resumo rápido</div>
+          <div class="hero-grid">
+            <div class="stat"><div class="label">Produtos</div><div class="value" id="heroProdutos">0</div></div>
+            <div class="stat"><div class="label">Pedidos</div><div class="value" id="heroPedidos">0</div></div>
+            <div class="stat"><div class="label">Receita</div><div class="value" id="heroReceita">R$ 0,00</div></div>
+            <div class="stat"><div class="label">Lucro</div><div class="value" id="heroLucro">R$ 0,00</div></div>
+          </div>
+          <div class="footer-note" style="color:#f3e8ff">Os produtos cadastrados aqui aparecem no catálogo do cliente no mesmo navegador ou dispositivo.</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="dashboard" class="view hidden">
+    <div class="grid grid-4">
+      <div class="card kpi"><div class="k">Receita total</div><div class="v" id="kpiReceita">R$ 0,00</div><div class="s">Soma de todos os pedidos</div></div>
+      <div class="card kpi"><div class="k">Lucro estimado</div><div class="v" id="kpiLucro">R$ 0,00</div><div class="s">Receita menos custo</div></div>
+      <div class="card kpi"><div class="k">Ticket médio</div><div class="v" id="kpiTicket">R$ 0,00</div><div class="s">Valor médio por pedido</div></div>
+      <div class="card kpi"><div class="k">Margem média</div><div class="v" id="kpiMargem">0%</div><div class="s">Sobre os produtos vendidos</div></div>
+    </div>
+    <div class="section grid grid-2">
+      <div class="card"><h2>Receita x lucro por mês</h2><div class="canvas-wrap"><canvas id="chartReceita" width="700" height="260"></canvas></div></div>
+      <div class="card"><h2>Vendas por categoria</h2><div class="canvas-wrap"><canvas id="chartCategoria" width="700" height="260"></canvas></div></div>
+    </div>
+    <div class="section grid grid-2">
+      <div class="card">
+        <h2>Produtos com melhor margem</h2>
+        <div class="table-wrap"><table><thead><tr><th>Produto</th><th>Categoria</th><th>Preço</th><th>Custo</th><th>Margem</th></tr></thead><tbody id="topMarginTable"></tbody></table></div>
+      </div>
+      <div class="card">
+        <h2>Últimos pedidos</h2>
+        <div class="table-wrap"><table><thead><tr><th>Cliente</th><th>Data</th><th>Itens</th><th>Total</th></tr></thead><tbody id="ordersTable"></tbody></table></div>
+      </div>
+    </div>
+  </section>
+
+  <section id="cadastro" class="view hidden">
+    <div class="grid grid-2">
+      <div class="card">
+        <div class="toolbar"><h2 style="margin:0">Cadastro de produto</h2><span class="spacer"></span><button class="btn ghost small" id="resetProduto">Limpar</button></div>
+        <input type="hidden" id="pId">
+        <div class="form-grid" style="margin-top:12px">
+          <div><label>Nome</label><input class="input" id="pNome"></div>
+          <div><label>Categoria</label><input class="input" id="pCategoria" placeholder="Ex.: Canecas"></div>
+          <div><label>Preço de venda</label><input class="input" id="pPreco" type="number" step="0.01"></div>
+          <div><label>Custo</label><input class="input" id="pCusto" type="number" step="0.01"></div>
+          <div><label>Tempo de produção (min)</label><input class="input" id="pTempo" type="number"></div>
+          <div><label>Foto do produto</label><input class="input" id="pFoto" type="file" accept="image/*"></div>
+          <div><label>SKU</label><input class="input" id="pSku"></div>
+          <div><label>Ativo</label><select id="pAtivo"><option value="true">Sim</option><option value="false">Não</option></select></div>
+        </div>
+        <div style="margin-top:14px"><label>Descrição</label><textarea id="pDescricao" rows="4" class="input"></textarea></div>
+        <div style="margin-top:14px"><label>Campos de personalização (separados por vírgula)</label><input class="input" id="pCampos" placeholder="Nome, Tema, Cor, Tamanho, Turma"></div>
+        <div class="row" style="margin-top:14px">
+          <button class="btn primary" id="salvarProduto">Salvar produto</button>
+          <button class="btn success" id="exportProdutosJson">Exportar JSON</button>
+          <button class="btn ghost" id="exportProdutosCsv">Exportar CSV</button>
+        </div>
+        <div class="footer-note">As fotos ficam salvas localmente no navegador quando você envia a imagem.</div>
+      </div>
+
+      <div class="card">
+        <h2>Cadastro rápido de pedido</h2>
+        <div class="form-grid-2">
+          <div><label>Cliente</label><input class="input" id="oCliente"></div>
+          <div><label>Telefone</label><input class="input" id="oTelefone"></div>
+          <div><label>Data</label><input class="input" id="oData" type="date"></div>
+          <div><label>Forma de pagamento</label><input class="input" id="oPagamento" placeholder="PIX, cartão, dinheiro"></div>
+        </div>
+        <div class="form-grid-3" style="margin-top:12px">
+          <div><label>Produto</label><select id="oProduto"></select></div>
+          <div><label>Quantidade</label><input class="input" id="oQtd" type="number" value="1" min="1"></div>
+          <div><label>Personalização</label><input class="input" id="oPers" placeholder="Nome, tema..."></div>
+        </div>
+        <div class="row" style="margin-top:14px"><button class="btn primary" id="addOrderItem">Adicionar item</button><button class="btn ghost" id="clearOrderDraft">Limpar rascunho</button></div>
+        <div class="table-wrap" style="margin-top:14px"><table><thead><tr><th>Produto</th><th>Qtd</th><th>Personalização</th><th>Subtotal</th><th>Ação</th></tr></thead><tbody id="draftOrderTable"></tbody></table></div>
+        <div class="row" style="margin-top:14px"><div class="tag">Total do pedido: <span id="draftTotal">R$ 0,00</span></div><button class="btn success right" id="saveOrder">Salvar pedido</button></div>
+      </div>
+    </div>
+
+    <div class="section card">
+      <div class="toolbar"><h2 style="margin:0">Produtos cadastrados</h2><span class="spacer"></span><input class="input" id="buscaProduto" placeholder="Buscar produto" style="max-width:280px"></div>
+      <div class="table-wrap" style="margin-top:14px"><table><thead><tr><th>Foto</th><th>Nome</th><th>Categoria</th><th>Preço</th><th>Custo</th><th>Margem</th><th>Ativo</th><th>Ações</th></tr></thead><tbody id="productsTable"></tbody></table></div>
+    </div>
+  </section>
+
+  <section id="pedidos" class="view hidden">
+    <div class="card">
+      <div class="toolbar"><h2 style="margin:0">Todos os pedidos</h2><span class="spacer"></span><button class="btn ghost small" id="exportPedidosJson">Exportar JSON</button></div>
+      <div class="table-wrap" style="margin-top:14px"><table><thead><tr><th>Cliente</th><th>Telefone</th><th>Data</th><th>Pagamento</th><th>Itens</th><th>Total</th><th>Ações</th></tr></thead><tbody id="allOrdersTable"></tbody></table></div>
+    </div>
+  </section>
+
+  <section id="relatorios" class="view hidden">
+    <div class="grid grid-2">
+      <div class="card">
+        <h2>Relatórios exportáveis</h2>
+        <div class="grid grid-3">
+          <div class="card"><strong>Produtos</strong><p class="muted">Exporta lista de produtos com preço, custo e margem.</p><button class="btn ghost small" id="reportProdutosCsv">CSV</button></div>
+          <div class="card"><strong>Pedidos</strong><p class="muted">Exporta todos os pedidos em JSON.</p><button class="btn ghost small" id="reportPedidosJson">JSON</button></div>
+          <div class="card"><strong>Resumo gerencial</strong><p class="muted">Gera relatório imprimível para PDF.</p><button class="btn primary small" id="printResumo">Gerar PDF</button></div>
+        </div>
+      </div>
+      <div class="card">
+        <h2>Resumo gerencial</h2>
+        <div id="reportSummary" class="notice">Sem dados suficientes ainda. Cadastre produtos e pedidos para gerar indicadores.</div>
+      </div>
+    </div>
+  </section>
+
+  <section id="config" class="view hidden">
+    <div class="grid grid-2">
+      <div class="card">
+        <h2>Configurações da loja</h2>
+        <div class="form-grid-2">
+          <div><label>Nome da loja</label><input class="input" id="cfgLoja"></div>
+          <div><label>WhatsApp principal</label><input class="input" id="cfgWhatsapp" placeholder="5511999999999"></div>
+          <div><label>Mensagem inicial do pedido</label><input class="input" id="cfgMsg" placeholder="Olá! Gostaria de fazer este pedido:"></div>
+          <div><label>Moeda</label><input class="input" id="cfgMoeda" value="BRL"></div>
+        </div>
+        <div style="margin-top:12px"><label>Texto do banner</label><textarea class="input" id="cfgBanner" rows="3"></textarea></div>
+        <div class="row" style="margin-top:14px"><button class="btn success" id="saveConfig">Salvar configurações</button></div>
+      </div>
+      <div class="card">
+        <h2>Catálogo do cliente</h2>
+        <p class="muted">O catálogo lê os mesmos dados do admin quando aberto neste mesmo navegador. Para publicação no GitHub Pages, use os dois arquivos na raiz do repositório.</p>
+        <div class="notice">Link público sugerido: <strong>.../index.html</strong></div>
+      </div>
+    </div>
+  </section>
+</div>
+
+<script>
+const STORAGE_KEY = 'personaliza_hub_v3';
+let state = {
+  config: { loja:'Minha Loja', whatsapp:'5511999999999', mensagem:'Olá! Gostaria de fazer este pedido:', moeda:'BRL', banner:'Coleção personalizada pronta para encantar seus clientes.' },
+  products: [],
+  orders: [],
+  draftOrder: { items: [] }
+};
+
+const qs = s => document.querySelector(s);
+const qsa = s => [...document.querySelectorAll(s)];
+const currency = v => new Intl.NumberFormat('pt-BR',{style:'currency',currency:state.config.moeda||'BRL'}).format(Number(v||0));
+const uid = () => Math.random().toString(36).slice(2,10);
+const esc = s => String(s??'').replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[m]));
+function pct(v){ return `${((Number(v)||0)*100).toFixed(1)}%`; }
+function setStatus(msg,isError=false){ const el=qs('#statusBar'); if(!el) return; el.textContent=msg; el.classList.remove('hidden'); el.style.background=isError?'#fef2f2':'#fdf2f8'; el.style.borderColor=isError?'#fecaca':'#fbcfe8'; el.style.color=isError?'#991b1b':'#9d174d'; }
+function clearStatus(){ const el=qs('#statusBar'); if(!el) return; el.classList.add('hidden'); el.textContent=''; }
+function save(){ localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); renderAll(); }
+function load(){ const raw=localStorage.getItem(STORAGE_KEY); if(raw){ try{ state = JSON.parse(raw); }catch(e){} } }
+function margin(p){ return Number(p.preco)>0 ? (Number(p.preco)-Number(p.custo||0))/Number(p.preco) : 0; }
+function orderTotal(order){ return order.items.reduce((a,i)=>a+Number(i.preco||0)*Number(i.qtd||0),0); }
+function orderCost(order){ return order.items.reduce((a,i)=>a+Number(i.custo||0)*Number(i.qtd||0),0); }
+function resetProductForm(){ clearStatus(); ['pId','pNome','pCategoria','pPreco','pCusto','pTempo','pSku','pDescricao','pCampos'].forEach(id=>qs('#'+id).value=''); qs('#pAtivo').value='true'; qs('#pFoto').value=''; }
+function seed(){
+  state.products = [
+    {id:uid(), nome:'Caneca Personalizada Floral', categoria:'Canecas', preco:42, custo:18, tempo:20, sku:'CAN-001', ativo:true, descricao:'Caneca de porcelana com arte personalizada.', campos:['Nome','Tema','Cor'], foto:'', createdAt:new Date().toISOString()},
+    {id:uid(), nome:'Squeeze Escolar', categoria:'Escola', preco:60, custo:28, tempo:25, sku:'ESC-001', ativo:true, descricao:'Squeeze personalizada com nome e tema.', campos:['Nome','Tema','Turma'], foto:'', createdAt:new Date().toISOString()},
+    {id:uid(), nome:'Kit Etiquetas', categoria:'Escola', preco:35, custo:10, tempo:15, sku:'ESC-002', ativo:true, descricao:'Etiquetas adesivas para material escolar.', campos:['Nome','Tema'], foto:'', createdAt:new Date().toISOString()},
+    {id:uid(), nome:'Camiseta Personalizada', categoria:'Vestuário', preco:79, custo:34, tempo:35, sku:'VES-001', ativo:true, descricao:'Camiseta com estampa exclusiva.', campos:['Tamanho','Cor','Arte'], foto:'', createdAt:new Date().toISOString()}
+  ];
+  const ds = ['2026-01-05','2026-02-08','2026-03-10','2026-04-01'];
+  state.orders = [
+    {id:uid(), cliente:'Ana', telefone:'11999990001', data:ds[0], pagamento:'PIX', items:[{productId:state.products[0].id,nome:state.products[0].nome,qtd:4,personalizacao:'Nome Ana',preco:42,custo:18}]},
+    {id:uid(), cliente:'Bruna', telefone:'11999990002', data:ds[1], pagamento:'Cartão', items:[{productId:state.products[1].id,nome:state.products[1].nome,qtd:3,personalizacao:'Tema Frozen',preco:60,custo:28},{productId:state.products[2].id,nome:state.products[2].nome,qtd:2,personalizacao:'Nome Bia',preco:35,custo:10}]},
+    {id:uid(), cliente:'Carlos', telefone:'11999990003', data:ds[2], pagamento:'PIX', items:[{productId:state.products[3].id,nome:state.products[3].nome,qtd:2,personalizacao:'Tamanho M',preco:79,custo:34}]}
+  ];
+  state.draftOrder = {items:[]};
+  save();
+}
+function getMetrics(){
+  let receita=0,custo=0,margens=[];
+  state.orders.forEach(o=>o.items.forEach(i=>{ receita += Number(i.preco)*Number(i.qtd); custo += Number(i.custo||0)*Number(i.qtd); if(Number(i.preco)>0) margens.push((Number(i.preco)-Number(i.custo||0))/Number(i.preco)); }));
+  return { receita, custo, lucro:receita-custo, ticket:state.orders.length?receita/state.orders.length:0, margem:margens.length?margens.reduce((a,b)=>a+b,0)/margens.length:0, produtos:state.products.length, pedidos:state.orders.length };
+}
+function byMonthSeries(){
+  const map={};
+  state.orders.forEach(o=>{ const key=(o.data||'').slice(0,7); if(!key) return; map[key] ||= {receita:0,lucro:0}; map[key].receita += orderTotal(o); map[key].lucro += orderTotal(o)-orderCost(o); });
+  return Object.entries(map).sort((a,b)=>a[0].localeCompare(b[0]));
+}
+function byCategorySeries(){
+  const map={};
+  state.orders.forEach(o=>o.items.forEach(i=>{ const p = state.products.find(x=>x.id===i.productId); const cat=(p?.categoria)||'Sem categoria'; map[cat]=(map[cat]||0)+Number(i.qtd||0); }));
+  return Object.entries(map).sort((a,b)=>b[1]-a[1]);
+}
+function drawBarChart(canvas, labels, seriesA, seriesB){
+  const c=canvas.getContext('2d'); const W=canvas.width,H=canvas.height; c.clearRect(0,0,W,H); c.fillStyle='#ffffff'; c.fillRect(0,0,W,H);
+  const pad=36; const max=Math.max(1,...seriesA,...(seriesB||[])); const innerW=W-pad*2, innerH=H-pad*2;
+  c.strokeStyle='#e5e7eb'; c.lineWidth=1;
+  for(let i=0;i<5;i++){ const y=pad + innerH*(i/4); c.beginPath(); c.moveTo(pad,y); c.lineTo(W-pad,y); c.stroke(); }
+  const groups = labels.length || 1; const groupW = innerW/groups; const bw = seriesB ? groupW*0.28 : groupW*0.55;
+  labels.forEach((label,idx)=>{
+    const baseX = pad + idx*groupW + groupW*0.15;
+    const h1 = (seriesA[idx]||0)/max*innerH; c.fillStyle='#8b5cf6'; c.fillRect(baseX, H-pad-h1, bw, h1);
+    if(seriesB){ const h2=(seriesB[idx]||0)/max*innerH; c.fillStyle='#ec4899'; c.fillRect(baseX+bw+6, H-pad-h2, bw, h2); }
+    c.fillStyle='#6b7280'; c.font='12px sans-serif'; c.save(); c.translate(baseX, H-pad+14); c.fillText(label, 0, 0); c.restore();
+  });
+}
+function renderCharts(){
+  const monthly=byMonthSeries();
+  drawBarChart(qs('#chartReceita'), monthly.map(x=>x[0].slice(5)), monthly.map(x=>x[1].receita), monthly.map(x=>x[1].lucro));
+  const cats=byCategorySeries().slice(0,6); drawBarChart(qs('#chartCategoria'), cats.map(x=>x[0]), cats.map(x=>x[1]));
+}
+function renderViewNavigation(){
+  qsa('[data-view]').forEach(btn=>btn.onclick=()=>showView(btn.dataset.view));
+  qsa('[data-go]').forEach(btn=>btn.onclick=()=>showView(btn.dataset.go));
+}
+function showView(id){ qsa('.view').forEach(v=>v.classList.add('hidden')); qs('#'+id).classList.remove('hidden'); qsa('[data-view]').forEach(b=>b.classList.toggle('active', b.dataset.view===id)); }
+function renderConfig(){ qs('#cfgLoja').value=state.config.loja||''; qs('#cfgWhatsapp').value=state.config.whatsapp||''; qs('#cfgMsg').value=state.config.mensagem||''; qs('#cfgMoeda').value=state.config.moeda||'BRL'; qs('#cfgBanner').value=state.config.banner||''; }
+function renderProductOptions(){ const active=state.products.filter(p=>p.ativo!==false); const opts=['<option value="">Selecione</option>'].concat(active.map(p=>`<option value="${p.id}">${esc(p.nome)}</option>`)); qs('#oProduto').innerHTML=opts.join(''); }
+function renderProductsTable(){
+  const term=(qs('#buscaProduto').value||'').toLowerCase();
+  const rows=state.products.filter(p=>!term || JSON.stringify(p).toLowerCase().includes(term)).map(p=>`<tr>
+    <td>${p.foto?`<img src="${p.foto}" class="product-thumb">`:'<div class="product-thumb"></div>'}</td>
+    <td><strong>${esc(p.nome)}</strong><div class="muted">${esc(p.sku||'Sem SKU')}</div></td>
+    <td>${esc(p.categoria||'—')}</td>
+    <td>${currency(p.preco)}</td>
+    <td>${currency(p.custo)}</td>
+    <td>${pct(margin(p))}</td>
+    <td>${p.ativo!==false?'Sim':'Não'}</td>
+    <td><div class="row"><button class="btn ghost small" onclick="editProduct('${p.id}')">Editar</button><button class="btn danger small" onclick="deleteProduct('${p.id}')">Excluir</button></div></td>
+  </tr>`).join('');
+  qs('#productsTable').innerHTML=rows || '<tr><td colspan="8" class="muted">Nenhum produto cadastrado.</td></tr>';
+}
+function renderDraftOrder(){
+  const rows=state.draftOrder.items.map((it,idx)=>`<tr><td>${esc(it.nome)}</td><td>${it.qtd}</td><td>${esc(it.personalizacao||'—')}</td><td>${currency(Number(it.preco)*Number(it.qtd))}</td><td><button class="btn danger small" onclick="removeDraftItem(${idx})">Remover</button></td></tr>`).join('');
+  qs('#draftOrderTable').innerHTML=rows || '<tr><td colspan="5" class="muted">Nenhum item no rascunho.</td></tr>';
+  qs('#draftTotal').textContent = currency(state.draftOrder.items.reduce((a,i)=>a+Number(i.preco)*Number(i.qtd),0));
+}
+function renderOrders(){
+  const rows=state.orders.slice().reverse().map(o=>`<tr><td>${esc(o.cliente)}</td><td>${esc(o.telefone||'—')}</td><td>${esc(o.data||'—')}</td><td>${esc(o.pagamento||'—')}</td><td>${o.items.map(i=>`${esc(i.nome)} (${i.qtd})`).join('<br>')}</td><td>${currency(orderTotal(o))}</td><td><button class="btn danger small" onclick="deleteOrder('${o.id}')">Excluir</button></td></tr>`).join('');
+  qs('#allOrdersTable').innerHTML=rows || '<tr><td colspan="7" class="muted">Nenhum pedido cadastrado.</td></tr>';
+  qs('#ordersTable').innerHTML=(state.orders.slice().reverse().slice(0,6).map(o=>`<tr><td>${esc(o.cliente)}</td><td>${esc(o.data||'—')}</td><td>${o.items.length}</td><td>${currency(orderTotal(o))}</td></tr>`).join('')) || '<tr><td colspan="4" class="muted">Nenhum pedido.</td></tr>';
+}
+function renderDashboard(){
+  const m=getMetrics();
+  qs('#heroProdutos').textContent = m.produtos; qs('#heroPedidos').textContent = m.pedidos; qs('#heroReceita').textContent = currency(m.receita); qs('#heroLucro').textContent = currency(m.lucro);
+  qs('#kpiReceita').textContent = currency(m.receita); qs('#kpiLucro').textContent = currency(m.lucro); qs('#kpiTicket').textContent = currency(m.ticket); qs('#kpiMargem').textContent = pct(m.margem);
+  const top=state.products.slice().sort((a,b)=>margin(b)-margin(a)).slice(0,8).map(p=>`<tr><td>${esc(p.nome)}</td><td>${esc(p.categoria||'—')}</td><td>${currency(p.preco)}</td><td>${currency(p.custo)}</td><td>${pct(margin(p))}</td></tr>`).join('');
+  qs('#topMarginTable').innerHTML = top || '<tr><td colspan="5" class="muted">Sem produtos.</td></tr>';
+  qs('#reportSummary').innerHTML = `
+    <strong>${esc(state.config.loja||'Sua loja')}</strong><br><br>
+    Produtos cadastrados: <strong>${m.produtos}</strong><br>
+    Pedidos lançados: <strong>${m.pedidos}</strong><br>
+    Receita total: <strong>${currency(m.receita)}</strong><br>
+    Lucro estimado: <strong>${currency(m.lucro)}</strong><br>
+    Ticket médio: <strong>${currency(m.ticket)}</strong><br>
+    Margem média: <strong>${pct(m.margem)}</strong>`;
+  renderCharts();
+}
+function renderAll(){ renderConfig(); renderProductOptions(); renderProductsTable(); renderDraftOrder(); renderOrders(); renderDashboard(); }
+function readImageAsDataURL(file){ return new Promise((resolve,reject)=>{ const r=new FileReader(); r.onload=()=>resolve(r.result); r.onerror=reject; r.readAsDataURL(file); }); }
+async function saveProduct(){
+  try{
+    clearStatus();
+    const id=(qs('#pId').value||'').trim() || uid();
+    const existing = state.products.find(p=>p.id===id);
+    let foto = existing?.foto || '';
+    const fileInput = qs('#pFoto');
+    const file = fileInput && fileInput.files ? fileInput.files[0] : null;
+    if(file) foto = await readImageAsDataURL(file);
+
+    const product = {
+      id,
+      nome:qs('#pNome').value.trim(),
+      categoria:qs('#pCategoria').value.trim(),
+      preco:Number(qs('#pPreco').value||0),
+      custo:Number(qs('#pCusto').value||0),
+      tempo:Number(qs('#pTempo').value||0),
+      sku:qs('#pSku').value.trim(),
+      ativo:qs('#pAtivo').value==='true',
+      descricao:qs('#pDescricao').value.trim(),
+      campos:qs('#pCampos').value.split(',').map(s=>s.trim()).filter(Boolean),
+      foto,
+      createdAt:existing?.createdAt||new Date().toISOString()
+    };
+
+    if(!product.nome){ setStatus('Informe o nome do produto.', true); return; }
+    if(product.preco < 0 || product.custo < 0 || product.tempo < 0){ setStatus('Preço, custo e tempo não podem ser negativos.', true); return; }
+
+    if(existing) {
+      Object.assign(existing, product);
+      setStatus('Produto atualizado com sucesso.');
+    } else {
+      state.products.push(product);
+      setStatus('Produto cadastrado com sucesso.');
+    }
+
+    resetProductForm();
+    save();
+    renderProductOptions();
+    renderProductsTable();
+    showView('cadastro');
+  }catch(e){
+    console.error(e);
+    setStatus('Não foi possível salvar o produto. Verifique os campos e tente novamente.', true);
+  }
+}
+function editProduct(id){ const p=state.products.find(x=>x.id===id); if(!p) return; qs('#pId').value=p.id; qs('#pNome').value=p.nome||''; qs('#pCategoria').value=p.categoria||''; qs('#pPreco').value=p.preco||''; qs('#pCusto').value=p.custo||''; qs('#pTempo').value=p.tempo||''; qs('#pSku').value=p.sku||''; qs('#pAtivo').value=String(p.ativo!==false); qs('#pDescricao').value=p.descricao||''; qs('#pCampos').value=(p.campos||[]).join(', '); showView('cadastro'); }
+function deleteProduct(id){ if(!confirm('Excluir este produto?')) return; state.products = state.products.filter(p=>p.id!==id); save(); }
+window.editProduct=editProduct; window.deleteProduct=deleteProduct;
+function addDraftItem(){ const id=qs('#oProduto').value; const p=state.products.find(x=>x.id===id); if(!p) return alert('Selecione um produto.'); state.draftOrder.items.push({ productId:p.id, nome:p.nome, qtd:Number(qs('#oQtd').value||1), personalizacao:qs('#oPers').value.trim(), preco:Number(p.preco), custo:Number(p.custo||0) }); save(); qs('#oPers').value=''; qs('#oQtd').value=1; }
+function removeDraftItem(idx){ state.draftOrder.items.splice(idx,1); save(); } window.removeDraftItem=removeDraftItem;
+function clearDraft(){ state.draftOrder={items:[]}; save(); }
+function saveDraftOrder(){ if(!state.draftOrder.items.length) return alert('Adicione ao menos um item.'); const order = { id:uid(), cliente:qs('#oCliente').value.trim(), telefone:qs('#oTelefone').value.trim(), data:qs('#oData').value || new Date().toISOString().slice(0,10), pagamento:qs('#oPagamento').value.trim(), items:[...state.draftOrder.items] }; if(!order.cliente) return alert('Informe o cliente.'); state.orders.push(order); state.draftOrder={items:[]}; qs('#oCliente').value=''; qs('#oTelefone').value=''; qs('#oData').value=''; qs('#oPagamento').value=''; save(); showView('pedidos'); }
+function deleteOrder(id){ if(!confirm('Excluir este pedido?')) return; state.orders = state.orders.filter(o=>o.id!==id); save(); } window.deleteOrder=deleteOrder;
+function exportJSON(filename,data){ const blob=new Blob([JSON.stringify(data,null,2)],{type:'application/json'}); const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download=filename; a.click(); setTimeout(()=>URL.revokeObjectURL(a.href),500); }
+function exportCSV(filename, rows){ const csv=rows.map(r=>r.map(v=>`"${String(v??'').replace(/"/g,'""')}"`).join(',')).join('\n'); const blob=new Blob([csv],{type:'text/csv;charset=utf-8;'}); const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download=filename; a.click(); setTimeout(()=>URL.revokeObjectURL(a.href),500); }
+function importData(file){ const ext=file.name.split('.').pop().toLowerCase(); const reader=new FileReader(); reader.onload=()=>{ try{ if(ext==='json'){ const data=JSON.parse(reader.result); if(data.products||data.orders||data.config){ state={...state,...data}; } else if(Array.isArray(data)){ state.products=data; } } else { const lines=String(reader.result).trim().split(/\r?\n/).map(l=>l.split(',')); const [header,...body]=lines; const idx=(name)=>header.findIndex(h=>h.trim().toLowerCase()===name.toLowerCase()); body.forEach(r=>state.products.push({id:uid(), nome:r[idx('nome')]||'', categoria:r[idx('categoria')]||'', preco:Number(r[idx('preco')]||0), custo:Number(r[idx('custo')]||0), tempo:Number(r[idx('tempo')]||0), sku:r[idx('sku')]||'', ativo:true, descricao:r[idx('descricao')]||'', campos:(r[idx('campos')]||'').split('|').filter(Boolean), foto:''})); }
+        save(); alert('Importação concluída.');
+      }catch(e){ alert('Não foi possível importar o arquivo.'); }
+    }; if(ext==='json') reader.readAsText(file); else reader.readAsText(file,'utf-8'); }
+function bind(){
+  renderViewNavigation();
+  qs('#salvarProduto').onclick=saveProduct; qs('#resetProduto').onclick=resetProductForm; qs('#buscaProduto').oninput=renderProductsTable;
+  qs('#addOrderItem').onclick=addDraftItem; qs('#clearOrderDraft').onclick=clearDraft; qs('#saveOrder').onclick=saveDraftOrder;
+  qs('#saveConfig').onclick=()=>{ state.config={ loja:qs('#cfgLoja').value.trim(), whatsapp:qs('#cfgWhatsapp').value.trim(), mensagem:qs('#cfgMsg').value.trim(), moeda:qs('#cfgMoeda').value.trim()||'BRL', banner:qs('#cfgBanner').value.trim() }; save(); alert('Configurações salvas.'); };
+  qs('#loadSample').onclick=seed; qs('#exportBackup').onclick=()=>exportJSON('backup_personaliza_hub.json', state); qs('#exportPedidosJson').onclick=()=>exportJSON('pedidos.json', state.orders);
+  qs('#exportProdutosJson').onclick=()=>exportJSON('produtos.json', state.products);
+  qs('#exportProdutosCsv').onclick = qs('#reportProdutosCsv').onclick = ()=>exportCSV('produtos.csv', [['nome','categoria','preco','custo','tempo','sku','descricao','campos'], ...state.products.map(p=>[p.nome,p.categoria,p.preco,p.custo,p.tempo,p.sku,p.descricao,(p.campos||[]).join('|')])]);
+  qs('#reportPedidosJson').onclick=()=>exportJSON('pedidos.json', state.orders);
+  qs('#printResumo').onclick=()=>window.print();
+  qs('#importBtn').onclick=()=>qs('#fileInput').click(); qs('#fileInput').onchange=(e)=>e.target.files[0]&&importData(e.target.files[0]);
+}
+load(); bind(); renderAll();
+if(location.hash && qs(location.hash)) showView(location.hash.slice(1));
+</script>
+</body>
+</html>
