@@ -152,7 +152,7 @@
 
   <script>
     const STORAGE_KEY = 'personaliza_hub_supabase_auth';
-    let supabase = null;
+    let supabaseClient = null;
     let state = { config: { loja:'Minha Loja', whatsapp:'5511999999999', mensagem:'Olá! Gostaria de fazer este pedido:', moeda:'BRL', banner:'Coleção personalizada pronta para encantar seus clientes.' }, products: [], cart: [] };
 
     function escapeHtml(str=''){ return String(str).replace(/[&<>"]+/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[m] || m)); }
@@ -180,18 +180,18 @@
       const url = document.getElementById('sbUrl').value.trim();
       const anon = document.getElementById('sbAnon').value.trim();
       if(!url || !anon) throw new Error('Preencha a URL e a anon key.');
-      supabase = window.supabase.createClient(url, anon);
+      supabaseClient = window.supabase.createClient(url, anon);
       storeConfig();
     }
 
     async function fetchConfig(){
-      const { data, error } = await supabase.from('store_config').select('*').limit(1).maybeSingle();
+      const { data, error } = await supabaseClient.from('store_config').select('*').limit(1).maybeSingle();
       if(error) throw error;
       if(data) state.config = { ...state.config, ...data };
     }
 
     async function fetchProducts(){
-      const { data, error } = await supabase.from('products').select('*').eq('active', true).order('created_at', { ascending:false });
+      const { data, error } = await supabaseClient.from('products').select('*').eq('active', true).order('created_at', { ascending:false });
       if(error) throw error;
       state.products = data || [];
     }
