@@ -177,8 +177,10 @@
     }
 
     function initClient(){
-      const url = document.getElementById('sbUrl').value.trim();
-      const anon = document.getElementById('sbAnon').value.trim();
+      //const url = document.getElementById('sbUrl').value.trim();
+      //const anon = document.getElementById('sbAnon').value.trim();
+      const url = 'https://xwaflarqkooltziusmbl.supabase.co'
+      const anon = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inh3YWZsYXJxa29vbHR6aXVzbWJsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzU0ODkyNDgsImV4cCI6MjA5MTA2NTI0OH0.v4YFHMEc8Ryu_97J5UV5nVU7wPjFKetd10WP9MJ60u4'
       if(!url || !anon) throw new Error('Preencha a URL e a anon key.');
       supabaseClient = window.supabase.createClient(url, anon);
       storeConfig();
