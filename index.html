@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Catálogo Personalizados</title>
+
+<style>
+:root{
+  --bg:#ffffff;
+  --card:#ffffff;
+  --text:#1f2430;
+  --muted:#6b7280;
+  --line:#f3d6e3;
+  --primary:#ce0655;
+  --primary-2:#ff8fc7;
+  --accent:#ff8fc7;
+  --shadow:0 16px 40px rgba(206,6,85,.12);
+  --radius:20px;
+}
+*{box-sizing:border-box}
+body{
+  margin:0;
+  font-family:Arial, sans-serif;
+  background:var(--bg);
+  color:var(--text);
+}
+
+.container{
+  max-width:1200px;
+  margin:auto;
+  padding:20px;
+}
+
+h1{
+  text-align:center;
+  color:var(--primary);
+}
+
+.catalog-grid{
+  display:grid;
+  grid-template-columns:repeat(auto-fit,minmax(250px,1fr));
+  gap:20px;
+  margin-top:20px;
+}
+
+.card{
+  background:var(--card);
+  border-radius:20px;
+  box-shadow:var(--shadow);
+  padding:15px;
+  border:1px solid var(--line);
+}
+
+.card img{
+  width:100%;
+  height:180px;
+  object-fit:cover;
+  border-radius:12px;
+}
+
+.price{
+  font-size:22px;
+  font-weight:bold;
+  color:var(--primary);
+}
+
+.input, textarea{
+  width:100%;
+  padding:10px;
+  border-radius:10px;
+  border:1px solid var(--line);
+  margin-top:5px;
+}
+
+.btn{
+  background:var(--primary);
+  color:#fff;
+  border:none;
+  padding:12px;
+  border-radius:12px;
+  cursor:pointer;
+  font-weight:bold;
+}
+
+.btn:hover{
+  background:#a00445;
+}
+
+.checkout{
+  position:fixed;
+  bottom:0;
+  left:0;
+  right:0;
+  background:#fff;
+  border-top:2px solid var(--primary);
+  padding:15px;
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+}
+
+</style>
+</head>
+
+<body>
+
+<div class="container">
+
+<h1>Catálogo Personalizados</h1>
+
+<div class="catalog-grid" id="produtos"></div>
+
+<h2>Seus dados</h2>
+
+<input class="input" id="nome" placeholder="Seu nome">
+<input class="input" id="telefone" placeholder="Seu WhatsApp">
+<textarea class="input" id="obs" placeholder="Detalhes do pedido"></textarea>
+
+</div>
+
+<div class="checkout">
+  <div>
+    <strong id="total">R$ 0,00</strong>
+  </div>
+  <button class="btn" onclick="enviarPedido()">Enviar Pedido</button>
+</div>
+
+<script>
+
+let produtos = [
+  {nome:"Caneca Personalizada", preco:40},
+  {nome:"Squeeze Personalizado", preco:60},
+  {nome:"Camiseta Personalizada", preco:80}
+];
+
+let carrinho = [];
+
+function render(){
+  let html = "";
+  produtos.forEach((p,i)=>{
+    html += `
+      <div class="card">
+        <div>${p.nome}</div>
+        <div class="price">R$ ${p.preco}</div>
+        <input class="input" placeholder="Personalização" id="pers${i}">
+        <button class="btn" onclick="add(${i})">Adicionar</button>
+      </div>
+    `;
+  });
+  document.getElementById("produtos").innerHTML = html;
+}
+
+function add(i){
+  let pers = document.getElementById("pers"+i).value;
+  carrinho.push({...produtos[i], pers});
+  atualizar();
+}
+
+function atualizar(){
+  let total = carrinho.reduce((a,b)=>a+b.preco,0);
+  document.getElementById("total").innerText = 
+    total.toLocaleString("pt-BR",{style:"currency",currency:"BRL"});
+}
+
+function enviarPedido(){
+  let nome = document.getElementById("nome").value;
+  let telefone = document.getElementById("telefone").value;
+
+  let msg = "Pedido:%0A";
+  
+  carrinho.forEach(p=>{
+    msg += `${p.nome} - ${p.pers}%0A`;
+  });
+
+  msg += `%0ANome: ${nome}%0ATel: ${telefone}`;
+
+  window.open(`https://wa.me/5511911173222?text=${msg}`);
+}
+
+render();
+
+</script>
+
+</body>
+</html>
