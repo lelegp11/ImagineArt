@@ -157,7 +157,7 @@
           <div>
             <div class="smallcaps" style="color:#ddd">Gestão interna</div>
             <h1>Cadastre produtos e publique no catálogo.</h1>
-            <p>As fotos enviadas aqui são convertidas para 500px por 500px para reduzir peso e evitar erro ao salvar.</p>
+            <p>As fotos são salvas em IndexedDB e os dados dos produtos no localStorage. Assim você evita o erro de quota no navegador.</p>
           </div>
           <div class="hero-panel">
             <div class="smallcaps" style="color:#e9d5ff">Resumo rápido</div>
@@ -200,7 +200,7 @@
             <div>
               <label>Foto do produto</label>
               <input class="input" id="pFoto" type="file" accept="image/*">
-              <div class="mini" style="margin-top:6px">Imagem convertida automaticamente para 500px por 500px.</div>
+              <div class="mini" style="margin-top:6px">Imagem convertida para 500px por 500px e salva fora do localStorage.</div>
             </div>
 
             <div><label>SKU</label><input class="input" id="pSku"></div>
@@ -337,8 +337,8 @@
 
         <div class="card">
           <h2>Observação</h2>
-          <div class="status warn">
-            Se você cadastrar muitas fotos grandes, o navegador ainda pode atingir o limite do armazenamento local. Esta versão já reduz a foto para 500x500 para diminuir bastante esse risco.
+          <div class="status ok">
+            Esta versão evita o erro de quota porque as imagens não são gravadas no localStorage.
           </div>
         </div>
       </div>
@@ -346,7 +346,10 @@
   </div>
 
   <script>
-    const STORAGE_KEY = 'personaliza_hub_store_v4';
+    const STORAGE_KEY = 'personaliza_hub_store_v5';
+    const DB_NAME = 'personaliza_hub_images_db';
+    const DB_VERSION = 1;
+    const STORE_NAME = 'product_images';
 
     let state = {
       config: {
@@ -360,8 +363,11 @@
       orders: [],
       draftOrder: { items: [] },
       editingProductId: null,
-      currentPhotoData: ''
+      currentPhotoBlob: null,
+      currentPhotoPreview: ''
     };
+
+    let db = null;
 
     function uid(){
       return Math.random().toString(36).slice(2,10);
@@ -388,8 +394,112 @@
       return `${(Number(v || 0) * 100).toFixed(1)}%`;
     }
 
+    function openDb(){
+      return new Promise((resolve, reject) => {
+        const req = indexedDB.open(DB_NAME, DB_VERSION);
+        req.onupgradeneeded = event => {
+          const database = event.target.result;
+          if(!database.objectStoreNames.contains(STORE_NAME)){
+            database.createObjectStore(STORE_NAME);
+          }
+        };
+        req.onsuccess = () => {
+          db = req.result;
+          resolve(db);
+        };
+        req.onerror = () => reject(req.error);
+      });
+    }
+
+    async function ensureDb(){
+      if(db) return db;
+      return await openDb();
+    }
+
+    async function saveImageToDb(key, blob){
+      const database = await ensureDb();
+      return new Promise((resolve, reject) => {
+        const tx = database.transaction(STORE_NAME, 'readwrite');
+        const store = tx.objectStore(STORE_NAME);
+        const req = store.put(blob, key);
+        req.onsuccess = () => resolve();
+        req.onerror = () => reject(req.error);
+      });
+    }
+
+    async function getImageFromDb(key){
+      const database = await ensureDb();
+      return new Promise((resolve, reject) => {
+        const tx = database.transaction(STORE_NAME, 'readonly');
+        const store = tx.objectStore(STORE_NAME);
+        const req = store.get(key);
+        req.onsuccess = () => resolve(req.result || null);
+        req.onerror = () => reject(req.error);
+      });
+    }
+
+    async function deleteImageFromDb(key){
+      const database = await ensureDb();
+      return new Promise((resolve, reject) => {
+        const tx = database.transaction(STORE_NAME, 'readwrite');
+        const store = tx.objectStore(STORE_NAME);
+        const req = store.delete(key);
+        req.onsuccess = () => resolve();
+        req.onerror = () => reject(req.error);
+      });
+    }
+
+    function blobToDataUrl(blob){
+      return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = () => resolve(reader.result);
+        reader.onerror = reject;
+        reader.readAsDataURL(blob);
+      });
+    }
+
+    function resizeImageTo500Blob(file){
+      return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = e => {
+          const img = new Image();
+          img.onload = () => {
+            const canvas = document.createElement('canvas');
+            canvas.width = 500;
+            canvas.height = 500;
+            const ctx = canvas.getContext('2d');
+
+            ctx.fillStyle = '#ffffff';
+            ctx.fillRect(0, 0, 500, 500);
+
+            const scale = Math.min(500 / img.width, 500 / img.height);
+            const newWidth = img.width * scale;
+            const newHeight = img.height * scale;
+            const x = (500 - newWidth) / 2;
+            const y = (500 - newHeight) / 2;
+
+            ctx.drawImage(img, x, y, newWidth, newHeight);
+
+            canvas.toBlob(blob => {
+              if(blob) resolve(blob);
+              else reject(new Error('Falha ao gerar blob da imagem'));
+            }, 'image/jpeg', 0.82);
+          };
+          img.onerror = reject;
+          img.src = e.target.result;
+        };
+        reader.onerror = reject;
+        reader.readAsDataURL(file);
+      });
+    }
+
     function saveState(){
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+      localStorage.setItem(STORAGE_KEY, JSON.stringify({
+        config: state.config,
+        products: state.products,
+        orders: state.orders,
+        draftOrder: state.draftOrder
+      }));
       renderAll();
     }
 
@@ -404,7 +514,8 @@
           orders: parsed.orders || [],
           draftOrder: parsed.draftOrder || { items: [] },
           editingProductId: null,
-          currentPhotoData: ''
+          currentPhotoBlob: null,
+          currentPhotoPreview: ''
         };
       }catch(e){
         console.error(e);
@@ -430,64 +541,6 @@
       }
     }
 
-    function resizeImageTo500(file){
-      return new Promise((resolve, reject) => {
-        const reader = new FileReader();
-        reader.onload = e => {
-          const img = new Image();
-          img.onload = () => {
-            const canvas = document.createElement('canvas');
-            canvas.width = 500;
-            canvas.height = 500;
-            const ctx = canvas.getContext('2d');
-
-            ctx.fillStyle = '#ffffff';
-            ctx.fillRect(0, 0, 500, 500);
-
-            const scale = Math.min(500 / img.width, 500 / img.height);
-            const newWidth = img.width * scale;
-            const newHeight = img.height * scale;
-            const x = (500 - newWidth) / 2;
-            const y = (500 - newHeight) / 2;
-
-            ctx.drawImage(img, x, y, newWidth, newHeight);
-            resolve(canvas.toDataURL('image/jpeg', 0.82));
-          };
-          img.onerror = reject;
-          img.src = e.target.result;
-        };
-        reader.onerror = reject;
-        reader.readAsDataURL(file);
-      });
-    }
-
-    function getMetrics(){
-      let receita = 0;
-      let custo = 0;
-      let margins = [];
-
-      state.orders.forEach(order => {
-        order.items.forEach(item => {
-          const rec = Number(item.preco || 0) * Number(item.qtd || 0);
-          const cus = Number(item.custo || 0) * Number(item.qtd || 0);
-          receita += rec;
-          custo += cus;
-          if(Number(item.preco || 0) > 0){
-            margins.push((Number(item.preco) - Number(item.custo || 0)) / Number(item.preco));
-          }
-        });
-      });
-
-      return {
-        receita,
-        lucro: receita - custo,
-        ticket: state.orders.length ? receita / state.orders.length : 0,
-        margem: margins.length ? margins.reduce((a,b)=>a+b,0)/margins.length : 0,
-        produtos: state.products.length,
-        pedidos: state.orders.length
-      };
-    }
-
     function clearProductForm(){
       ['pNome','pCategoria','pPreco','pCusto','pTempo','pSku','pDescricao','pCampos'].forEach(id => {
         document.getElementById(id).value = '';
@@ -495,7 +548,8 @@
       document.getElementById('pAtivo').value = 'true';
       document.getElementById('pFoto').value = '';
       state.editingProductId = null;
-      state.currentPhotoData = '';
+      state.currentPhotoBlob = null;
+      state.currentPhotoPreview = '';
       showPhotoPreview('');
       document.getElementById('salvarProduto').textContent = 'Salvar produto';
       setStatus('Preencha os dados e clique em salvar.');
@@ -508,7 +562,7 @@
         activeProducts.map(p => `<option value="${p.id}">${escapeHtml(p.nome)}</option>`).join('');
     }
 
-    function renderProductsTable(){
+    async function renderProductsTable(){
       const tbody = document.getElementById('productsTable');
       const q = (document.getElementById('buscaProduto')?.value || '').toLowerCase().trim();
       tbody.innerHTML = '';
@@ -524,11 +578,24 @@
         return;
       }
 
-      filtered.forEach(p => {
+      for(const p of filtered){
+        let imgHtml = '<div class="mini">sem foto</div>';
+        if(p.imageKey){
+          try{
+            const blob = await getImageFromDb(p.imageKey);
+            if(blob){
+              const url = URL.createObjectURL(blob);
+              imgHtml = `<img src="${url}" class="thumb" alt="Foto">`;
+            }
+          }catch(e){
+            console.error(e);
+          }
+        }
+
         const margem = p.preco ? (Number(p.preco) - Number(p.custo || 0)) / Number(p.preco) : 0;
         tbody.insertAdjacentHTML('beforeend', `
           <tr>
-            <td>${p.foto ? `<img src="${p.foto}" class="thumb" alt="Foto">` : '<div class="mini">sem foto</div>'}</td>
+            <td>${imgHtml}</td>
             <td><strong>${escapeHtml(p.nome)}</strong><div class="mini">${escapeHtml(p.sku || '')}</div></td>
             <td>${escapeHtml(p.categoria || '')}</td>
             <td>${currency(p.preco)}</td>
@@ -543,7 +610,7 @@
             </td>
           </tr>
         `);
-      });
+      }
     }
 
     function renderDraftOrder(){
@@ -604,15 +671,35 @@
     }
 
     function renderDashboard(){
-      const m = getMetrics();
-      document.getElementById('heroProdutos').textContent = m.produtos;
-      document.getElementById('heroPedidos').textContent = m.pedidos;
-      document.getElementById('heroReceita').textContent = currency(m.receita);
-      document.getElementById('heroLucro').textContent = currency(m.lucro);
-      document.getElementById('kpiReceita').textContent = currency(m.receita);
-      document.getElementById('kpiLucro').textContent = currency(m.lucro);
-      document.getElementById('kpiTicket').textContent = currency(m.ticket);
-      document.getElementById('kpiMargem').textContent = pct(m.margem);
+      let receita = 0;
+      let custo = 0;
+      let margins = [];
+
+      state.orders.forEach(order => {
+        order.items.forEach(item => {
+          const rec = Number(item.preco || 0) * Number(item.qtd || 0);
+          const cus = Number(item.custo || 0) * Number(item.qtd || 0);
+          receita += rec;
+          custo += cus;
+          if(Number(item.preco || 0) > 0){
+            margins.push((Number(item.preco) - Number(item.custo || 0)) / Number(item.preco));
+          }
+        });
+      });
+
+      const lucro = receita - custo;
+      const ticket = state.orders.length ? receita / state.orders.length : 0;
+      const margem = margins.length ? margins.reduce((a,b)=>a+b,0)/margins.length : 0;
+
+      document.getElementById('heroProdutos').textContent = state.products.length;
+      document.getElementById('heroPedidos').textContent = state.orders.length;
+      document.getElementById('heroReceita').textContent = currency(receita);
+      document.getElementById('heroLucro').textContent = currency(lucro);
+
+      document.getElementById('kpiReceita').textContent = currency(receita);
+      document.getElementById('kpiLucro').textContent = currency(lucro);
+      document.getElementById('kpiTicket').textContent = currency(ticket);
+      document.getElementById('kpiMargem').textContent = pct(margem);
     }
 
     function renderConfig(){
@@ -623,9 +710,9 @@
       document.getElementById('cfgBanner').value = state.config.banner || '';
     }
 
-    function renderAll(){
+    async function renderAll(){
       renderSelects();
-      renderProductsTable();
+      await renderProductsTable();
       renderDraftOrder();
       renderOrders();
       renderDashboard();
@@ -671,26 +758,30 @@
     async function handlePhotoUpload(){
       const file = document.getElementById('pFoto').files[0];
       if(!file){
-        state.currentPhotoData = '';
+        state.currentPhotoBlob = null;
+        state.currentPhotoPreview = '';
         showPhotoPreview('');
         return;
       }
 
       try{
         setStatus('Processando foto...', 'warn');
-        const base64 = await resizeImageTo500(file);
-        state.currentPhotoData = base64;
-        showPhotoPreview(base64);
-        setStatus('Foto carregada e redimensionada para 500x500.', 'ok');
+        const blob = await resizeImageTo500Blob(file);
+        const preview = await blobToDataUrl(blob);
+        state.currentPhotoBlob = blob;
+        state.currentPhotoPreview = preview;
+        showPhotoPreview(preview);
+        setStatus('Foto carregada e preparada para salvar.', 'ok');
       }catch(err){
         console.error(err);
-        state.currentPhotoData = '';
+        state.currentPhotoBlob = null;
+        state.currentPhotoPreview = '';
         showPhotoPreview('');
         setStatus('Erro ao processar a foto.', 'error');
       }
     }
 
-    function handleSaveProduct(){
+    async function handleSaveProduct(){
       try{
         const nome = document.getElementById('pNome').value.trim();
         const categoria = document.getElementById('pCategoria').value.trim() || 'Sem categoria';
@@ -715,17 +806,21 @@
           return;
         }
 
-        let foto = state.currentPhotoData || '';
+        let productId = state.editingProductId || uid();
+        let imageKey = null;
 
-        if(state.editingProductId){
-          const atual = state.products.find(p => p.id === state.editingProductId);
-          if(atual && !foto){
-            foto = atual.foto || '';
-          }
+        const existing = state.products.find(p => p.id === productId);
+        if(existing?.imageKey){
+          imageKey = existing.imageKey;
+        }
+
+        if(state.currentPhotoBlob){
+          imageKey = `img_${productId}`;
+          await saveImageToDb(imageKey, state.currentPhotoBlob);
         }
 
         const produto = {
-          id: state.editingProductId || uid(),
+          id: productId,
           nome,
           categoria,
           preco,
@@ -735,7 +830,7 @@
           ativo,
           descricao,
           campos,
-          foto
+          imageKey: imageKey || null
         };
 
         if(state.editingProductId){
@@ -751,11 +846,11 @@
         clearProductForm();
       }catch(err){
         console.error(err);
-        setStatus('Erro ao salvar o produto.', 'error');
+        setStatus(`Erro ao salvar o produto: ${err?.message || 'erro desconhecido'}`, 'error');
       }
     }
 
-    window.editProduct = function(id){
+    window.editProduct = async function(id){
       const p = state.products.find(x => x.id === id);
       if(!p) return;
 
@@ -770,16 +865,39 @@
       document.getElementById('pDescricao').value = p.descricao || '';
       document.getElementById('pCampos').value = Array.isArray(p.campos) ? p.campos.join(', ') : '';
       document.getElementById('pFoto').value = '';
-      state.currentPhotoData = p.foto || '';
-      showPhotoPreview(p.foto || '');
+      state.currentPhotoBlob = null;
+      state.currentPhotoPreview = '';
+
+      if(p.imageKey){
+        try{
+          const blob = await getImageFromDb(p.imageKey);
+          if(blob){
+            const preview = await blobToDataUrl(blob);
+            state.currentPhotoPreview = preview;
+            showPhotoPreview(preview);
+          } else {
+            showPhotoPreview('');
+          }
+        }catch(e){
+          console.error(e);
+          showPhotoPreview('');
+        }
+      } else {
+        showPhotoPreview('');
+      }
+
       document.getElementById('salvarProduto').textContent = 'Atualizar produto';
       setStatus(`Editando: ${p.nome}`, 'warn');
       setView('cadastro');
       window.scrollTo({ top: 0, behavior: 'smooth' });
     };
 
-    window.removeProduct = function(id){
+    window.removeProduct = async function(id){
       if(!confirm('Excluir este produto?')) return;
+      const product = state.products.find(p => p.id === id);
+      if(product?.imageKey){
+        try{ await deleteImageFromDb(product.imageKey); } catch(e){ console.error(e); }
+      }
       state.products = state.products.filter(p => p.id !== id);
       saveState();
       setStatus('Produto excluído.', 'ok');
@@ -873,7 +991,12 @@
       });
 
       document.getElementById('btnExportJson').addEventListener('click', () => {
-        exportJson('personaliza-hub-store.json', state);
+        exportJson('personaliza-hub-store.json', {
+          config: state.config,
+          products: state.products,
+          orders: state.orders,
+          draftOrder: state.draftOrder
+        });
       });
 
       document.getElementById('exportProdutosJson').addEventListener('click', () => {
@@ -890,7 +1013,8 @@
           sku: p.sku,
           ativo: p.ativo,
           descricao: p.descricao,
-          campos: Array.isArray(p.campos) ? p.campos.join(' | ') : ''
+          campos: Array.isArray(p.campos) ? p.campos.join(' | ') : '',
+          imageKey: p.imageKey || ''
         })));
       });
 
@@ -918,7 +1042,8 @@
 
           state.draftOrder = { items: [] };
           state.editingProductId = null;
-          state.currentPhotoData = '';
+          state.currentPhotoBlob = null;
+          state.currentPhotoPreview = '';
           saveState();
           clearProductForm();
           alert('Importação concluída.');
@@ -931,10 +1056,13 @@
       });
     }
 
-    loadState();
-    initEvents();
-    renderAll();
-    setView('inicio');
+    (async function init(){
+      await ensureDb();
+      loadState();
+      initEvents();
+      await renderAll();
+      setView('inicio');
+    })();
   </script>
 </body>
 </html>
