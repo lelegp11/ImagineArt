@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Personaliza Hub — Catálogo</title>
+<style>
+:root{
+  --bg:#f7f7fb;
+  --card:#ffffff;
+  --text:#1f2430;
+  --muted:#6b7280;
+  --line:#e5e7eb;
+  --primary:#6d28d9;
+  --primary-2:#8b5cf6;
+  --accent:#ec4899;
+  --success:#16a34a;
+  --warning:#f59e0b;
+  --danger:#dc2626;
+  --shadow:0 16px 40px rgba(22,27,45,.08);
+  --radius:20px;
+}
+*{box-sizing:border-box}
+html,body{margin:0;padding:0;background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Inter,Arial,sans-serif}
+.container{max-width:1380px;margin:0 auto;padding:20px}
+.topbar{position:sticky;top:0;z-index:50;backdrop-filter:saturate(180%) blur(16px);background:rgba(247,247,251,.82);border-bottom:1px solid rgba(229,231,235,.7)}
+.topbar-inner{display:flex;align-items:center;gap:16px;justify-content:space-between;padding:14px 20px;max-width:1380px;margin:0 auto}
+.brand{display:flex;align-items:center;gap:14px;font-weight:800}.logo{width:44px;height:44px;border-radius:14px;background:linear-gradient(135deg,var(--primary),var(--accent));box-shadow:var(--shadow)}.brand small{display:block;font-weight:600;color:var(--muted)}
+.btn{border:none;background:#fff;color:var(--text);padding:11px 16px;border-radius:999px;box-shadow:var(--shadow);cursor:pointer;font-weight:700}.btn.primary{background:linear-gradient(135deg,var(--primary),var(--primary-2));color:#fff}.btn.success{background:linear-gradient(135deg,#16a34a,#22c55e);color:#fff}.btn.ghost{background:#fff}.btn.small{padding:8px 12px;border-radius:12px;font-size:13px}
+.hero{margin-top:24px;border-radius:32px;overflow:hidden;position:relative;background:radial-gradient(circle at 20% 20%, rgba(255,255,255,.28), transparent 30%),linear-gradient(135deg, #111827 0%, #4c1d95 42%, #db2777 100%);color:#fff;box-shadow:var(--shadow)}
+.hero-content{display:grid;grid-template-columns:1.2fr .8fr;gap:20px;padding:36px}.hero h1{font-size:40px;line-height:1.05;margin:0 0 12px}.hero p{font-size:17px;color:rgba(255,255,255,.86);max-width:760px}
+.badges,.toolbar,.row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}.badges{margin:16px 0}.badge{background:rgba(255,255,255,.14);border:1px solid rgba(255,255,255,.18);padding:10px 14px;border-radius:999px;font-weight:700}
+.section{margin-top:26px}.smallcaps{font-size:12px;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);font-weight:800}
+.notice{padding:14px 16px;border-radius:16px;background:#fdf2f8;border:1px solid #fbcfe8;color:#9d174d;font-size:14px}
+.input,select,textarea{width:100%;padding:12px 14px;border-radius:14px;border:1px solid var(--line);background:#fff;font:inherit;color:var(--text)}
+.card{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);padding:18px}
+.client-header{display:flex;align-items:center;justify-content:space-between;gap:18px;flex-wrap:wrap}
+.catalog-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:18px}.product-card{background:#fff;border:1px solid var(--line);border-radius:24px;box-shadow:var(--shadow);overflow:hidden;display:flex;flex-direction:column}.product-image{height:220px;background:#f3f4f6 center/cover no-repeat;position:relative}.product-image::after{content:"";position:absolute;inset:0;background:linear-gradient(180deg,transparent 55%,rgba(17,24,39,.18))}.product-info{padding:16px;display:flex;flex-direction:column;gap:10px}.price{font-size:28px;font-weight:800}.muted,.footer-note{color:var(--muted)}.footer-note{margin-top:12px;font-size:13px}
+.checkout-bar{position:sticky;bottom:16px;z-index:20;background:rgba(255,255,255,.92);backdrop-filter:blur(12px);border:1px solid var(--line);border-radius:24px;box-shadow:var(--shadow);padding:14px 16px;display:flex;align-items:center;gap:14px;justify-content:space-between;margin-top:20px}
+.table-wrap{overflow:auto;border:1px solid var(--line);border-radius:18px}table{width:100%;border-collapse:collapse;background:#fff}th,td{padding:12px 14px;border-bottom:1px solid var(--line);text-align:left;font-size:14px;vertical-align:top}th{background:#fafafa;color:#4b5563;position:sticky;top:0}
+.grid{display:grid;gap:18px}.grid-2{grid-template-columns:repeat(2,1fr)}
+.qtyline{display:flex;gap:8px;align-items:center}.qtyline input{max-width:100px}
+@media (max-width:1200px){.catalog-grid{grid-template-columns:repeat(2,1fr)}.hero-content,.grid-2{grid-template-columns:1fr}}
+@media (max-width:700px){.container{padding:14px}.topbar-inner{padding:12px 14px}.hero-content{padding:22px}.hero h1{font-size:30px}.catalog-grid,.grid-2{grid-template-columns:1fr}.checkout-bar{flex-direction:column;align-items:stretch}}
+</style>
+</head>
+<body>
+<div class="topbar">
+  <div class="topbar-inner">
+    <div class="brand"><div class="logo"></div><div><div>Personaliza Hub</div><small>Catálogo • Pedidos via WhatsApp</small></div></div>
+    <div class="row"><a class="btn ghost small" href="admin.html" target="_blank" rel="noopener">Abrir admin</a></div>
+  </div>
+</div>
+<div class="container">
+  <section class="hero">
+    <div class="hero-content">
+      <div>
+        <div class="smallcaps" style="color:#ddd">Loja virtual</div>
+        <h1 id="heroTitle">Escolha os produtos e envie seu pedido.</h1>
+        <p id="heroText">Preencha os detalhes de personalização e envie tudo direto no WhatsApp.</p>
+        <div class="badges"><span class="badge">Atendimento rápido</span><span class="badge">Produtos personalizados</span><span class="badge">Pedido via WhatsApp</span></div>
+      </div>
+      <div class="card" style="background:rgba(255,255,255,.12); color:#fff; border:1px solid rgba(255,255,255,.16)">
+        <div class="smallcaps" style="color:#f3e8ff">Resumo do carrinho</div>
+        <div style="font-size:34px;font-weight:800;margin-top:8px" id="heroTotal">R$ 0,00</div>
+        <div class="footer-note" style="color:#f3e8ff">Os itens adicionados aparecem no resumo do pedido logo abaixo.</div>
+      </div>
+    </div>
+  </section>
+
+  <section class="section">
+    <div class="client-header">
+      <div><div class="smallcaps">Catálogo para cliente</div><h2 style="margin:6px 0">Escolha os produtos e envie seu pedido</h2></div>
+      <div class="toolbar"><select id="filtroCategoria"></select><input class="input" id="buscaCatalogo" placeholder="Buscar produto" style="max-width:260px"></div>
+    </div>
+    <div class="notice" style="margin-top:12px">O pedido abre direto no WhatsApp principal de vendas cadastrado no admin.</div>
+    <div class="section catalog-grid" id="catalogGrid"></div>
+    <div class="checkout-bar">
+      <div><div class="smallcaps">Resumo do pedido</div><div><strong id="cartCount">0 item(s)</strong> • <span id="cartTotal">R$ 0,00</span></div></div>
+      <div class="row"><button class="btn ghost" id="openResumo">Ver resumo</button><button class="btn success" id="sendWhatsapp">Enviar pedido no WhatsApp</button></div>
+    </div>
+  </section>
+
+  <section class="section grid grid-2">
+    <div class="card">
+      <h2>Dados do cliente</h2>
+      <div class="grid grid-2">
+        <div><label>Nome</label><input class="input" id="cNome"></div>
+        <div><label>Telefone</label><input class="input" id="cTelefone"></div>
+        <div><label>E-mail</label><input class="input" id="cEmail"></div>
+        <div><label>Forma de pagamento</label><input class="input" id="cPagamento" placeholder="PIX, cartão..."></div>
+      </div>
+      <div style="margin-top:12px"><label>Observações gerais</label><textarea class="input" id="cObs" rows="3" placeholder="Prazo, cor, nome, tema, detalhes..."></textarea></div>
+      <div class="footer-note">Os produtos são lidos do mesmo navegador em que você usa o admin, usando armazenamento local.</div>
+    </div>
+    <div class="card hidden" id="resumoCard">
+      <div class="toolbar"><h2 style="margin:0">Resumo do pedido</h2><span style="flex:1"></span><button class="btn ghost small" id="hideResumo">Fechar</button></div>
+      <div class="table-wrap" style="margin-top:14px"><table><thead><tr><th>Produto</th><th>Qtd</th><th>Personalização</th><th>Subtotal</th><th>Ação</th></tr></thead><tbody id="resumoPedido"></tbody></table></div>
+    </div>
+  </section>
+</div>
+<script>
+const STORAGE_KEY = 'personaliza_hub_v3';
+let state={ config:{ loja:'Minha Loja', whatsapp:'5511999999999', mensagem:'Olá! Gostaria de fazer este pedido:', moeda:'BRL', banner:'Coleção personalizada pronta para encantar seus clientes.' }, products:[], cart:[] };
+const qs=s=>document.querySelector(s), qsa=s=>[...document.querySelectorAll(s)];
+const currency=v=>new Intl.NumberFormat('pt-BR',{style:'currency',currency:state.config.moeda||'BRL'}).format(Number(v||0));
+const esc=s=>String(s??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[m]));
+function load(){ const raw=localStorage.getItem(STORAGE_KEY); if(raw){ try{ const data=JSON.parse(raw); state={...state, config:data.config||state.config, products:data.products||[], cart:[]}; }catch(e){} } }
+function categories(){ return ['Todas', ...new Set(state.products.filter(p=>p.ativo!==false).map(p=>p.categoria||'Sem categoria'))]; }
+function renderCategoryFilter(){ qs('#filtroCategoria').innerHTML=categories().map(c=>`<option value="${esc(c)}">${esc(c)}</option>`).join(''); }
+function updateCart(){ const count=state.cart.reduce((a,i)=>a+Number(i.qtd||0),0), total=state.cart.reduce((a,i)=>a+Number(i.qtd||0)*Number(i.preco||0),0); qs('#cartCount').textContent=`${count} item(s)`; qs('#cartTotal').textContent=currency(total); qs('#heroTotal').textContent=currency(total); renderResumo(); }
+function renderCatalog(){ const term=(qs('#buscaCatalogo').value||'').toLowerCase(); const cat=qs('#filtroCategoria').value||'Todas'; const list=state.products.filter(p=>p.ativo!==false).filter(p=>(cat==='Todas'||(p.categoria||'Sem categoria')===cat) && (!term || JSON.stringify(p).toLowerCase().includes(term)));
+  qs('#catalogGrid').innerHTML = list.map(p=>`<div class="product-card"><div class="product-image" style="background-image:url('${p.foto||''}')"></div><div class="product-info"><div class="smallcaps">${esc(p.categoria||'Sem categoria')}</div><strong>${esc(p.nome)}</strong><div class="muted">${esc(p.descricao||'')}</div><div class="price">${currency(p.preco)}</div><div>${(p.campos||[]).map(f=>`<input class="input field-${p.id}" data-label="${esc(f)}" placeholder="${esc(f)}">`).join('')}</div><div class="qtyline"><input class="input qty-${p.id}" type="number" min="1" value="1"><button class="btn primary" onclick="addToCart('${p.id}')">Adicionar</button></div></div></div>`).join('') || '<div class="card">Nenhum produto cadastrado no admin ainda.</div>';
+}
+function addToCart(id){ const p=state.products.find(x=>x.id===id); if(!p) return; const fields=qsa(`.field-${id}`); const info=fields.map(f=>`${f.dataset.label}: ${f.value||'—'}`).join(' | '); const qtd=Number(qs(`.qty-${id}`).value||1); state.cart.push({ productId:id, nome:p.nome, qtd, personalizacao:info, preco:Number(p.preco||0) }); updateCart(); }
+window.addToCart=addToCart;
+function removeCartItem(idx){ state.cart.splice(idx,1); updateCart(); } window.removeCartItem=removeCartItem;
+function renderResumo(){ qs('#resumoPedido').innerHTML = state.cart.map((i,idx)=>`<tr><td>${esc(i.nome)}</td><td>${i.qtd}</td><td>${esc(i.personalizacao||'—')}</td><td>${currency(Number(i.preco)*Number(i.qtd))}</td><td><button class="btn ghost small" onclick="removeCartItem(${idx})">Remover</button></td></tr>`).join('') || '<tr><td colspan="5" class="muted">Seu carrinho está vazio.</td></tr>'; }
+function sendWhatsapp(){ if(!state.cart.length) return alert('Adicione itens ao pedido.'); const lines=[state.config.mensagem||'Olá! Gostaria de fazer este pedido:','']; state.cart.forEach((i,n)=>{ lines.push(`${n+1}. ${i.nome}`); lines.push(`Qtd: ${i.qtd}`); if(i.personalizacao) lines.push(`Personalização: ${i.personalizacao}`); lines.push(`Subtotal: ${currency(Number(i.preco)*Number(i.qtd))}`); lines.push(''); }); lines.push(`Nome: ${qs('#cNome').value||'—'}`); lines.push(`Telefone: ${qs('#cTelefone').value||'—'}`); lines.push(`E-mail: ${qs('#cEmail').value||'—'}`); lines.push(`Pagamento: ${qs('#cPagamento').value||'—'}`); lines.push(`Observações: ${qs('#cObs').value||'—'}`); lines.push(`Total: ${currency(state.cart.reduce((a,i)=>a+Number(i.qtd)*Number(i.preco),0))}`); const url=`https://wa.me/${encodeURIComponent(state.config.whatsapp||'') }?text=${encodeURIComponent(lines.join('\n'))}`; window.open(url,'_blank'); }
+function bind(){ qs('#buscaCatalogo').oninput=renderCatalog; qs('#filtroCategoria').onchange=renderCatalog; qs('#openResumo').onclick=()=>qs('#resumoCard').classList.remove('hidden'); qs('#hideResumo').onclick=()=>qs('#resumoCard').classList.add('hidden'); qs('#sendWhatsapp').onclick=sendWhatsapp; }
+load(); bind(); renderCategoryFilter(); renderCatalog(); updateCart(); qs('#heroTitle').textContent=`${state.config.loja||'Minha Loja'} — escolha seus produtos.`; qs('#heroText').textContent=state.config.banner||'Preencha os detalhes de personalização e envie tudo direto no WhatsApp.';
+</script>
+</body>
+</html>
