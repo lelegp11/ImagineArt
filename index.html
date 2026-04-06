@@ -73,13 +73,6 @@
   </div>
 
   <div class="container">
-    <section id="setupArea" class="setup">
-      <div class="card">
-        <h2>Bem Vindo!</h2>
-        <div class="toolbar" style="margin-top:14px"><button class="btn primary" id="btnConnect">Entre Aqui!</button></div>
-      </div>
-    </section>
-
     <div id="catalogArea" class="hidden">
       <section class="hero">
         <div class="hero-content">
@@ -154,30 +147,12 @@
     function currency(v){ return new Intl.NumberFormat('pt-BR',{style:'currency',currency: state.config.moeda || 'BRL'}).format(Number(v || 0)); }
     function setSetupStatus(msg){ document.getElementById('setupStatus').textContent = msg; }
 
-    //function restoreConfig(){
-    //  const raw = localStorage.getItem(STORAGE_KEY);
-    //  if(!raw) return;
-    //  try{
-    //    const parsed = JSON.parse(raw);
-    //    'https://xwaflarqkooltziusmbl.supabase.co' = parsed.url || '';
-    //    'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inh3YWZsYXJxa29vbHR6aXVzbWJsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzU0ODkyNDgsImV4cCI6MjA5MTA2NTI0OH0.v4YFHMEc8Ryu_97J5UV5nVU7wPjFKetd10WP9MJ60u4' = parsed.anon || '';
-    //  }catch{}
-    //}
-
-    function storeConfig(){
-      localStorage.setItem(STORAGE_KEY, JSON.stringify({
-        url: 'https://xwaflarqkooltziusmbl.supabase.co',
-        anon: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inh3YWZsYXJxa29vbHR6aXVzbWJsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzU0ODkyNDgsImV4cCI6MjA5MTA2NTI0OH0.v4YFHMEc8Ryu_97J5UV5nVU7wPjFKetd10WP9MJ60u4'
-      }));
-    }
-
     function initClient(){
       //const url = document.getElementById('sbUrl').value.trim();
       //const anon = document.getElementById('sbAnon').value.trim();
       const url = 'https://xwaflarqkooltziusmbl.supabase.co'
       const anon = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inh3YWZsYXJxa29vbHR6aXVzbWJsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzU0ODkyNDgsImV4cCI6MjA5MTA2NTI0OH0.v4YFHMEc8Ryu_97J5UV5nVU7wPjFKetd10WP9MJ60u4'
       supabaseClient = window.supabase.createClient(url, anon);
-      storeConfig();
     }
 
     async function fetchConfig(){
@@ -321,7 +296,7 @@
         applyConfig();
         renderCatalog();
         renderCart();
-        document.getElementById('setupArea').classList.add('hidden');
+        //document.getElementById('setupArea').classList.add('hidden');
         document.getElementById('catalogArea').classList.remove('hidden');
       }catch(err){
         console.error(err);
