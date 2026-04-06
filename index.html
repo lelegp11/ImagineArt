@@ -1,290 +1,445 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>Personaliza Hub — Catálogo</title>
-<style>
-:root{
-  --bg:#f7f7fb;
-  --card:#ffffff;
-  --text:#1f2430;
-  --muted:#6b7280;
-  --line:#e5e7eb;
-  --primary:#6d28d9;
-  --primary-2:#8b5cf6;
-  --accent:#ec4899;
-  --success:#16a34a;
-  --shadow:0 16px 40px rgba(22,27,45,.08);
-  --radius:20px;
-}
-*{box-sizing:border-box}
-html,body{margin:0;padding:0;background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Inter,Arial,sans-serif}
-.topbar{position:sticky;top:0;z-index:40;background:rgba(247,247,251,.92);backdrop-filter:blur(16px);border-bottom:1px solid rgba(229,231,235,.7)}
-.topbar-inner{max-width:1380px;margin:0 auto;padding:14px 20px;display:flex;align-items:center;justify-content:space-between;gap:16px}
-.brand{display:flex;align-items:center;gap:14px;font-weight:800}.logo{width:44px;height:44px;border-radius:14px;background:linear-gradient(135deg,var(--primary),var(--accent));box-shadow:var(--shadow)}.brand small{display:block;color:var(--muted);font-weight:600}
-.container{max-width:1380px;margin:0 auto;padding:20px}
-.hero{margin-top:10px;border-radius:32px;overflow:hidden;background:radial-gradient(circle at 20% 20%, rgba(255,255,255,.28), transparent 30%), linear-gradient(135deg, #111827 0%, #4c1d95 42%, #db2777 100%);color:#fff;box-shadow:var(--shadow)}
-.hero-content{display:grid;grid-template-columns:1.15fr .85fr;gap:20px;padding:36px}.hero h1{font-size:40px;line-height:1.05;margin:0 0 12px}.hero p{font-size:17px;color:rgba(255,255,255,.86);max-width:760px}.hero-panel{background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.14);border-radius:24px;padding:20px}
-.toolbar{display:flex;gap:10px;flex-wrap:wrap;align-items:center}.toolbar .spacer{flex:1}
-.input,select,textarea{width:100%;padding:12px 14px;border-radius:14px;border:1px solid var(--line);background:#fff;font:inherit;color:var(--text)}
-.btn{border:none;background:#fff;color:var(--text);padding:11px 16px;border-radius:999px;box-shadow:var(--shadow);cursor:pointer;font-weight:700}.btn.primary{background:linear-gradient(135deg,var(--primary),var(--primary-2));color:#fff}.btn.success{background:linear-gradient(135deg,#16a34a,#22c55e);color:#fff}.btn.small{padding:8px 12px;border-radius:12px;font-size:13px}
-.card{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);padding:18px}
-.client-header{display:flex;align-items:center;justify-content:space-between;gap:18px;margin-top:26px}.smallcaps{font-size:12px;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);font-weight:800}.notice{padding:14px 16px;border-radius:16px;background:#fdf2f8;border:1px solid #fbcfe8;color:#9d174d;font-size:14px;margin-top:12px}
-.catalog-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:18px;margin-top:18px}.product-card{background:#fff;border:1px solid var(--line);border-radius:24px;box-shadow:var(--shadow);overflow:hidden;display:flex;flex-direction:column}.product-image{height:220px;background:#f3f4f6 center/cover no-repeat;position:relative}.product-image::after{content:"";position:absolute;inset:0;background:linear-gradient(180deg,transparent 55%,rgba(17,24,39,.18))}.product-info{padding:16px;display:flex;flex-direction:column;gap:10px}.price{font-size:28px;font-weight:800}.tag{display:inline-block;padding:6px 10px;background:#f3e8ff;color:#6d28d9;border-radius:999px;font-size:12px;font-weight:800}.muted{color:var(--muted)}
-.form-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:14px}.form-grid-2{display:grid;grid-template-columns:repeat(2,1fr);gap:14px}
-.row{display:flex;gap:10px;align-items:center;flex-wrap:wrap}.qty{display:flex;align-items:center;border:1px solid var(--line);border-radius:999px;overflow:hidden}.qty button{border:none;background:#fff;padding:10px 14px;cursor:pointer;font-size:18px}.qty span{padding:0 14px;font-weight:800}
-.checkout-bar{position:sticky;bottom:16px;z-index:20;background:rgba(255,255,255,.92);backdrop-filter:blur(12px);border:1px solid var(--line);border-radius:24px;box-shadow:var(--shadow);padding:14px 16px;display:flex;align-items:center;gap:14px;justify-content:space-between;margin-top:20px}
-.table-wrap{overflow:auto;border:1px solid var(--line);border-radius:18px} table{width:100%;border-collapse:collapse;background:#fff} th,td{padding:12px 14px;border-bottom:1px solid var(--line);text-align:left;font-size:14px;vertical-align:top} th{background:#fafafa;color:#4b5563}
-.empty{padding:36px;border:1px dashed var(--line);border-radius:22px;background:#fff;text-align:center;color:var(--muted)}
-@media (max-width:1200px){.catalog-grid,.form-grid{grid-template-columns:repeat(2,1fr)}.form-grid-2,.hero-content{grid-template-columns:1fr}}
-@media (max-width:700px){.container{padding:14px}.topbar-inner{padding:12px 14px}.hero-content{padding:22px}.hero h1{font-size:30px}.catalog-grid,.form-grid,.form-grid-2{grid-template-columns:1fr}.checkout-bar{flex-direction:column;align-items:stretch}}
-</style>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Personaliza Hub — Catálogo</title>
+  <style>
+    :root{
+      --bg:#f7f7fb;
+      --card:#ffffff;
+      --text:#1f2430;
+      --muted:#6b7280;
+      --line:#e5e7eb;
+      --primary:#6d28d9;
+      --primary-2:#8b5cf6;
+      --accent:#ec4899;
+      --success:#16a34a;
+      --shadow:0 16px 40px rgba(22,27,45,.08);
+      --radius:20px;
+    }
+    *{box-sizing:border-box}
+    html,body{
+      margin:0;padding:0;background:var(--bg);color:var(--text);
+      font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Inter,Arial,sans-serif
+    }
+    .container{max-width:1380px;margin:0 auto;padding:20px}
+    .topbar{
+      position:sticky;top:0;z-index:50;
+      backdrop-filter:saturate(180%) blur(16px);
+      background:rgba(247,247,251,.82);
+      border-bottom:1px solid rgba(229,231,235,.7)
+    }
+    .topbar-inner{
+      display:flex;align-items:center;gap:16px;justify-content:space-between;
+      padding:14px 20px;max-width:1380px;margin:0 auto
+    }
+    .brand{display:flex;align-items:center;gap:14px;font-weight:800}
+    .logo{
+      width:44px;height:44px;border-radius:14px;
+      background:linear-gradient(135deg,var(--primary),var(--accent));
+      box-shadow:var(--shadow)
+    }
+    .brand small{display:block;font-weight:600;color:var(--muted)}
+    .hero{
+      margin-top:24px;border-radius:32px;overflow:hidden;position:relative;background:
+      radial-gradient(circle at 20% 20%, rgba(255,255,255,.28), transparent 30%),
+      linear-gradient(135deg, #111827 0%, #4c1d95 42%, #db2777 100%);
+      color:#fff;box-shadow:var(--shadow)
+    }
+    .hero-content{display:grid;grid-template-columns:1.2fr .8fr;gap:20px;padding:36px}
+    .hero h1{font-size:40px;line-height:1.05;margin:0 0 12px}
+    .hero p{font-size:17px;color:rgba(255,255,255,.86);max-width:760px}
+    .hero-panel{background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.14);border-radius:24px;padding:20px}
+    .smallcaps{font-size:12px;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);font-weight:800}
+    .catalog-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:18px;margin-top:18px}
+    .product-card{
+      background:#fff;border:1px solid var(--line);border-radius:24px;box-shadow:var(--shadow);
+      overflow:hidden;display:flex;flex-direction:column
+    }
+    .product-image{
+      height:220px;background:#f3f4f6 center/cover no-repeat;position:relative
+    }
+    .product-image::after{
+      content:"";position:absolute;inset:0;background:linear-gradient(180deg,transparent 55%,rgba(17,24,39,.18))
+    }
+    .product-info{padding:16px;display:flex;flex-direction:column;gap:10px}
+    .price{font-size:28px;font-weight:800}
+    .muted{color:var(--muted)}
+    .btn{
+      border:none;background:#fff;color:var(--text);padding:11px 16px;border-radius:999px;
+      box-shadow:var(--shadow);cursor:pointer;font-weight:700
+    }
+    .btn.primary{background:linear-gradient(135deg,var(--primary),var(--primary-2));color:#fff}
+    .btn.success{background:linear-gradient(135deg,#16a34a,#22c55e);color:#fff}
+    .btn.ghost{background:#fff}
+    .input, select, textarea{
+      width:100%;padding:12px 14px;border-radius:14px;border:1px solid var(--line);
+      background:#fff;font:inherit;color:var(--text)
+    }
+    label{font-size:13px;font-weight:700;color:#4b5563;margin-bottom:6px;display:block}
+    .form-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:14px}
+    .grid-2{display:grid;grid-template-columns:repeat(2,1fr);gap:18px}
+    .card{
+      background:var(--card);border:1px solid var(--line);border-radius:var(--radius);
+      box-shadow:var(--shadow);padding:18px
+    }
+    .toolbar{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+    .toolbar .spacer{flex:1}
+    .notice{padding:14px 16px;border-radius:16px;background:#fdf2f8;border:1px solid #fbcfe8;color:#9d174d;font-size:14px}
+    .table-wrap{overflow:auto;border:1px solid var(--line);border-radius:18px}
+    table{width:100%;border-collapse:collapse;background:#fff}
+    th,td{padding:12px 14px;border-bottom:1px solid var(--line);text-align:left;font-size:14px;vertical-align:top}
+    th{background:#fafafa;color:#4b5563}
+    .checkout-bar{
+      position:sticky;bottom:16px;z-index:20;background:rgba(255,255,255,.92);backdrop-filter:blur(12px);
+      border:1px solid var(--line);border-radius:24px;box-shadow:var(--shadow);padding:14px 16px;
+      display:flex;align-items:center;gap:14px;justify-content:space-between;margin-top:20px
+    }
+    .hidden{display:none!important}
+    .qty{
+      display:flex;align-items:center;border:1px solid var(--line);border-radius:999px;overflow:hidden
+    }
+    .qty button{
+      border:none;background:#fff;padding:10px 14px;cursor:pointer;font-size:18px
+    }
+    .qty span{padding:0 14px;font-weight:800}
+    .footer-note{margin-top:12px;color:var(--muted);font-size:13px}
+    @media (max-width:1200px){
+      .catalog-grid,.form-grid{grid-template-columns:repeat(2,1fr)}
+      .hero-content,.grid-2{grid-template-columns:1fr}
+    }
+    @media (max-width:700px){
+      .container{padding:14px}
+      .topbar-inner{padding:12px 14px}
+      .hero-content{padding:22px}
+      .hero h1{font-size:30px}
+      .catalog-grid,.form-grid,.grid-2{grid-template-columns:1fr}
+      .checkout-bar{flex-direction:column;align-items:stretch}
+    }
+  </style>
 </head>
 <body>
-<div class="topbar">
-  <div class="topbar-inner">
-    <div class="brand">
-      <div class="logo"></div>
-      <div>
-        <div id="brandLoja">Minha Loja</div>
-        <small>Catálogo • Pedido via WhatsApp</small>
-      </div>
-    </div>
-    <a class="btn small" href="admin.html">Abrir admin</a>
-  </div>
-</div>
-
-<div class="container">
-  <div class="hero">
-    <div class="hero-content">
-      <div>
-        <div class="smallcaps" style="color:#ddd">Catálogo online</div>
-        <h1>Escolha os produtos e envie seu pedido.</h1>
-        <p id="bannerTexto">Coleção personalizada pronta para encantar seus clientes.</p>
-      </div>
-      <div class="hero-panel">
-        <div class="smallcaps" style="color:#e9d5ff">Como funciona</div>
-        <p style="margin:10px 0 0;color:#fff">1. Escolha os itens.<br>2. Preencha os campos de personalização.<br>3. Informe seus dados.<br>4. Envie o pedido no WhatsApp.</p>
-      </div>
-    </div>
-  </div>
-
-  <div class="client-header">
-    <div>
-      <div class="smallcaps">Catálogo para cliente</div>
-      <h2 style="margin:6px 0">Escolha os produtos e envie seu pedido</h2>
-    </div>
-    <div class="toolbar">
-      <select class="input" id="filtroCategoria" style="min-width:180px"></select>
-      <input class="input" id="buscaCatalogo" placeholder="Buscar produto" style="max-width:260px" />
-    </div>
-  </div>
-
-  <div class="notice">Os produtos abaixo são os mesmos cadastrados no <strong>admin.html</strong>. Se não aparecerem aqui, abra os dois no mesmo navegador e mesmo domínio.</div>
-
-  <div id="catalogGrid" class="catalog-grid"></div>
-  <div id="emptyState" class="empty" style="display:none;margin-top:18px">Nenhum produto disponível no catálogo.</div>
-
-  <div class="checkout-bar">
-    <div>
-      <div class="smallcaps">Resumo do pedido</div>
-      <div><strong id="cartCount">0 item(s)</strong> • <span id="cartTotal">R$ 0,00</span></div>
-    </div>
-    <div class="row">
-      <button class="btn small" id="btnOpenResumo">Ver resumo</button>
-      <button class="btn success" id="btnSendWhatsapp">Enviar pedido no WhatsApp</button>
-    </div>
-  </div>
-
-  <div class="card" style="margin-top:18px">
-    <h2>Dados do cliente</h2>
-    <div class="form-grid">
-      <div><label>Nome</label><input class="input" id="cNome" /></div>
-      <div><label>Telefone</label><input class="input" id="cTelefone" /></div>
-      <div><label>E-mail</label><input class="input" id="cEmail" /></div>
-      <div><label>Forma de pagamento</label><input class="input" id="cPagamento" placeholder="PIX, cartão..." /></div>
-    </div>
-    <div style="margin-top:12px"><label>Observações gerais</label><textarea class="input" id="cObs" rows="3" placeholder="Prazo, cor, nome, tema, detalhes..."></textarea></div>
-  </div>
-
-  <div class="card" id="resumoCard" style="margin-top:18px;display:none">
-    <div class="toolbar"><h2 style="margin:0">Resumo do pedido</h2><span class="spacer"></span><button class="btn small" id="btnHideResumo">Fechar</button></div>
-    <div class="table-wrap" style="margin-top:14px">
-      <table>
-        <thead><tr><th>Produto</th><th>Qtd</th><th>Personalização</th><th>Subtotal</th></tr></thead>
-        <tbody id="resumoPedido"></tbody>
-      </table>
-    </div>
-  </div>
-</div>
-
-<script>
-const STORAGE_KEY = 'personaliza_hub_shared_v2';
-let state = {
-  config: { loja:'Minha Loja', whatsapp:'5511999999999', mensagem:'Olá! Gostaria de fazer este pedido:', moeda:'BRL', banner:'Coleção personalizada pronta para encantar seus clientes.' },
-  products: [],
-  orders: []
-};
-let cart = [];
-
-const $ = id => document.getElementById(id);
-const currency = v => new Intl.NumberFormat('pt-BR',{style:'currency',currency:state.config.moeda || 'BRL'}).format(Number(v || 0));
-const esc = s => String(s ?? '').replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[m]));
-
-function loadState(){
-  try{
-    const raw = localStorage.getItem(STORAGE_KEY);
-    if(raw){
-      const parsed = JSON.parse(raw);
-      state = {
-        config: {...state.config, ...(parsed.config || {})},
-        products: Array.isArray(parsed.products) ? parsed.products : [],
-        orders: Array.isArray(parsed.orders) ? parsed.orders : []
-      };
-    }
-  }catch(err){ console.error(err); }
-}
-
-function renderCategoryFilter(){
-  const cats = ['Todas', ...new Set(state.products.filter(p => p.ativo).map(p => p.categoria || 'Sem categoria'))];
-  const current = $('filtroCategoria').value || 'Todas';
-  $('filtroCategoria').innerHTML = cats.map(c => `<option value="${esc(c)}">${esc(c)}</option>`).join('');
-  $('filtroCategoria').value = cats.includes(current) ? current : 'Todas';
-}
-
-function getFieldValues(productId){
-  const map = {};
-  document.querySelectorAll(`[data-product="${productId}"]`).forEach(input => map[input.dataset.field] = input.value.trim());
-  return map;
-}
-
-function changeQty(productId, delta){
-  const found = cart.find(i => i.productId === productId);
-  if(!found){
-    if(delta > 0){
-      const p = state.products.find(x => x.id === productId);
-      if(!p) return;
-      cart.push({ productId, nome:p.nome, preco:Number(p.preco || 0), qtd:1, fields:getFieldValues(productId) });
-    }
-  } else {
-    found.qtd = Math.max(0, found.qtd + delta);
-    found.fields = getFieldValues(productId);
-    if(found.qtd === 0) cart = cart.filter(i => i.productId !== productId);
-  }
-  renderCatalog();
-  renderCartSummary();
-}
-
-function addToCart(productId){
-  const p = state.products.find(x => x.id === productId);
-  if(!p) return;
-  const existing = cart.find(i => i.productId === productId);
-  const fields = getFieldValues(productId);
-  if(existing){
-    existing.qtd += 1;
-    existing.fields = fields;
-  } else {
-    cart.push({ productId, nome:p.nome, preco:Number(p.preco || 0), qtd:1, fields });
-  }
-  renderCatalog();
-  renderCartSummary();
-}
-
-function renderCatalog(){
-  renderCategoryFilter();
-  const cat = $('filtroCategoria').value || 'Todas';
-  const q = ($('buscaCatalogo').value || '').toLowerCase();
-  const grid = $('catalogGrid');
-  grid.innerHTML = '';
-  const filtered = state.products.filter(p => p.ativo)
-    .filter(p => cat === 'Todas' || (p.categoria || 'Sem categoria') === cat)
-    .filter(p => `${p.nome} ${p.categoria || ''} ${p.descricao || ''}`.toLowerCase().includes(q));
-
-  $('emptyState').style.display = filtered.length ? 'none' : 'block';
-
-  filtered.forEach(p => {
-    const existing = cart.find(i => i.productId === p.id);
-    const qty = existing?.qtd || 0;
-    const fields = (p.campos || []).map(f => `
-      <label>${esc(f)}
-        <input class="input" data-field="${esc(f)}" data-product="${p.id}" placeholder="${esc(f)}" value="${esc(existing?.fields?.[f] || '')}">
-      </label>`).join('');
-    grid.insertAdjacentHTML('beforeend', `
-      <div class="product-card">
-        <div class="product-image" style="background-image:url('${esc(p.imagem || '')}')"></div>
-        <div class="product-info">
-          <div class="tag">${esc(p.categoria || 'Sem categoria')}</div>
-          <div><strong style="font-size:20px">${esc(p.nome)}</strong></div>
-          <div class="muted">${esc(p.descricao || '')}</div>
-          <div class="price">${currency(p.preco)}</div>
-          <div class="form-grid-2">${fields || '<div class="muted">Sem campos extras.</div>'}</div>
-          <div class="row">
-            <div class="qty">
-              <button onclick="changeQty('${p.id}',-1)">−</button>
-              <span id="qty-${p.id}">${qty}</span>
-              <button onclick="changeQty('${p.id}',1)">+</button>
-            </div>
-            <button class="btn primary small" onclick="addToCart('${p.id}')">Adicionar</button>
-          </div>
+  <div class="topbar">
+    <div class="topbar-inner">
+      <div class="brand">
+        <div class="logo"></div>
+        <div>
+          <div id="storeNameTop">Minha Loja</div>
+          <small>Catálogo • Pedido via WhatsApp</small>
         </div>
-      </div>`);
-  });
-}
+      </div>
 
-function renderCartSummary(){
-  const count = cart.reduce((acc, item) => acc + item.qtd, 0);
-  const total = cart.reduce((acc, item) => acc + item.preco * item.qtd, 0);
-  $('cartCount').textContent = `${count} item(s)`;
-  $('cartTotal').textContent = currency(total);
-  const tbody = $('resumoPedido');
-  tbody.innerHTML = '';
-  if(!cart.length){
-    tbody.innerHTML = '<tr><td colspan="4" class="muted">Nenhum item no pedido.</td></tr>';
-    return;
-  }
-  cart.forEach(item => {
-    const details = Object.entries(item.fields || {}).filter(([,v]) => v).map(([k,v]) => `<strong>${esc(k)}:</strong> ${esc(v)}`).join('<br>') || '—';
-    tbody.insertAdjacentHTML('beforeend', `<tr><td>${esc(item.nome)}</td><td>${item.qtd}</td><td>${details}</td><td>${currency(item.preco * item.qtd)}</td></tr>`);
-  });
-}
+      <div class="toolbar">
+        <select id="filtroCategoria" class="input" style="max-width:220px"></select>
+        <input class="input" id="buscaCatalogo" placeholder="Buscar produto" style="max-width:260px">
+      </div>
+    </div>
+  </div>
 
-function sendWhatsapp(){
-  if(!cart.length){ alert('Adicione pelo menos um item ao pedido.'); return; }
-  const numero = (state.config.whatsapp || '').replace(/\D/g,'');
-  if(!numero){ alert('WhatsApp principal não configurado no admin.'); return; }
-  let msg = `${state.config.mensagem || 'Olá! Gostaria de fazer este pedido:'}\n\n`;
-  cart.forEach(item => {
-    msg += `• ${item.nome} | Qtd: ${item.qtd} | Subtotal: ${currency(item.preco * item.qtd)}\n`;
-    const fields = Object.entries(item.fields || {}).filter(([,v]) => v);
-    fields.forEach(([k,v]) => { msg += `   - ${k}: ${v}\n`; });
-  });
-  msg += `\nNome: ${$('cNome').value || ''}`;
-  msg += `\nTelefone: ${$('cTelefone').value || ''}`;
-  msg += `\nE-mail: ${$('cEmail').value || ''}`;
-  msg += `\nPagamento: ${$('cPagamento').value || ''}`;
-  msg += `\nObservações: ${$('cObs').value || ''}`;
-  window.open(`https://wa.me/${numero}?text=${encodeURIComponent(msg)}`, '_blank');
-}
+  <div class="container">
+    <section class="hero">
+      <div class="hero-content">
+        <div>
+          <div class="smallcaps" style="color:#ddd">Catálogo online</div>
+          <h1>Escolha seus produtos personalizados.</h1>
+          <p id="bannerText">Coleção personalizada pronta para encantar seus clientes.</p>
+        </div>
+        <div class="hero-panel">
+          <div class="smallcaps" style="color:#e9d5ff">Como funciona</div>
+          <p style="margin:10px 0 0;color:#fff">Escolha os produtos, informe a personalização, preencha seus dados e envie o pedido direto no WhatsApp.</p>
+        </div>
+      </div>
+    </section>
 
-function renderBrand(){
-  $('brandLoja').textContent = state.config.loja || 'Minha Loja';
-  $('bannerTexto').textContent = state.config.banner || 'Coleção personalizada pronta para encantar seus clientes.';
-}
+    <div class="notice" style="margin-top:16px">
+      Selecione os itens, informe a personalização e toque em <strong>Enviar pedido no WhatsApp</strong>.
+    </div>
 
-window.changeQty = changeQty;
-window.addToCart = addToCart;
-$('filtroCategoria').addEventListener('change', renderCatalog);
-$('buscaCatalogo').addEventListener('input', renderCatalog);
-$('btnOpenResumo').addEventListener('click', () => $('resumoCard').style.display = 'block');
-$('btnHideResumo').addEventListener('click', () => $('resumoCard').style.display = 'none');
-$('btnSendWhatsapp').addEventListener('click', sendWhatsapp);
-window.addEventListener('storage', e => { if(e.key === STORAGE_KEY){ loadState(); renderBrand(); renderCatalog(); renderCartSummary(); } });
+    <section class="catalog-grid" id="catalogGrid"></section>
 
-loadState();
-renderBrand();
-renderCatalog();
-renderCartSummary();
-</script>
+    <div class="checkout-bar">
+      <div>
+        <div class="smallcaps">Resumo do pedido</div>
+        <div><strong id="cartCount">0 item(s)</strong> • <span id="cartTotal">R$ 0,00</span></div>
+      </div>
+      <div class="toolbar">
+        <button class="btn ghost" id="openResumo">Ver resumo</button>
+        <button class="btn success" id="sendWhatsapp">Enviar pedido no WhatsApp</button>
+      </div>
+    </div>
+
+    <div class="grid-2" style="margin-top:18px">
+      <div class="card">
+        <h2>Dados do cliente</h2>
+        <div class="form-grid">
+          <div><label>Nome</label><input class="input" id="cNome"></div>
+          <div><label>Telefone</label><input class="input" id="cTelefone"></div>
+          <div><label>E-mail</label><input class="input" id="cEmail"></div>
+          <div><label>Forma de pagamento</label><input class="input" id="cPagamento" placeholder="PIX, cartão..."></div>
+        </div>
+        <div style="margin-top:12px">
+          <label>Observações gerais</label>
+          <textarea class="input" id="cObs" rows="3" placeholder="Prazo, cor, nome, tema, detalhes..."></textarea>
+        </div>
+      </div>
+
+      <div class="card hidden" id="resumoCard">
+        <div class="toolbar">
+          <h2 style="margin:0">Resumo do pedido</h2>
+          <span class="spacer"></span>
+          <button class="btn ghost" id="hideResumo">Fechar</button>
+        </div>
+        <div class="table-wrap" style="margin-top:14px">
+          <table>
+            <thead><tr><th>Produto</th><th>Qtd</th><th>Personalização</th><th>Subtotal</th><th>Ação</th></tr></thead>
+            <tbody id="resumoPedido"></tbody>
+          </table>
+        </div>
+        <div class="footer-note">Confira tudo antes de enviar.</div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const STORAGE_KEY = 'personaliza_hub_store_v2';
+
+    let state = {
+      config: {
+        loja: 'Minha Loja',
+        whatsapp: '5511999999999',
+        mensagem: 'Olá! Gostaria de fazer este pedido:',
+        moeda: 'BRL',
+        banner: 'Coleção personalizada pronta para encantar seus clientes.'
+      },
+      products: [],
+      cart: []
+    };
+
+    function escapeHtml(str=''){
+      return String(str).replace(/[&<>"']/g, m => ({
+        '&':'&amp;',
+        '<':'&lt;',
+        '>':'&gt;',
+        '"':'&quot;',
+        "'":'&#039;'
+      }[m]));
+    }
+
+    function currency(v){
+      return new Intl.NumberFormat('pt-BR', {
+        style:'currency',
+        currency:state.config.moeda || 'BRL'
+      }).format(Number(v || 0));
+    }
+
+    function loadState(){
+      const raw = localStorage.getItem(STORAGE_KEY);
+      if(!raw) return;
+      try{
+        const parsed = JSON.parse(raw);
+        state.config = { ...state.config, ...(parsed.config || {}) };
+        state.products = parsed.products || [];
+      }catch(e){
+        console.error(e);
+      }
+    }
+
+    function getFilteredProducts(){
+      const busca = (document.getElementById('buscaCatalogo').value || '').toLowerCase().trim();
+      const cat = document.getElementById('filtroCategoria').value || '';
+
+      return state.products.filter(p => p.ativo).filter(p => {
+        const okBusca =
+          p.nome.toLowerCase().includes(busca) ||
+          (p.categoria || '').toLowerCase().includes(busca) ||
+          (p.descricao || '').toLowerCase().includes(busca);
+
+        const okCat = !cat || (p.categoria || '') === cat;
+        return okBusca && okCat;
+      });
+    }
+
+    function buildCategoryFilter(){
+      const select = document.getElementById('filtroCategoria');
+      const cats = [...new Set(state.products.filter(p => p.ativo).map(p => p.categoria || 'Sem categoria'))].sort();
+      select.innerHTML = `<option value="">Todas as categorias</option>` +
+        cats.map(c => `<option value="${escapeHtml(c)}">${escapeHtml(c)}</option>`).join('');
+    }
+
+    function renderCatalog(){
+      const grid = document.getElementById('catalogGrid');
+      const products = getFilteredProducts();
+      grid.innerHTML = '';
+
+      if(!products.length){
+        grid.innerHTML = `<div class="card"><strong>Nenhum produto disponível.</strong><div class="muted" style="margin-top:6px">Cadastre produtos no admin para exibir aqui.</div></div>`;
+        return;
+      }
+
+      products.forEach(p => {
+        const fields = Array.isArray(p.campos) ? p.campos : [];
+        const fieldsHtml = fields.map((field, idx) => `
+          <div>
+            <label>${escapeHtml(field)}</label>
+            <input class="input" id="field-${p.id}-${idx}" placeholder="${escapeHtml(field)}">
+          </div>
+        `).join('');
+
+        grid.insertAdjacentHTML('beforeend', `
+          <div class="product-card">
+            <div class="product-image" style="background-image:url('${p.foto || ''}')"></div>
+            <div class="product-info">
+              <div class="smallcaps">${escapeHtml(p.categoria || 'Produto')}</div>
+              <div><strong>${escapeHtml(p.nome)}</strong></div>
+              <div class="muted">${escapeHtml(p.descricao || '')}</div>
+              <div class="price">${currency(p.preco)}</div>
+
+              ${fieldsHtml ? `<div>${fieldsHtml}</div>` : ''}
+
+              <div class="toolbar">
+                <div class="qty">
+                  <button type="button" onclick="changeQty('${p.id}',-1)">−</button>
+                  <span id="qty-${p.id}">1</span>
+                  <button type="button" onclick="changeQty('${p.id}',1)">+</button>
+                </div>
+                <button class="btn primary" onclick="addToCart('${p.id}')">Adicionar</button>
+              </div>
+            </div>
+          </div>
+        `);
+      });
+    }
+
+    window.changeQty = function(id, delta){
+      const el = document.getElementById(`qty-${id}`);
+      let n = Number(el.textContent || 1) + delta;
+      if(n < 1) n = 1;
+      el.textContent = String(n);
+    };
+
+    window.addToCart = function(id){
+      const p = state.products.find(x => x.id === id && x.ativo);
+      if(!p) return;
+
+      const qty = Number(document.getElementById(`qty-${id}`).textContent || 1);
+      const fields = Array.isArray(p.campos) ? p.campos : [];
+      const personalizacao = fields.map((field, idx) => {
+        const value = document.getElementById(`field-${id}-${idx}`)?.value?.trim() || '';
+        return value ? `${field}: ${value}` : '';
+      }).filter(Boolean).join(' | ');
+
+      state.cart.push({
+        id: Math.random().toString(36).slice(2,10),
+        productId: p.id,
+        nome: p.nome,
+        qtd: qty,
+        preco: Number(p.preco || 0),
+        personalizacao
+      });
+
+      document.getElementById(`qty-${id}`).textContent = '1';
+      renderCart();
+      alert('Produto adicionado ao pedido.');
+    };
+
+    function renderCart(){
+      const count = state.cart.reduce((sum, item) => sum + Number(item.qtd || 0), 0);
+      const total = state.cart.reduce((sum, item) => sum + Number(item.preco || 0) * Number(item.qtd || 0), 0);
+
+      document.getElementById('cartCount').textContent = `${count} item(s)`;
+      document.getElementById('cartTotal').textContent = currency(total);
+
+      const tbody = document.getElementById('resumoPedido');
+      tbody.innerHTML = '';
+
+      if(!state.cart.length){
+        tbody.innerHTML = `<tr><td colspan="5">Nenhum item adicionado.</td></tr>`;
+        return;
+      }
+
+      state.cart.forEach(item => {
+        const subtotal = Number(item.preco || 0) * Number(item.qtd || 0);
+        tbody.insertAdjacentHTML('beforeend', `
+          <tr>
+            <td>${escapeHtml(item.nome)}</td>
+            <td>${item.qtd}</td>
+            <td>${escapeHtml(item.personalizacao || '—')}</td>
+            <td>${currency(subtotal)}</td>
+            <td><button class="btn ghost" onclick="removeCartItem('${item.id}')">Remover</button></td>
+          </tr>
+        `);
+      });
+    }
+
+    window.removeCartItem = function(id){
+      state.cart = state.cart.filter(item => item.id !== id);
+      renderCart();
+    };
+
+    function sendWhatsapp(){
+      if(!state.cart.length){
+        alert('Adicione ao menos um item.');
+        return;
+      }
+
+      const nome = document.getElementById('cNome').value.trim();
+      const telefone = document.getElementById('cTelefone').value.trim();
+      const email = document.getElementById('cEmail').value.trim();
+      const pagamento = document.getElementById('cPagamento').value.trim();
+      const obs = document.getElementById('cObs').value.trim();
+
+      let msg = `${state.config.mensagem || 'Olá! Gostaria de fazer este pedido:'}\n\n`;
+      msg += `*Pedido:*\n`;
+
+      state.cart.forEach((item, idx) => {
+        msg += `${idx + 1}. ${item.qtd}x ${item.nome} — ${currency(item.preco * item.qtd)}\n`;
+        if(item.personalizacao){
+          msg += `   Personalização: ${item.personalizacao}\n`;
+        }
+      });
+
+      const total = state.cart.reduce((sum, item) => sum + Number(item.preco || 0) * Number(item.qtd || 0), 0);
+      msg += `\n*Total:* ${currency(total)}\n\n`;
+      msg += `*Cliente:* ${nome || 'Não informado'}\n`;
+      msg += `*Telefone:* ${telefone || 'Não informado'}\n`;
+      if(email) msg += `*E-mail:* ${email}\n`;
+      if(pagamento) msg += `*Pagamento:* ${pagamento}\n`;
+      if(obs) msg += `*Observações:* ${obs}\n`;
+
+      const numero = (state.config.whatsapp || '').replace(/\D/g, '');
+      if(!numero){
+        alert('O WhatsApp da loja não foi configurado no admin.');
+        return;
+      }
+
+      window.open(`https://wa.me/${numero}?text=${encodeURIComponent(msg)}`, '_blank');
+    }
+
+    function applyConfig(){
+      document.getElementById('storeNameTop').textContent = state.config.loja || 'Minha Loja';
+      document.getElementById('bannerText').textContent = state.config.banner || 'Coleção personalizada pronta para encantar seus clientes.';
+    }
+
+    function initEvents(){
+      document.getElementById('buscaCatalogo').addEventListener('input', renderCatalog);
+      document.getElementById('filtroCategoria').addEventListener('change', renderCatalog);
+      document.getElementById('sendWhatsapp').addEventListener('click', sendWhatsapp);
+      document.getElementById('openResumo').addEventListener('click', () => {
+        document.getElementById('resumoCard').classList.remove('hidden');
+        document.getElementById('resumoCard').scrollIntoView({ behavior:'smooth', block:'start' });
+      });
+      document.getElementById('hideResumo').addEventListener('click', () => {
+        document.getElementById('resumoCard').classList.add('hidden');
+      });
+    }
+
+    loadState();
+    initEvents();
+    buildCategoryFilter();
+    applyConfig();
+    renderCatalog();
+    renderCart();
+  </script>
 </body>
 </html>
