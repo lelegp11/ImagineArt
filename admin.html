@@ -7,19 +7,9 @@
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <style>
     :root{
-      --bg:#f7f7fb;
-      --card:#ffffff;
-      --text:#1f2430;
-      --muted:#6b7280;
-      --line:#e5e7eb;
-      --primary:#6d28d9;
-      --primary-2:#8b5cf6;
-      --accent:#ec4899;
-      --success:#16a34a;
-      --danger:#dc2626;
-      --warning:#f59e0b;
-      --shadow:0 16px 40px rgba(22,27,45,.08);
-      --radius:20px;
+      --bg:#f7f7fb;--card:#ffffff;--text:#1f2430;--muted:#6b7280;--line:#e5e7eb;
+      --primary:#6d28d9;--primary-2:#8b5cf6;--accent:#ec4899;--success:#16a34a;
+      --danger:#dc2626;--warning:#f59e0b;--shadow:0 16px 40px rgba(22,27,45,.08);--radius:20px;
     }
     *{box-sizing:border-box}
     html,body{margin:0;padding:0;background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Inter,Arial,sans-serif}
@@ -87,8 +77,8 @@
       <div class="brand">
         <div class="logo"></div>
         <div>
-          <div>Imagine Art</div>
-          <small>Admin</small>
+          <div>Personaliza Hub</div>
+          <small>Admin final com Supabase</small>
         </div>
       </div>
       <div class="nav" id="navBar">
@@ -96,6 +86,7 @@
         <button data-view="dashboard">Dashboard</button>
         <button data-view="cadastro">Cadastro</button>
         <button data-view="pedidos">Pedidos</button>
+        <button data-view="escolas">Escolas</button>
         <button data-view="config">Configurações</button>
       </div>
       <div class="toolbar">
@@ -121,7 +112,6 @@
           </div>
           <div id="authStatus" class="status hidden"></div>
         </div>
-
         <div class="card">
           <h2 style="margin-top:0">Configuração fixa</h2>
           <div class="status warn">
@@ -139,7 +129,7 @@
             <div>
               <div class="smallcaps" style="color:#ddd">Gestão interna</div>
               <h1>Painel profissional conectado ao Supabase.</h1>
-              <p>Cadastre produtos, acompanhe pedidos, veja receita, lucro, ticket médio e margens em um único painel.</p>
+              <p>Cadastre produtos, acompanhe pedidos, veja receita, lucro, ticket médio, margens e agora gerencie também as escolas.</p>
             </div>
             <div class="hero-panel">
               <div class="smallcaps" style="color:#e9d5ff">Resumo rápido</div>
@@ -191,7 +181,7 @@
             </div>
             <div style="margin-top:14px">
               <label>Campos de personalização (separados por vírgula)</label>
-              <input class="input" id="pCampos" placeholder="Nome, Tema, Cor, Tamanho, Turma">
+              <input class="input" id="pCampos" placeholder="Nome da criança, Turma/Sala">
             </div>
             <div style="margin-top:14px" class="toolbar">
               <div id="previewFotoBox" class="hidden"><img id="previewFoto" class="thumb" alt="Prévia"></div>
@@ -245,9 +235,38 @@
           </div>
           <div class="table-wrap" style="margin-top:14px">
             <table>
-              <thead><tr><th>Cliente</th><th>Telefone</th><th>E-mail</th><th>Data</th><th>Pagamento</th><th>Itens</th><th>Total</th><th>Ação</th></tr></thead>
+              <thead><tr><th>Cliente</th><th>Telefone</th><th>E-mail</th><th>Escola</th><th>Criança</th><th>Turma/Sala</th><th>Data</th><th>Pagamento</th><th>Itens</th><th>Total</th><th>Obs.</th><th>Ação</th></tr></thead>
               <tbody id="ordersTable"></tbody>
             </table>
+          </div>
+        </div>
+      </section>
+
+      <section id="escolas" class="view hidden">
+        <div class="grid grid-2">
+          <div class="card">
+            <div class="toolbar">
+              <h2 style="margin:0">Cadastro de escola</h2>
+              <span class="spacer"></span>
+              <button class="btn ghost small" id="resetEscola">Limpar</button>
+            </div>
+            <div class="form-grid-2" style="margin-top:12px">
+              <div><label>Nome da escola</label><input class="input" id="schoolName"></div>
+              <div><label>Ativa</label><select id="schoolActive" class="input"><option value="true">Sim</option><option value="false">Não</option></select></div>
+            </div>
+            <div class="toolbar" style="margin-top:14px">
+              <button class="btn primary" id="saveSchoolBtn">Salvar escola</button>
+            </div>
+            <div id="schoolStatus" class="status">Cadastre aqui as escolas que o cliente poderá selecionar.</div>
+          </div>
+          <div class="card">
+            <h2 style="margin-top:0">Escolas cadastradas</h2>
+            <div class="table-wrap">
+              <table>
+                <thead><tr><th>Nome</th><th>Ativa</th><th>Ação</th></tr></thead>
+                <tbody id="schoolsTable"></tbody>
+              </table>
+            </div>
           </div>
         </div>
       </section>
@@ -270,7 +289,9 @@
     let currentUser = null;
     let products = [];
     let orders = [];
+    let schools = [];
     let editingProductId = null;
+    let editingSchoolId = null;
     let currentUploadFile = null;
 
     function qs(id){ return document.getElementById(id); }
@@ -278,30 +299,12 @@
     function pct(v){ return `${(Number(v||0)*100).toFixed(1)}%`; }
     function escapeHtml(str=''){ return String(str).replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[m])); }
 
-    function setAuthStatus(message, type=''){
-      const el = qs('authStatus');
-      el.classList.remove('hidden');
-      el.textContent = message;
-      el.className = 'status ' + type;
-    }
+    function setAuthStatus(message, type=''){ const el=qs('authStatus'); el.classList.remove('hidden'); el.textContent=message; el.className='status '+type; }
+    function setProductStatus(message, type=''){ const el=qs('statusProduto'); el.textContent=message; el.className='status '+type; }
+    function setSchoolStatus(message, type=''){ const el=qs('schoolStatus'); el.textContent=message; el.className='status '+type; }
 
-    function setProductStatus(message, type=''){
-      const el = qs('statusProduto');
-      el.textContent = message;
-      el.className = 'status ' + type;
-    }
-
-    function showApp(){
-      qs('authView').classList.add('hidden');
-      qs('appView').classList.remove('hidden');
-      qs('btnLogout').classList.remove('hidden');
-    }
-
-    function showAuth(){
-      qs('authView').classList.remove('hidden');
-      qs('appView').classList.add('hidden');
-      qs('btnLogout').classList.add('hidden');
-    }
+    function showApp(){ qs('authView').classList.add('hidden'); qs('appView').classList.remove('hidden'); qs('btnLogout').classList.remove('hidden'); }
+    function showAuth(){ qs('authView').classList.remove('hidden'); qs('appView').classList.add('hidden'); qs('btnLogout').classList.add('hidden'); }
 
     function setView(view){
       document.querySelectorAll('#appView .view').forEach(v => v.classList.add('hidden'));
@@ -315,13 +318,8 @@
       }
       supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
       const { data: { session } } = await supabaseClient.auth.getSession();
-      if(session?.user){
-        currentUser = session.user;
-        showApp();
-        await refreshAll();
-      } else {
-        showAuth();
-      }
+      if(session?.user){ currentUser = session.user; showApp(); await refreshAll(); }
+      else { showAuth(); }
     }
 
     async function login(){
@@ -334,10 +332,7 @@
         setAuthStatus('Login realizado com sucesso.', 'ok');
         showApp();
         await refreshAll();
-      }catch(err){
-        console.error(err);
-        setAuthStatus(err.message || 'Erro ao entrar.', 'error');
-      }
+      }catch(err){ console.error(err); setAuthStatus(err.message || 'Erro ao entrar.', 'error'); }
     }
 
     async function signup(){
@@ -347,17 +342,10 @@
         const { error } = await supabaseClient.auth.signUp({ email, password });
         if(error) throw error;
         setAuthStatus('Conta criada. Faça login em seguida.', 'ok');
-      }catch(err){
-        console.error(err);
-        setAuthStatus(err.message || 'Erro ao criar conta.', 'error');
-      }
+      }catch(err){ console.error(err); setAuthStatus(err.message || 'Erro ao criar conta.', 'error'); }
     }
 
-    async function logout(){
-      await supabaseClient.auth.signOut();
-      currentUser = null;
-      showAuth();
-    }
+    async function logout(){ await supabaseClient.auth.signOut(); currentUser = null; showAuth(); }
 
     async function fetchStoreConfig(){
       const { data, error } = await supabaseClient.from('store_config').select('*').limit(1).maybeSingle();
@@ -374,29 +362,23 @@
     async function saveConfig(){
       try{
         const payload = {
+          id: 1,
           loja: qs('cfgLoja').value.trim(),
           whatsapp: qs('cfgWhatsapp').value.trim(),
           mensagem: qs('cfgMsg').value.trim(),
           moeda: qs('cfgMoeda').value.trim() || 'BRL',
-          banner: qs('cfgBanner').value.trim(),
-          updated_at: new Date().toISOString()
+          banner: qs('cfgBanner').value.trim()
         };
-        const { error } = await supabaseClient.from('store_config').upsert({ id: 1, ...payload });
+        const { error } = await supabaseClient.from('store_config').upsert(payload);
         if(error) throw error;
         alert('Configurações salvas.');
-      }catch(err){
-        console.error(err);
-        alert(err.message || 'Erro ao salvar configurações.');
-      }
+      }catch(err){ console.error(err); alert(err.message || 'Erro ao salvar configurações.'); }
     }
 
     async function fetchProducts(){
       const { data, error } = await supabaseClient.from('products').select('*').order('created_at',{ascending:false});
       if(error) throw error;
-      products = (data || []).map(p => ({
-        ...p,
-        custom_fields: Array.isArray(p.custom_fields) ? p.custom_fields : (typeof p.custom_fields === 'string' ? p.custom_fields.split(',').map(s=>s.trim()).filter(Boolean) : [])
-      }));
+      products = (data || []).map(p => ({ ...p, custom_fields: Array.isArray(p.custom_fields) ? p.custom_fields : [] }));
       renderProducts();
     }
 
@@ -408,21 +390,19 @@
       renderDashboard();
     }
 
+    async function fetchSchools(){
+      const { data, error } = await supabaseClient.from('schools').select('*').order('name',{ascending:true});
+      if(error) throw error;
+      schools = data || [];
+      renderSchools();
+    }
+
     function renderProducts(){
       const q = (qs('buscaProduto').value || '').toLowerCase().trim();
       const tbody = qs('productsTable');
       tbody.innerHTML = '';
-      const filtered = products.filter(p =>
-        (p.name || '').toLowerCase().includes(q) ||
-        (p.category || '').toLowerCase().includes(q) ||
-        (p.sku || '').toLowerCase().includes(q)
-      );
-
-      if(!filtered.length){
-        tbody.innerHTML = `<tr><td colspan="8" class="mini">Nenhum produto cadastrado.</td></tr>`;
-        return;
-      }
-
+      const filtered = products.filter(p => (p.name || '').toLowerCase().includes(q) || (p.category || '').toLowerCase().includes(q) || (p.sku || '').toLowerCase().includes(q));
+      if(!filtered.length){ tbody.innerHTML = `<tr><td colspan="8" class="mini">Nenhum produto cadastrado.</td></tr>`; return; }
       filtered.forEach(p => {
         const margin = p.sale_price ? (Number(p.sale_price)-Number(p.cost||0))/Number(p.sale_price) : 0;
         tbody.insertAdjacentHTML('beforeend', `
@@ -434,38 +414,41 @@
             <td>${currency(p.cost)}</td>
             <td>${pct(margin)}</td>
             <td>${p.active ? 'Sim' : 'Não'}</td>
-            <td>
-              <div class="toolbar">
-                <button class="btn ghost small" onclick="editProduct('${p.id}')">Editar</button>
-                <button class="btn danger small" onclick="removeProduct('${p.id}')">Excluir</button>
-              </div>
-            </td>
+            <td><div class="toolbar"><button class="btn ghost small" onclick="editProduct('${p.id}')">Editar</button><button class="btn danger small" onclick="removeProduct('${p.id}')">Excluir</button></div></td>
           </tr>
         `);
       });
+    }
+
+    function getItemInfo(order, field){
+      const items = Array.isArray(order.items) ? order.items : [];
+      return items.map(i => i[field]).filter(Boolean).join(', ');
     }
 
     function renderOrders(){
       const tbody = qs('ordersTable');
       tbody.innerHTML = '';
       qs('ordersCount').textContent = `${orders.length} pedido(s)`;
-
-      if(!orders.length){
-        tbody.innerHTML = `<tr><td colspan="8" class="mini">Nenhum pedido recebido.</td></tr>`;
-        return;
-      }
+      if(!orders.length){ tbody.innerHTML = `<tr><td colspan="12" class="mini">Nenhum pedido recebido.</td></tr>`; return; }
 
       orders.forEach(order => {
         const items = Array.isArray(order.items) ? order.items.map(i => `${i.qtd}x ${escapeHtml(i.nome)}`).join('<br>') : '—';
+        const schoolName = order.school_name || getItemInfo(order, 'school_name') || '—';
+        const childName = order.child_name || getItemInfo(order, 'child_name') || '—';
+        const classroom = order.classroom || getItemInfo(order, 'classroom') || '—';
         tbody.insertAdjacentHTML('beforeend', `
           <tr>
             <td>${escapeHtml(order.client_name || '')}</td>
             <td>${escapeHtml(order.phone || '')}</td>
             <td>${escapeHtml(order.email || '')}</td>
-            <td>${order.order_date || (order.created_at ? new Date(order.created_at).toLocaleString('pt-BR') : '—')}</td>
+            <td>${escapeHtml(schoolName)}</td>
+            <td>${escapeHtml(childName)}</td>
+            <td>${escapeHtml(classroom)}</td>
+            <td>${escapeHtml(order.order_date || '')}</td>
             <td>${escapeHtml(order.payment_method || '')}</td>
             <td>${items}</td>
             <td>${currency(order.total_amount)}</td>
+            <td>${escapeHtml(order.notes || '')}</td>
             <td><button class="btn danger small" onclick="removeOrder('${order.id}')">Excluir</button></td>
           </tr>
         `);
@@ -476,7 +459,6 @@
       const revenue = orders.reduce((sum, o) => sum + Number(o.total_amount || 0), 0);
       let cost = 0;
       let marginList = [];
-
       orders.forEach(order => {
         const items = Array.isArray(order.items) ? order.items : [];
         items.forEach(item => {
@@ -498,11 +480,30 @@
       qs('heroPedidos').textContent = orders.length;
       qs('heroReceita').textContent = currency(revenue);
       qs('heroLucro').textContent = currency(profit);
-
       qs('kpiReceita').textContent = currency(revenue);
       qs('kpiLucro').textContent = currency(profit);
       qs('kpiTicket').textContent = currency(ticket);
       qs('kpiMargem').textContent = pct(margin);
+    }
+
+    function renderSchools(){
+      const tbody = qs('schoolsTable');
+      tbody.innerHTML = '';
+      if(!schools.length){ tbody.innerHTML = `<tr><td colspan="3" class="mini">Nenhuma escola cadastrada.</td></tr>`; return; }
+      schools.forEach(s => {
+        tbody.insertAdjacentHTML('beforeend', `
+          <tr>
+            <td>${escapeHtml(s.name)}</td>
+            <td>${s.active ? 'Sim' : 'Não'}</td>
+            <td>
+              <div class="toolbar">
+                <button class="btn ghost small" onclick="editSchool('${s.id}')">Editar</button>
+                <button class="btn danger small" onclick="removeSchool('${s.id}')">Excluir</button>
+              </div>
+            </td>
+          </tr>
+        `);
+      });
     }
 
     async function resizeImageTo500Blob(file){
@@ -514,19 +515,16 @@
             const canvas = document.createElement('canvas');
             canvas.width = 500; canvas.height = 500;
             const ctx = canvas.getContext('2d');
-            ctx.fillStyle = '#ffffff';
-            ctx.fillRect(0,0,500,500);
+            ctx.fillStyle = '#ffffff'; ctx.fillRect(0,0,500,500);
             const scale = Math.min(500/img.width, 500/img.height);
             const w = img.width*scale, h = img.height*scale;
             const x = (500-w)/2, y = (500-h)/2;
             ctx.drawImage(img, x, y, w, h);
             canvas.toBlob(blob => blob ? resolve(blob) : reject(new Error('Falha ao gerar a imagem')), 'image/jpeg', 0.82);
           };
-          img.onerror = reject;
-          img.src = e.target.result;
+          img.onerror = reject; img.src = e.target.result;
         };
-        reader.onerror = reject;
-        reader.readAsDataURL(file);
+        reader.onerror = reject; reader.readAsDataURL(file);
       });
     }
 
@@ -550,6 +548,13 @@
       setProductStatus('Preencha os dados e clique em salvar.');
     }
 
+    function clearSchoolForm(){
+      qs('schoolName').value = '';
+      qs('schoolActive').value = 'true';
+      editingSchoolId = null;
+      setSchoolStatus('Cadastre aqui as escolas que o cliente poderá selecionar.');
+    }
+
     async function saveProduct(){
       try{
         const name = qs('pNome').value.trim();
@@ -562,44 +567,36 @@
         const description = qs('pDescricao').value.trim();
         const custom_fields = qs('pCampos').value.split(',').map(s=>s.trim()).filter(Boolean);
 
-        if(!name){
-          setProductStatus('Informe o nome do produto.', 'error');
-          return;
-        }
+        if(!name){ setProductStatus('Informe o nome do produto.', 'error'); return; }
 
         setProductStatus('Salvando produto...', 'warn');
-
         const id = editingProductId || crypto.randomUUID();
         let imageUrl = products.find(p => p.id === id)?.image_url || null;
+        if(currentUploadFile){ imageUrl = await uploadImage(currentUploadFile, id); }
 
-        if(currentUploadFile){
-          imageUrl = await uploadImage(currentUploadFile, id);
-        }
-
-        const payload = {
-          id,
-          name,
-          category,
-          sale_price,
-          cost,
-          production_time,
-          sku,
-          active,
-          description,
-          custom_fields,
-          image_url: imageUrl
-        };
-
+        const payload = { id, name, category, sale_price, cost, production_time, sku, active, description, custom_fields, image_url: imageUrl };
         const { error } = await supabaseClient.from('products').upsert(payload);
         if(error) throw error;
 
         setProductStatus('Produto salvo com sucesso.', 'ok');
         clearProductForm();
         await fetchProducts();
-      }catch(err){
-        console.error(err);
-        setProductStatus(err.message || 'Erro ao salvar produto.', 'error');
-      }
+      }catch(err){ console.error(err); setProductStatus(err.message || 'Erro ao salvar produto.', 'error'); }
+    }
+
+    async function saveSchool(){
+      try{
+        const name = qs('schoolName').value.trim();
+        const active = qs('schoolActive').value === 'true';
+        if(!name){ setSchoolStatus('Informe o nome da escola.', 'error'); return; }
+        setSchoolStatus('Salvando escola...', 'warn');
+        const payload = editingSchoolId ? { id: editingSchoolId, name, active } : { name, active };
+        const { error } = await supabaseClient.from('schools').upsert(payload);
+        if(error) throw error;
+        setSchoolStatus('Escola salva com sucesso.', 'ok');
+        clearSchoolForm();
+        await fetchSchools();
+      }catch(err){ console.error(err); setSchoolStatus(err.message || 'Erro ao salvar escola.', 'error'); }
     }
 
     window.editProduct = function(id){
@@ -616,12 +613,8 @@
       qs('pDescricao').value = p.description || '';
       qs('pCampos').value = Array.isArray(p.custom_fields) ? p.custom_fields.join(', ') : '';
       qs('salvarProduto').textContent = 'Atualizar produto';
-      if(p.image_url){
-        qs('previewFoto').src = p.image_url;
-        qs('previewFotoBox').classList.remove('hidden');
-      } else {
-        qs('previewFotoBox').classList.add('hidden');
-      }
+      if(p.image_url){ qs('previewFoto').src = p.image_url; qs('previewFotoBox').classList.remove('hidden'); }
+      else { qs('previewFotoBox').classList.add('hidden'); }
       setProductStatus(`Editando: ${p.name}`, 'warn');
       setView('cadastro');
     }
@@ -629,27 +622,35 @@
     window.removeProduct = async function(id){
       if(!confirm('Excluir este produto?')) return;
       const { error } = await supabaseClient.from('products').delete().eq('id', id);
-      if(error){
-        alert(error.message || 'Erro ao excluir produto.');
-        return;
-      }
-      await fetchProducts();
-      renderDashboard();
+      if(error){ alert(error.message || 'Erro ao excluir produto.'); return; }
+      await fetchProducts(); renderDashboard();
+    }
+
+    window.editSchool = function(id){
+      const s = schools.find(x => String(x.id) === String(id));
+      if(!s) return;
+      editingSchoolId = s.id;
+      qs('schoolName').value = s.name || '';
+      qs('schoolActive').value = String(!!s.active);
+      setSchoolStatus(`Editando: ${s.name}`, 'warn');
+      setView('escolas');
+    }
+
+    window.removeSchool = async function(id){
+      if(!confirm('Excluir esta escola?')) return;
+      const { error } = await supabaseClient.from('schools').delete().eq('id', id);
+      if(error){ alert(error.message || 'Erro ao excluir escola.'); return; }
+      await fetchSchools();
     }
 
     window.removeOrder = async function(id){
       if(!confirm('Excluir este pedido?')) return;
       const { error } = await supabaseClient.from('orders').delete().eq('id', id);
-      if(error){
-        alert(error.message || 'Erro ao excluir pedido.');
-        return;
-      }
+      if(error){ alert(error.message || 'Erro ao excluir pedido.'); return; }
       await fetchOrders();
     }
 
-    async function refreshAll(){
-      await Promise.all([fetchStoreConfig(), fetchProducts(), fetchOrders()]);
-    }
+    async function refreshAll(){ await Promise.all([fetchStoreConfig(), fetchProducts(), fetchOrders(), fetchSchools()]); }
 
     function bindEvents(){
       document.querySelectorAll('.nav button').forEach(btn => btn.addEventListener('click', () => setView(btn.dataset.view)));
@@ -661,6 +662,8 @@
       qs('saveConfig').addEventListener('click', saveConfig);
       qs('salvarProduto').addEventListener('click', saveProduct);
       qs('resetProduto').addEventListener('click', clearProductForm);
+      qs('saveSchoolBtn').addEventListener('click', saveSchool);
+      qs('resetEscola').addEventListener('click', clearSchoolForm);
       qs('buscaProduto').addEventListener('input', renderProducts);
       qs('pFoto').addEventListener('change', e => {
         currentUploadFile = e.target.files[0] || null;
@@ -676,12 +679,8 @@
 
     (async function init(){
       bindEvents();
-      try{
-        await initSupabase();
-      }catch(err){
-        console.error(err);
-        setAuthStatus(err.message || 'Erro ao iniciar conexão com Supabase.', 'error');
-      }
+      try{ await initSupabase(); }
+      catch(err){ console.error(err); setAuthStatus(err.message || 'Erro ao iniciar conexão com Supabase.', 'error'); }
     })();
   </script>
 </body>

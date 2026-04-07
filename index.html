@@ -89,7 +89,7 @@
         </div>
         <div class="hero-panel">
           <div class="smallcaps" style="color:#e9d5ff">Como funciona</div>
-          <p style="margin:10px 0 0;color:#fff">Escolha os produtos, informe a personalização, preencha seus dados, salve o pedido no sistema e envie pelo WhatsApp.</p>
+          <p style="margin:10px 0 0;color:#fff">Escolha os produtos, informe os dados da criança, a escola, a turma/sala e finalize o pedido.</p>
         </div>
       </div>
     </section>
@@ -126,10 +126,20 @@
             </select>
           </div>
         </div>
-        <div style="margin-top:12px">
-          <label>Observações gerais</label>
-          <textarea class="input" id="cObs" rows="3" placeholder="Prazo, cor, nome, tema, detalhes..."></textarea>
+
+        <div class="form-grid" style="margin-top:12px">
+          <div>
+            <label>Escola</label>
+            <select class="input" id="schoolSelect">
+              <option value="">Selecione a escola</option>
+            </select>
+          </div>
+          <div style="grid-column: span 3;">
+            <label>Observações gerais</label>
+            <input class="input" id="cObs" placeholder="Prazo, detalhes, observações do pedido">
+          </div>
         </div>
+
         <div id="orderStatus" class="status hidden"></div>
       </div>
 
@@ -158,6 +168,7 @@
     let state = {
       config: { loja:'Minha Loja', whatsapp:'', mensagem:'Olá! Gostaria de fazer este pedido:', moeda:'BRL', banner:'Coleção personalizada pronta para encantar seus clientes.' },
       products: [],
+      schools: [],
       cart: []
     };
 
@@ -191,6 +202,13 @@
       }
     }
 
+    async function fetchSchools(){
+      const { data, error } = await supabaseClient.from('schools').select('*').eq('active', true).order('name',{ascending:true});
+      if(error) throw error;
+      state.schools = data || [];
+      renderSchools();
+    }
+
     async function fetchProducts(){
       const { data, error } = await supabaseClient.from('products').select('*').eq('active', true).order('created_at',{ascending:false});
       if(error) throw error;
@@ -198,6 +216,11 @@
         ...p,
         custom_fields: Array.isArray(p.custom_fields) ? p.custom_fields : (typeof p.custom_fields === 'string' ? p.custom_fields.split(',').map(s=>s.trim()).filter(Boolean) : [])
       }));
+    }
+
+    function renderSchools(){
+      const select = qs('schoolSelect');
+      select.innerHTML = '<option value="">Selecione a escola</option>' + state.schools.map(s => `<option value="${escapeHtml(s.name)}">${escapeHtml(s.name)}</option>`).join('');
     }
 
     function buildCategoryFilter(){
@@ -290,28 +313,29 @@
     }
 
     async function saveOrderToDb(){
-      if(!state.cart.length){
-        setOrderStatus('Adicione ao menos um item.', 'error');
-        return false;
-      }
+      if(!state.cart.length){ setOrderStatus('Adicione ao menos um item.', 'error'); return false; }
 
       const client_name = qs('cNome').value.trim();
       const phone = qs('cTelefone').value.trim();
       const email = qs('cEmail').value.trim();
+      const school_name = qs('schoolSelect').value.trim();
       const payment_method = qs('cPagamento').value.trim();
       const notes = qs('cObs').value.trim();
 
-      if(!client_name || !phone){
-        setOrderStatus('Preencha nome e telefone para salvar o pedido.', 'error');
-        return false;
-      }
+      if(!client_name || !phone){ setOrderStatus('Preencha nome e telefone para salvar o pedido.', 'error'); return false; }
+      if(!school_name){ setOrderStatus('Selecione a escola.', 'error'); return false; }
 
       const total_amount = state.cart.reduce((sum, item) => sum + Number(item.sale_price || 0) * Number(item.qtd || 0), 0);
+      const child_name = state.cart.map(i => i.child_name).filter(Boolean).join(', ');
+      const classroom = state.cart.map(i => i.classroom).filter(Boolean).join(', ');
 
       const payload = {
         client_name,
         phone,
         email,
+        school_name,
+        child_name,
+        classroom,
         order_date: new Date().toISOString().slice(0,10),
         payment_method,
         notes,
@@ -321,7 +345,10 @@
           nome: item.nome,
           qtd: item.qtd,
           sale_price: item.sale_price,
-          personalizacao: item.personalizacao || ''
+          personalizacao: item.personalizacao || '',
+          school_name,
+          child_name: item.child_name || '',
+          classroom: item.classroom || ''
         }))
       };
 
@@ -338,56 +365,18 @@
       }
     }
 
-    function sendWhatsapp(){
-      if(!state.cart.length){
-        setOrderStatus('Adicione ao menos um item.', 'error');
-        return;
-      }
-
-      const nome = qs('cNome').value.trim();
-      const telefone = qs('cTelefone').value.trim();
-      const email = qs('cEmail').value.trim();
-      const pagamento = qs('cPagamento').value.trim();
-      const obs = qs('cObs').value.trim();
-
-      let msg = `${state.config.mensagem || 'Olá! Gostaria de fazer este pedido:'}\n\n*Pedido:*\n`;
-      state.cart.forEach((item, idx) => {
-        msg += `${idx + 1}. ${item.qtd}x ${item.nome} — ${currency(item.sale_price * item.qtd)}\n`;
-        if(item.personalizacao) msg += `   Personalização: ${item.personalizacao}\n`;
-      });
-
-      const total_amount = state.cart.reduce((sum, item) => sum + Number(item.sale_price || 0) * Number(item.qtd || 0), 0);
-      msg += `\n*Total:* ${currency(total_amount)}\n\n`;
-      msg += `*Cliente:* ${nome || 'Não informado'}\n`;
-      msg += `*Telefone:* ${telefone || 'Não informado'}\n`;
-            if(pagamento) msg += `*Pagamento:* ${pagamento}\n`;
-      
-      const numero = (state.config.whatsapp || '').replace(/\D/g, '');
-      if(!numero){
-        setOrderStatus('O WhatsApp da loja não foi configurado.', 'error');
-        return;
-      }
-      window.open(`https://wa.me/${numero}?text=${encodeURIComponent(msg)}`, '_blank');
-    }
-
-
     async function saveAndSendOrder(){
-      if(!state.cart.length){
-        setOrderStatus('Adicione ao menos um item.', 'error');
-        return;
-      }
+      if(!state.cart.length){ setOrderStatus('Adicione ao menos um item.', 'error'); return; }
 
       const nome = qs('cNome').value.trim();
       const telefone = qs('cTelefone').value.trim();
       const email = qs('cEmail').value.trim();
+      const escola = qs('schoolSelect').value.trim();
       const pagamento = qs('cPagamento').value.trim();
       const obs = qs('cObs').value.trim();
 
       const numero = (state.config.whatsapp || '').replace(/\D/g, '');
-      if(!numero){
-        setOrderStatus('O WhatsApp da loja não foi configurado.', 'error');
-        return;
-      }
+      if(!numero){ setOrderStatus('O WhatsApp da loja não foi configurado.', 'error'); return; }
 
       const msgCart = [...state.cart];
       const saved = await saveOrderToDb();
@@ -398,16 +387,17 @@
 
       msgCart.forEach((item, idx) => {
         msg += `${idx + 1}. ${item.qtd}x ${item.nome} — ${currency(item.sale_price * item.qtd)}\n`;
-        if(item.personalizacao){
-          msg += `   Personalização: ${item.personalizacao}\n`;
-        }
+        if(item.personalizacao){ msg += `   Personalização: ${item.personalizacao}\n`; }
+        if(item.child_name) msg += `   Criança: ${item.child_name}\n`;
+        if(item.classroom) msg += `   Turma/Sala: ${item.classroom}\n`;
       });
 
       const total_amount = msgCart.reduce((sum, item) => sum + Number(item.sale_price || 0) * Number(item.qtd || 0), 0);
       msg += `\n*Total:* ${currency(total_amount)}\n\n`;
-      msg += `*Cliente:* ${nome || 'Não informado'}\n`;
-      msg += `*Telefone:* ${telefone || 'Não informado'}\n`;
+      msg += `*Cliente:* ${nome}\n`;
+      msg += `*Telefone:* ${telefone}\n`;
       if(email) msg += `*E-mail:* ${email}\n`;
+      msg += `*Escola:* ${escola}\n`;
       if(pagamento) msg += `*Pagamento:* ${pagamento}\n`;
       if(obs) msg += `*Observações:* ${obs}\n`;
 
@@ -417,25 +407,18 @@
 
       setOrderStatus('Pedido salvo. Abrindo o WhatsApp...', 'ok');
 
-      // limpa carrinho só depois de montar a mensagem
       state.cart = [];
       renderCart();
 
-      // tentativa direta no app e fallback para web
       window.location.href = appUrl;
-      setTimeout(() => {
-        window.location.href = webUrl;
-      }, 900);
+      setTimeout(() => { window.location.href = webUrl; }, 900);
     }
 
     function initEvents(){
       qs('buscaCatalogo').addEventListener('input', renderCatalog);
       qs('filtroCategoria').addEventListener('change', renderCatalog);
       qs('saveAndSendBtn').addEventListener('click', saveAndSendOrder);
-      qs('openResumo').addEventListener('click', () => {
-        qs('resumoCard').classList.remove('hidden');
-        qs('resumoCard').scrollIntoView({ behavior:'smooth', block:'start' });
-      });
+      qs('openResumo').addEventListener('click', () => { qs('resumoCard').classList.remove('hidden'); qs('resumoCard').scrollIntoView({ behavior:'smooth', block:'start' }); });
       qs('hideResumo').addEventListener('click', () => qs('resumoCard').classList.add('hidden'));
     }
 
@@ -451,8 +434,19 @@
       if(!p) return;
       const qty = Number(qs(`qty-${id}`).textContent || 1);
       const fields = Array.isArray(p.custom_fields) ? p.custom_fields : [];
+
+      let child_name = '';
+      let classroom = '';
+
       const personalizacao = fields.map((field, idx) => {
         const value = qs(`field-${id}-${idx}`)?.value?.trim() || '';
+        const normalized = field.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+        if(normalized.includes('nome da crianca') || normalized === 'nome' || normalized.includes('nome crianca')){
+          child_name = value || child_name;
+        }
+        if(normalized.includes('turma') || normalized.includes('sala')){
+          classroom = value || classroom;
+        }
         return value ? `${field}: ${value}` : '';
       }).filter(Boolean).join(' | ');
 
@@ -462,7 +456,9 @@
         nome: p.name,
         qtd: qty,
         sale_price: Number(p.sale_price || 0),
-        personalizacao
+        personalizacao,
+        child_name,
+        classroom
       });
 
       qs(`qty-${id}`).textContent = '1';
@@ -480,6 +476,7 @@
       try{
         await initSupabase();
         await fetchStoreConfig();
+        await fetchSchools();
         await fetchProducts();
         applyConfig();
         buildCategoryFilter();
