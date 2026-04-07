@@ -386,7 +386,7 @@
     };
 
     window.addToCart = function(id){
-      const p = state.products.find(x => x.id === id && x.ativo);
+      const p = state.products.find(x => x.id === id && x.active);
       if(!p) return;
       const qty = Number(qs(`qty-${id}`).textContent || 1);
       const fields = Array.isArray(p.custom_fields) ? p.custom_fields : [];
