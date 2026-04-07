@@ -148,7 +148,7 @@
   <script>
     const STORAGE_KEY = 'personaliza_hub_supabase_auth';
     let supabaseClient = null;
-    let state = { config: { loja:'Minha Loja', whatsapp:'5511999999999', mensagem:'Olá! Gostaria de fazer este pedido:', moeda:'BRL', banner:'Coleção personalizada pronta para encantar seus clientes.' }, products: [], cart: [] };
+    let state = { config: { loja:'Minha Loja', whatsapp:'5511911173222', mensagem:'Olá! Gostaria de fazer este pedido:', moeda:'BRL', banner:'Coleção personalizada pronta para encantar seus clientes.' }, products: [], cart: [] };
 
     function escapeHtml(str=''){ return String(str).replace(/[&<>"]+/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[m] || m)); }
     function currency(v){ return new Intl.NumberFormat('pt-BR',{style:'currency',currency: state.config.moeda || 'BRL'}).format(Number(v || 0)); }
