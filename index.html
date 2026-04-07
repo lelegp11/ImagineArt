@@ -193,7 +193,7 @@
     }
 
     async function fetchProducts(){
-      const { data, error } = await supabaseClient.from('products').select('*').eq('ativo', true).order('created_at',{ascending:false});
+      const { data, error } = await supabaseClient.from('products').select('*').eq('active', true).order('created_at',{ascending:false});
       if(error) throw error;
       state.products = (data || []).map(p => ({
         ...p,
@@ -203,14 +203,14 @@
 
     function buildCategoryFilter(){
       const select = qs('filtroCategoria');
-      const cats = [...new Set(state.products.filter(p => p.ativo).map(p => p.categoria || 'Sem categoria'))].sort();
+      const cats = [...new Set(state.products.filter(p => p.active).map(p => p.categoria || 'Sem categoria'))].sort();
       select.innerHTML = `<option value="">Todas as categorias</option>` + cats.map(c => `<option value="${escapeHtml(c)}">${escapeHtml(c)}</option>`).join('');
     }
 
     function getFilteredProducts(){
       const busca = (qs('buscaCatalogo').value || '').toLowerCase().trim();
       const cat = qs('filtroCategoria').value || '';
-      return state.products.filter(p => p.ativo).filter(p => {
+      return state.products.filter(p => p.active).filter(p => {
         const okBusca = (p.nome||'').toLowerCase().includes(busca) || (p.categoria||'').toLowerCase().includes(busca) || (p.descricao||'').toLowerCase().includes(busca);
         const okCat = !cat || (p.categoria || '') === cat;
         return okBusca && okCat;
@@ -392,7 +392,7 @@
     };
 
     window.addToCart = function(id){
-      const p = state.products.find(x => x.id === id && x.ativo);
+      const p = state.products.find(x => x.id === id && x.active);
       if(!p) return;
       const qty = Number(qs(`qty-${id}`).textContent || 1);
       const fields = Array.isArray(p.campos) ? p.campos : [];
