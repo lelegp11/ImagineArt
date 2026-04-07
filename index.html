@@ -292,7 +292,7 @@
     async function saveOrderToDb(){
       if(!state.cart.length){
         setOrderStatus('Adicione ao menos um item.', 'error');
-        return;
+        return false;
       }
 
       const client_name = qs('cNome').value.trim();
@@ -300,10 +300,10 @@
       const email = qs('cEmail').value.trim();
       const payment_method = qs('cPagamento').value.trim();
       const notes = qs('cObs').value.trim();
-      
+
       if(!client_name || !phone){
         setOrderStatus('Preencha nome e telefone para salvar o pedido.', 'error');
-        return;
+        return false;
       }
 
       const total_amount = state.cart.reduce((sum, item) => sum + Number(item.sale_price || 0) * Number(item.qtd || 0), 0);
@@ -330,11 +330,11 @@
         const { error } = await supabaseClient.from('orders').insert(payload);
         if(error) throw error;
         setOrderStatus('Pedido salvo com sucesso!', 'ok');
-        state.cart = [];
-        renderCart();
+        return true;
       }catch(err){
         console.error(err);
         setOrderStatus(`Erro ao salvar pedido: ${err.message || err}`, 'error');
+        return false;
       }
     }
 
@@ -389,20 +389,21 @@
         return;
       }
 
+      const msgCart = [...state.cart];
       const saved = await saveOrderToDb();
       if(!saved) return;
 
       let msg = `${state.config.mensagem || 'Olá! Gostaria de fazer este pedido:'}\n\n`;
       msg += `*Pedido:*\n`;
 
-      state.cart.forEach((item, idx) => {
+      msgCart.forEach((item, idx) => {
         msg += `${idx + 1}. ${item.qtd}x ${item.nome} — ${currency(item.sale_price * item.qtd)}\n`;
         if(item.personalizacao){
           msg += `   Personalização: ${item.personalizacao}\n`;
         }
       });
 
-      const total_amount = state.cart.reduce((sum, item) => sum + Number(item.sale_price || 0) * Number(item.qtd || 0), 0);
+      const total_amount = msgCart.reduce((sum, item) => sum + Number(item.sale_price || 0) * Number(item.qtd || 0), 0);
       msg += `\n*Total:* ${currency(total_amount)}\n\n`;
       msg += `*Cliente:* ${nome || 'Não informado'}\n`;
       msg += `*Telefone:* ${telefone || 'Não informado'}\n`;
@@ -411,25 +412,20 @@
       if(obs) msg += `*Observações:* ${obs}\n`;
 
       const encoded = encodeURIComponent(msg);
-      const isMobile = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent || '');
       const appUrl = `whatsapp://send?phone=${numero}&text=${encoded}`;
       const webUrl = `https://wa.me/${numero}?text=${encoded}`;
 
       setOrderStatus('Pedido salvo. Abrindo o WhatsApp...', 'ok');
 
+      // limpa carrinho só depois de montar a mensagem
       state.cart = [];
       renderCart();
 
-      if(isMobile){
-        // Tenta abrir o app primeiro; se falhar, cai para o link web.
-        const fallback = setTimeout(() => {
-          window.location.href = webUrl;
-        }, 1200);
-        window.location.href = appUrl;
-        setTimeout(() => clearTimeout(fallback), 1800);
-      } else {
-        window.open(webUrl, '_blank');
-      }
+      // tentativa direta no app e fallback para web
+      window.location.href = appUrl;
+      setTimeout(() => {
+        window.location.href = webUrl;
+      }, 900);
     }
 
     function initEvents(){
