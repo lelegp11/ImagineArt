@@ -245,7 +245,7 @@
           </div>
           <div class="table-wrap" style="margin-top:14px">
             <table>
-              <thead><tr><th>Cliente</th><th>Telefone</th><th>E-mail</th><th>Data</th><th>Pagamento</th><th>Observações</th><th>Itens</th><th>Total</th><th>Ação</th></tr></thead>
+              <thead><tr><th>Cliente</th><th>Telefone</th><th>E-mail</th><th>Data</th><th>Pagamento</th><th>Itens</th><th>Total</th><th>Ação</th></tr></thead>
               <tbody id="ordersTable"></tbody>
             </table>
           </div>
@@ -414,7 +414,7 @@
       tbody.innerHTML = '';
       const filtered = products.filter(p =>
         (p.name || '').toLowerCase().includes(q) ||
-        (p.categoria || '').toLowerCase().includes(q) ||
+        (p.category || '').toLowerCase().includes(q) ||
         (p.sku || '').toLowerCase().includes(q)
       );
 
@@ -451,7 +451,7 @@
       qs('ordersCount').textContent = `${orders.length} pedido(s)`;
 
       if(!orders.length){
-        tbody.innerHTML = `<tr><td colspan="9" class="mini">Nenhum pedido recebido.</td></tr>`;
+        tbody.innerHTML = `<tr><td colspan="8" class="mini">Nenhum pedido recebido.</td></tr>`;
         return;
       }
 
@@ -464,7 +464,6 @@
             <td>${escapeHtml(order.email || '')}</td>
             <td>${order.order_date || (order.created_at ? new Date(order.created_at).toLocaleString('pt-BR') : '—')}</td>
             <td>${escapeHtml(order.payment_method || '')}</td>
-            <td>${escapeHtml(order.notes || '')}</td>
             <td>${items}</td>
             <td>${currency(order.total_amount)}</td>
             <td><button class="btn danger small" onclick="removeOrder('${order.id}')">Excluir</button></td>
@@ -559,7 +558,7 @@
         const cost = Number(qs('pCusto').value || 0);
         const production_time = Number(qs('pTempo').value || 0);
         const sku = qs('pSku').value.trim();
-        const ativo = qs('pActive').value === 'true';
+        const active = qs('pActive').value === 'true';
         const description = qs('pDescricao').value.trim();
         const custom_fields = qs('pCampos').value.split(',').map(s=>s.trim()).filter(Boolean);
 
@@ -578,7 +577,16 @@
         }
 
         const payload = {
-          id, nome, categoria, preco, custo, tempo, sku, ativo, descricao, campos,
+          id,
+          name,
+          category,
+          sale_price,
+          cost,
+          production_time,
+          sku,
+          active,
+          description,
+          custom_fields,
           image_url: imageUrl
         };
 
@@ -601,7 +609,7 @@
       qs('pNome').value = p.name || '';
       qs('pCategoria').value = p.category || '';
       qs('pPreco').value = p.sale_price ?? '';
-      qs('pCusto').value = p.custo ?? '';
+      qs('pCusto').value = p.cost ?? '';
       qs('pTempo').value = p.production_time ?? '';
       qs('pSku').value = p.sku || '';
       qs('pActive').value = String(!!p.active);
