@@ -197,13 +197,13 @@
       if(error) throw error;
       state.products = (data || []).map(p => ({
         ...p,
-        campos: Array.isArray(p.campos) ? p.campos : (typeof p.campos === 'string' ? p.campos.split(',').map(s=>s.trim()).filter(Boolean) : [])
+        custom_fields: Array.isArray(p.custom_fields) ? p.custom_fields : (typeof p.custom_fields === 'string' ? p.custom_fields.split(',').map(s=>s.trim()).filter(Boolean) : [])
       }));
     }
 
     function buildCategoryFilter(){
       const select = qs('filtroCategoria');
-      const cats = [...new Set(state.products.filter(p => p.active).map(p => p.categoria || 'Sem categoria'))].sort();
+      const cats = [...new Set(state.products.filter(p => p.active).map(p => p.category || 'Sem categoria'))].sort();
       select.innerHTML = `<option value="">Todas as categorias</option>` + cats.map(c => `<option value="${escapeHtml(c)}">${escapeHtml(c)}</option>`).join('');
     }
 
@@ -211,8 +211,8 @@
       const busca = (qs('buscaCatalogo').value || '').toLowerCase().trim();
       const cat = qs('filtroCategoria').value || '';
       return state.products.filter(p => p.active).filter(p => {
-        const okBusca = (p.nome||'').toLowerCase().includes(busca) || (p.categoria||'').toLowerCase().includes(busca) || (p.descricao||'').toLowerCase().includes(busca);
-        const okCat = !cat || (p.categoria || '') === cat;
+        const okBusca = (p.name||'').toLowerCase().includes(busca) || (p.category||'').toLowerCase().includes(busca) || (p.description||'').toLowerCase().includes(busca);
+        const okCat = !cat || (p.category || '') === cat;
         return okBusca && okCat;
       });
     }
@@ -228,8 +228,8 @@
       }
 
       products.forEach(p => {
-        const imageHtml = p.image_url ? `<img src="${p.image_url}" class="product-image" alt="${escapeHtml(p.nome)}">` : `<div class="muted">Sem imagem</div>`;
-        const fields = Array.isArray(p.campos) ? p.campos : [];
+        const imageHtml = p.image_url ? `<img src="${p.image_url}" class="product-image" alt="${escapeHtml(p.name)}">` : `<div class="muted">Sem imagem</div>`;
+        const fields = Array.isArray(p.custom_fields) ? p.custom_fields : [];
         const fieldsHtml = fields.map((field, idx) => `
           <div>
             <label>${escapeHtml(field)}</label>
@@ -240,10 +240,10 @@
           <div class="product-card">
             <div class="product-image-wrap">${imageHtml}</div>
             <div class="product-info">
-              <div class="smallcaps">${escapeHtml(p.categoria || 'Produto')}</div>
-              <div><strong>${escapeHtml(p.nome)}</strong></div>
-              <div class="muted">${escapeHtml(p.descricao || '')}</div>
-              <div class="price">${currency(p.preco)}</div>
+              <div class="smallcaps">${escapeHtml(p.category || 'Produto')}</div>
+              <div><strong>${escapeHtml(p.name)}</strong></div>
+              <div class="muted">${escapeHtml(p.description || '')}</div>
+              <div class="price">${currency(p.sale_price)}</div>
               ${fieldsHtml ? `<div>${fieldsHtml}</div>` : ''}
               <div class="toolbar">
                 <div class="qty">
@@ -261,9 +261,9 @@
 
     function renderCart(){
       const count = state.cart.reduce((sum, item) => sum + Number(item.qtd || 0), 0);
-      const total = state.cart.reduce((sum, item) => sum + Number(item.preco || 0) * Number(item.qtd || 0), 0);
+      const total_amount = state.cart.reduce((sum, item) => sum + Number(item.sale_price || 0) * Number(item.qtd || 0), 0);
       qs('cartCount').textContent = `${count} item(s)`;
-      qs('cartTotal').textContent = currency(total);
+      qs('cartTotal').textContent = currency(total_amount);
 
       const tbody = qs('resumoPedido');
       tbody.innerHTML = '';
@@ -272,7 +272,7 @@
         return;
       }
       state.cart.forEach(item => {
-        const subtotal = Number(item.preco || 0) * Number(item.qtd || 0);
+        const subtotal = Number(item.sale_price || 0) * Number(item.qtd || 0);
         tbody.insertAdjacentHTML('beforeend', `
           <tr>
             <td>${escapeHtml(item.nome)}</td>
@@ -296,34 +296,31 @@
         return;
       }
 
-      const customer_name = qs('cNome').value.trim();
+      const client_name = qs('cNome').value.trim();
       const phone = qs('cTelefone').value.trim();
-      const email = qs('cEmail').value.trim();
-      const payment_method = qs('cPagamento').value.trim();
-      const notes = qs('cObs').value.trim();
-
-      if(!customer_name || !phone){
+            const payment_method = qs('cPagamento').value.trim();
+      
+      if(!client_name || !phone){
         setOrderStatus('Preencha nome e telefone para salvar o pedido.', 'error');
         return;
       }
 
-      const total = state.cart.reduce((sum, item) => sum + Number(item.preco || 0) * Number(item.qtd || 0), 0);
+      const total_amount = state.cart.reduce((sum, item) => sum + Number(item.sale_price || 0) * Number(item.qtd || 0), 0);
 
       const payload = {
-        customer_name,
+        client_name,
         phone,
+        order_date: new Date().toISOString().slice(0,10),
         payment_method,
-        notes,
-        total,
+        total_amount,
         items: state.cart.map(item => ({
           productId: item.productId,
           nome: item.nome,
           qtd: item.qtd,
-          preco: item.preco,
+          sale_price: item.sale_price,
           personalizacao: item.personalizacao || ''
         }))
       };
-      if(email) payload.email = email;
 
       try{
         setOrderStatus('Salvando pedido...', 'warn');
@@ -346,24 +343,21 @@
 
       const nome = qs('cNome').value.trim();
       const telefone = qs('cTelefone').value.trim();
-      const email = qs('cEmail').value.trim();
-      const pagamento = qs('cPagamento').value.trim();
+            const pagamento = qs('cPagamento').value.trim();
       const obs = qs('cObs').value.trim();
 
       let msg = `${state.config.mensagem || 'Olá! Gostaria de fazer este pedido:'}\n\n*Pedido:*\n`;
       state.cart.forEach((item, idx) => {
-        msg += `${idx + 1}. ${item.qtd}x ${item.nome} — ${currency(item.preco * item.qtd)}\n`;
+        msg += `${idx + 1}. ${item.qtd}x ${item.nome} — ${currency(item.sale_price * item.qtd)}\n`;
         if(item.personalizacao) msg += `   Personalização: ${item.personalizacao}\n`;
       });
 
-      const total = state.cart.reduce((sum, item) => sum + Number(item.preco || 0) * Number(item.qtd || 0), 0);
-      msg += `\n*Total:* ${currency(total)}\n\n`;
+      const total_amount = state.cart.reduce((sum, item) => sum + Number(item.sale_price || 0) * Number(item.qtd || 0), 0);
+      msg += `\n*Total:* ${currency(total_amount)}\n\n`;
       msg += `*Cliente:* ${nome || 'Não informado'}\n`;
       msg += `*Telefone:* ${telefone || 'Não informado'}\n`;
-      if(email) msg += `*E-mail:* ${email}\n`;
-      if(pagamento) msg += `*Pagamento:* ${pagamento}\n`;
-      if(obs) msg += `*Observações:* ${obs}\n`;
-
+            if(pagamento) msg += `*Pagamento:* ${pagamento}\n`;
+      
       const numero = (state.config.whatsapp || '').replace(/\D/g, '');
       if(!numero){
         setOrderStatus('O WhatsApp da loja não foi configurado.', 'error');
@@ -392,10 +386,10 @@
     };
 
     window.addToCart = function(id){
-      const p = state.products.find(x => x.id === id && x.active);
+      const p = state.products.find(x => x.id === id && x.ativo);
       if(!p) return;
       const qty = Number(qs(`qty-${id}`).textContent || 1);
-      const fields = Array.isArray(p.campos) ? p.campos : [];
+      const fields = Array.isArray(p.custom_fields) ? p.custom_fields : [];
       const personalizacao = fields.map((field, idx) => {
         const value = qs(`field-${id}-${idx}`)?.value?.trim() || '';
         return value ? `${field}: ${value}` : '';
@@ -404,9 +398,9 @@
       state.cart.push({
         id: Math.random().toString(36).slice(2,10),
         productId: p.id,
-        nome: p.nome,
+        nome: p.name,
         qtd: qty,
-        preco: Number(p.preco || 0),
+        sale_price: Number(p.sale_price || 0),
         personalizacao
       });
 

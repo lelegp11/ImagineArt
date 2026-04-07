@@ -183,7 +183,7 @@
                 <div class="mini" style="margin-top:6px">Imagem enviada para o Storage do Supabase.</div>
               </div>
               <div><label>SKU</label><input class="input" id="pSku"></div>
-              <div><label>Ativo</label><select id="pAtivo" class="input"><option value="true">Sim</option><option value="false">Não</option></select></div>
+              <div><label>Ativo</label><select id="pActive" class="input"><option value="true">Sim</option><option value="false">Não</option></select></div>
             </div>
             <div style="margin-top:14px">
               <label>Descrição</label>
@@ -381,7 +381,7 @@
           banner: qs('cfgBanner').value.trim(),
           updated_at: new Date().toISOString()
         };
-        const { error } = await supabaseClient.from('store_config').upsert(payload);
+        const { error } = await supabaseClient.from('store_config').upsert({ id: 1, ...payload });
         if(error) throw error;
         alert('Configurações salvas.');
       }catch(err){
@@ -395,7 +395,7 @@
       if(error) throw error;
       products = (data || []).map(p => ({
         ...p,
-        campos: Array.isArray(p.campos) ? p.campos : (typeof p.campos === 'string' ? p.campos.split(',').map(s=>s.trim()).filter(Boolean) : [])
+        custom_fields: Array.isArray(p.custom_fields) ? p.custom_fields : (typeof p.custom_fields === 'string' ? p.custom_fields.split(',').map(s=>s.trim()).filter(Boolean) : [])
       }));
       renderProducts();
     }
@@ -413,7 +413,7 @@
       const tbody = qs('productsTable');
       tbody.innerHTML = '';
       const filtered = products.filter(p =>
-        (p.nome || '').toLowerCase().includes(q) ||
+        (p.name || '').toLowerCase().includes(q) ||
         (p.categoria || '').toLowerCase().includes(q) ||
         (p.sku || '').toLowerCase().includes(q)
       );
@@ -424,16 +424,16 @@
       }
 
       filtered.forEach(p => {
-        const margin = p.preco ? (Number(p.preco)-Number(p.custo||0))/Number(p.preco) : 0;
+        const margin = p.sale_price ? (Number(p.sale_price)-Number(p.cost||0))/Number(p.sale_price) : 0;
         tbody.insertAdjacentHTML('beforeend', `
           <tr>
             <td>${p.image_url ? `<img src="${p.image_url}" class="thumb" alt="Foto">` : '<div class="mini">sem foto</div>'}</td>
-            <td><strong>${escapeHtml(p.nome)}</strong><div class="mini">${escapeHtml(p.sku||'')}</div></td>
-            <td>${escapeHtml(p.categoria||'')}</td>
-            <td>${currency(p.preco)}</td>
-            <td>${currency(p.custo)}</td>
+            <td><strong>${escapeHtml(p.name)}</strong><div class="mini">${escapeHtml(p.sku||'')}</div></td>
+            <td>${escapeHtml(p.category||'')}</td>
+            <td>${currency(p.sale_price)}</td>
+            <td>${currency(p.cost)}</td>
             <td>${pct(margin)}</td>
-            <td>${p.ativo ? 'Sim' : 'Não'}</td>
+            <td>${p.active ? 'Sim' : 'Não'}</td>
             <td>
               <div class="toolbar">
                 <button class="btn ghost small" onclick="editProduct('${p.id}')">Editar</button>
@@ -459,13 +459,13 @@
         const items = Array.isArray(order.items) ? order.items.map(i => `${i.qtd}x ${escapeHtml(i.nome)}`).join('<br>') : '—';
         tbody.insertAdjacentHTML('beforeend', `
           <tr>
-            <td>${escapeHtml(order.customer_name || order.cliente || '')}</td>
+            <td>${escapeHtml(order.client_name || '')}</td>
             <td>${escapeHtml(order.phone || '')}</td>
             <td>${escapeHtml(order.email || '')}</td>
-            <td>${order.created_at ? new Date(order.created_at).toLocaleString('pt-BR') : '—'}</td>
-            <td>${escapeHtml(order.payment_method || order.pagamento || '')}</td>
+            <td>${order.order_date || (order.created_at ? new Date(order.created_at).toLocaleString('pt-BR') : '—')}</td>
+            <td>${escapeHtml(order.payment_method || '')}</td>
             <td>${items}</td>
-            <td>${currency(order.total)}</td>
+            <td>${currency(order.total_amount)}</td>
             <td><button class="btn danger small" onclick="removeOrder('${order.id}')">Excluir</button></td>
           </tr>
         `);
@@ -473,7 +473,7 @@
     }
 
     function renderDashboard(){
-      const revenue = orders.reduce((sum, o) => sum + Number(o.total || 0), 0);
+      const revenue = orders.reduce((sum, o) => sum + Number(o.total_amount || 0), 0);
       let cost = 0;
       let marginList = [];
 
@@ -482,9 +482,9 @@
         items.forEach(item => {
           const prod = products.find(p => String(p.id) === String(item.productId));
           if(prod){
-            cost += Number(prod.custo || 0) * Number(item.qtd || 0);
-            if(Number(prod.preco || 0) > 0){
-              marginList.push((Number(prod.preco)-Number(prod.custo||0))/Number(prod.preco));
+            cost += Number(prod.cost || 0) * Number(item.qtd || 0);
+            if(Number(prod.sale_price || 0) > 0){
+              marginList.push((Number(prod.sale_price)-Number(prod.cost||0))/Number(prod.sale_price));
             }
           }
         });
@@ -541,7 +541,7 @@
 
     function clearProductForm(){
       ['pNome','pCategoria','pPreco','pCusto','pTempo','pSku','pDescricao','pCampos'].forEach(id => qs(id).value = '');
-      qs('pAtivo').value = 'true';
+      qs('pActive').value = 'true';
       qs('pFoto').value = '';
       currentUploadFile = null;
       editingProductId = null;
@@ -552,17 +552,17 @@
 
     async function saveProduct(){
       try{
-        const nome = qs('pNome').value.trim();
-        const categoria = qs('pCategoria').value.trim() || 'Sem categoria';
-        const preco = Number(qs('pPreco').value || 0);
-        const custo = Number(qs('pCusto').value || 0);
-        const tempo = Number(qs('pTempo').value || 0);
+        const name = qs('pNome').value.trim();
+        const category = qs('pCategoria').value.trim() || 'Sem categoria';
+        const sale_price = Number(qs('pPreco').value || 0);
+        const cost = Number(qs('pCusto').value || 0);
+        const production_time = Number(qs('pTempo').value || 0);
         const sku = qs('pSku').value.trim();
-        const ativo = qs('pAtivo').value === 'true';
-        const descricao = qs('pDescricao').value.trim();
-        const campos = qs('pCampos').value.split(',').map(s=>s.trim()).filter(Boolean);
+        const ativo = qs('pActive').value === 'true';
+        const description = qs('pDescricao').value.trim();
+        const custom_fields = qs('pCampos').value.split(',').map(s=>s.trim()).filter(Boolean);
 
-        if(!nome){
+        if(!name){
           setProductStatus('Informe o nome do produto.', 'error');
           return;
         }
@@ -597,15 +597,15 @@
       const p = products.find(x => String(x.id) === String(id));
       if(!p) return;
       editingProductId = p.id;
-      qs('pNome').value = p.nome || '';
-      qs('pCategoria').value = p.categoria || '';
-      qs('pPreco').value = p.preco ?? '';
+      qs('pNome').value = p.name || '';
+      qs('pCategoria').value = p.category || '';
+      qs('pPreco').value = p.sale_price ?? '';
       qs('pCusto').value = p.custo ?? '';
-      qs('pTempo').value = p.tempo ?? '';
+      qs('pTempo').value = p.production_time ?? '';
       qs('pSku').value = p.sku || '';
-      qs('pAtivo').value = String(!!p.ativo);
-      qs('pDescricao').value = p.descricao || '';
-      qs('pCampos').value = Array.isArray(p.campos) ? p.campos.join(', ') : '';
+      qs('pActive').value = String(!!p.active);
+      qs('pDescricao').value = p.description || '';
+      qs('pCampos').value = Array.isArray(p.custom_fields) ? p.custom_fields.join(', ') : '';
       qs('salvarProduto').textContent = 'Atualizar produto';
       if(p.image_url){
         qs('previewFoto').src = p.image_url;
@@ -613,7 +613,7 @@
       } else {
         qs('previewFotoBox').classList.add('hidden');
       }
-      setProductStatus(`Editando: ${p.nome}`, 'warn');
+      setProductStatus(`Editando: ${p.name}`, 'warn');
       setView('cadastro');
     }
 
