@@ -107,8 +107,7 @@
       </div>
       <div class="toolbar">
         <button class="btn ghost" id="openResumo">Ver resumo</button>
-        <button class="btn primary" id="saveOrderBtn">Salvar pedido</button>
-        <button class="btn success" id="sendWhatsapp">Enviar pedido no WhatsApp</button>
+        <button class="btn success" id="saveAndSendBtn">Salvar pedido e enviar no WhatsApp</button>
       </div>
     </div>
 
@@ -371,11 +370,19 @@
       window.open(`https://wa.me/${numero}?text=${encodeURIComponent(msg)}`, '_blank');
     }
 
+
+    async function saveAndSendOrder(){
+      const saved = await saveOrderToDb();
+      if(!saved) return;
+      sendWhatsapp();
+      state.cart = [];
+      renderCart();
+    }
+
     function initEvents(){
       qs('buscaCatalogo').addEventListener('input', renderCatalog);
       qs('filtroCategoria').addEventListener('change', renderCatalog);
-      qs('saveOrderBtn').addEventListener('click', saveOrderToDb);
-      qs('sendWhatsapp').addEventListener('click', sendWhatsapp);
+      qs('saveAndSendBtn').addEventListener('click', saveAndSendOrder);
       qs('openResumo').addEventListener('click', () => {
         qs('resumoCard').classList.remove('hidden');
         qs('resumoCard').scrollIntoView({ behavior:'smooth', block:'start' });
