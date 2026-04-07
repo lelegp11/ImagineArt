@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Personaliza Hub — Admin (Supabase)</title>
+  <title>Personaliza Hub — Admin Final</title>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <style>
     :root{
@@ -17,6 +17,7 @@
       --accent:#ec4899;
       --success:#16a34a;
       --danger:#dc2626;
+      --warning:#f59e0b;
       --shadow:0 16px 40px rgba(22,27,45,.08);
       --radius:20px;
     }
@@ -38,11 +39,20 @@
     .btn.small{padding:8px 12px;border-radius:12px;font-size:13px}
     .container{max-width:1380px;margin:0 auto;padding:20px}
     .section{margin-top:26px}
-    .section h2{margin:0 0 14px;font-size:24px}
     .grid{display:grid;gap:18px}
     .grid-4{grid-template-columns:repeat(4,1fr)}
+    .grid-3{grid-template-columns:repeat(3,1fr)}
     .grid-2{grid-template-columns:repeat(2,1fr)}
     .card{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);padding:18px}
+    .hero{margin-top:24px;border-radius:32px;overflow:hidden;position:relative;background:radial-gradient(circle at 20% 20%, rgba(255,255,255,.28), transparent 30%),linear-gradient(135deg,#111827 0%,#4c1d95 42%,#db2777 100%);color:#fff;box-shadow:var(--shadow)}
+    .hero-content{display:grid;grid-template-columns:1.2fr .8fr;gap:20px;padding:36px}
+    .hero h1{font-size:40px;line-height:1.05;margin:0 0 12px}
+    .hero p{font-size:17px;color:rgba(255,255,255,.86);max-width:760px}
+    .hero-panel{background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.14);border-radius:24px;padding:20px}
+    .hero-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:12px;margin-top:10px}
+    .stat{background:rgba(255,255,255,.12);padding:16px;border-radius:18px;border:1px solid rgba(255,255,255,.12)}
+    .stat .label{font-size:12px;text-transform:uppercase;letter-spacing:.06em;color:rgba(255,255,255,.72)}
+    .stat .value{font-size:28px;font-weight:800;margin-top:6px}
     .kpi .k{font-size:13px;color:var(--muted);text-transform:uppercase;letter-spacing:.06em}
     .kpi .v{font-size:30px;font-weight:800;margin-top:8px}
     .kpi .s{margin-top:6px;color:var(--muted);font-size:13px}
@@ -59,25 +69,16 @@
     th{background:#fafafa;color:#4b5563;position:sticky;top:0}
     .mini{font-size:12px;color:var(--muted)}
     .tag{display:inline-block;padding:6px 10px;background:#f3e8ff;color:#6d28d9;border-radius:999px;font-size:12px;font-weight:800}
-    .hero{margin-top:24px;border-radius:32px;overflow:hidden;position:relative;background:radial-gradient(circle at 20% 20%, rgba(255,255,255,.28), transparent 30%),linear-gradient(135deg, #111827 0%, #4c1d95 42%, #db2777 100%);color:#fff;box-shadow:var(--shadow)}
-    .hero-content{display:grid;grid-template-columns:1.2fr .8fr;gap:20px;padding:36px}
-    .hero h1{font-size:40px;line-height:1.05;margin:0 0 12px}
-    .hero p{font-size:17px;color:rgba(255,255,255,.86);max-width:760px}
-    .hero-panel{background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.14);border-radius:24px;padding:20px}
-    .hero-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:12px;margin-top:10px}
-    .stat{background:rgba(255,255,255,.12);padding:16px;border-radius:18px;border:1px solid rgba(255,255,255,.12)}
-    .stat .label{font-size:12px;text-transform:uppercase;letter-spacing:.06em;color:rgba(255,255,255,.72)}
-    .stat .value{font-size:28px;font-weight:800;margin-top:6px}
-    .smallcaps{font-size:12px;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);font-weight:800}
     .status{margin-top:10px;padding:12px 14px;border-radius:14px;border:1px solid var(--line);background:#fff}
     .status.ok{color:#166534;border-color:#bbf7d0;background:#f0fdf4}
     .status.warn{color:#92400e;border-color:#fde68a;background:#fffbeb}
     .status.error{color:#991b1b;border-color:#fecaca;background:#fef2f2}
     .thumb{width:64px;height:64px;border-radius:12px;object-fit:contain;border:1px solid var(--line);background:#f8f8fb;padding:4px}
-    .login-wrap{max-width:840px;margin:24px auto}
     .right{margin-left:auto}
-    @media (max-width:1200px){.grid-4,.form-grid{grid-template-columns:repeat(2,1fr)}.hero-content,.grid-2{grid-template-columns:1fr}}
-    @media (max-width:700px){.container{padding:14px}.topbar-inner{padding:12px 14px}.hero-content{padding:22px}.hero h1{font-size:30px}.grid-2,.grid-4,.form-grid,.form-grid-2,.form-grid-3{grid-template-columns:1fr}.nav{display:none}}
+    .pill{display:inline-block;padding:6px 10px;border-radius:999px;background:#eef2ff;color:#4338ca;font-size:12px;font-weight:700}
+    .smallcaps{font-size:12px;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);font-weight:800}
+    @media (max-width:1200px){.grid-4,.form-grid{grid-template-columns:repeat(2,1fr)} .hero-content,.grid-2,.grid-3{grid-template-columns:1fr}}
+    @media (max-width:700px){.container{padding:14px}.topbar-inner{padding:12px 14px}.hero-content{padding:22px}.hero h1{font-size:30px}.grid-2,.grid-3,.grid-4,.form-grid,.form-grid-2,.form-grid-3{grid-template-columns:1fr}.nav{display:none}}
   </style>
 </head>
 <body>
@@ -87,65 +88,58 @@
         <div class="logo"></div>
         <div>
           <div>Personaliza Hub</div>
-          <small>Painel administrativo com Supabase</small>
+          <small>Admin final com Supabase</small>
         </div>
       </div>
-
-      <div class="nav" id="navAdmin">
+      <div class="nav" id="navBar">
         <button class="active" data-view="inicio">Início</button>
         <button data-view="dashboard">Dashboard</button>
         <button data-view="cadastro">Cadastro</button>
         <button data-view="pedidos">Pedidos</button>
         <button data-view="config">Configurações</button>
       </div>
-
-      <div class="toolbar" id="toolbarAdmin">
+      <div class="toolbar">
         <button class="btn ghost small" id="btnPreviewCliente">Visualização do cliente</button>
-        <button class="btn ghost small" id="btnRefreshData">Atualizar dados</button>
-        <button class="btn ghost small" id="btnExportJson">Exportar JSON</button>
-        <button class="btn danger small" id="btnLogout">Sair</button>
+        <button class="btn ghost small" id="btnRefresh">Atualizar dados</button>
+        <button class="btn danger small hidden" id="btnLogout">Sair</button>
       </div>
     </div>
   </div>
 
   <div class="container">
-    <section id="loginArea" class="login-wrap">
-      <div class="card">
-        <h2>Entrar no admin</h2>
-        <div class="form-grid-2" style="margin-top:12px">
-          <div>
-            <label>Supabase URL</label>
-            <input class="input" id="sbUrl" placeholder="https://SEU-PROJETO.supabase.co">
+    <section id="authView" class="view">
+      <div class="grid grid-2">
+        <div class="card">
+          <h2 style="margin-top:0">Entrar no painel</h2>
+          <div class="form-grid-2">
+            <div><label>E-mail</label><input class="input" id="authEmail" placeholder="seuemail@exemplo.com"></div>
+            <div><label>Senha</label><input class="input" id="authPassword" type="password" placeholder="••••••••"></div>
           </div>
-          <div>
-            <label>Anon key</label>
-            <input class="input" id="sbAnon" placeholder="cole aqui a anon key">
+          <div class="toolbar" style="margin-top:14px">
+            <button class="btn primary" id="btnLogin">Entrar</button>
+            <button class="btn ghost" id="btnSignup">Criar conta admin</button>
           </div>
-          <div>
-            <label>E-mail admin</label>
-            <input class="input" id="adminEmail" type="email" placeholder="seuemail@exemplo.com">
-          </div>
-          <div>
-            <label>Senha admin</label>
-            <input class="input" id="adminPassword" type="password" placeholder="********">
+          <div id="authStatus" class="status hidden"></div>
+        </div>
+
+        <div class="card">
+          <h2 style="margin-top:0">Configuração fixa</h2>
+          <div class="status warn">
+            <strong>Antes de usar:</strong><br>
+            Edite este arquivo e substitua os valores de <code>SUPABASE_URL</code> e <code>SUPABASE_ANON_KEY</code> no topo do JavaScript pelos dados do seu projeto.
           </div>
         </div>
-        <div class="toolbar" style="margin-top:14px">
-          <button class="btn primary" id="btnLogin">Entrar</button>
-          <button class="btn ghost" id="btnSignup">Criar conta admin</button>
-        </div>
-        <div id="authStatus" class="status">Preencha a URL, a anon key e faça login.</div>
       </div>
     </section>
 
-    <div id="appArea" class="hidden">
+    <section id="appView" class="hidden">
       <section id="inicio" class="view">
         <div class="hero">
           <div class="hero-content">
             <div>
               <div class="smallcaps" style="color:#ddd">Gestão interna</div>
-              <h1>Cadastre produtos e publique no catálogo.</h1>
-              <p>Este painel usa Supabase Database para os produtos e pedidos e Supabase Storage para as fotos.</p>
+              <h1>Painel profissional conectado ao Supabase.</h1>
+              <p>Cadastre produtos, acompanhe pedidos, veja receita, lucro, ticket médio e margens em um único painel.</p>
             </div>
             <div class="hero-panel">
               <div class="smallcaps" style="color:#e9d5ff">Resumo rápido</div>
@@ -163,7 +157,7 @@
       <section id="dashboard" class="view hidden">
         <div class="grid grid-4">
           <div class="card kpi"><div class="k">Receita total</div><div class="v" id="kpiReceita">R$ 0,00</div><div class="s">Soma de todos os pedidos</div></div>
-          <div class="card kpi"><div class="k">Lucro estimado</div><div class="v" id="kpiLucro">R$ 0,00</div><div class="s">Receita menos custo</div></div>
+          <div class="card kpi"><div class="k">Lucro estimado</div><div class="v" id="kpiLucro">R$ 0,00</div><div class="s">Receita menos custo dos itens vendidos</div></div>
           <div class="card kpi"><div class="k">Ticket médio</div><div class="v" id="kpiTicket">R$ 0,00</div><div class="s">Valor médio por pedido</div></div>
           <div class="card kpi"><div class="k">Margem média</div><div class="v" id="kpiMargem">0%</div><div class="s">Média dos itens vendidos</div></div>
         </div>
@@ -177,135 +171,41 @@
               <span class="spacer"></span>
               <button class="btn ghost small" id="resetProduto">Limpar</button>
             </div>
-
             <div class="form-grid" style="margin-top:12px">
               <div><label>Nome</label><input class="input" id="pNome"></div>
-              <div><label>Categoria</label><input class="input" id="pCategoria" placeholder="Ex.: Canecas"></div>
+              <div><label>Categoria</label><input class="input" id="pCategoria"></div>
               <div><label>Preço de venda</label><input class="input" id="pPreco" type="number" step="0.01"></div>
               <div><label>Custo</label><input class="input" id="pCusto" type="number" step="0.01"></div>
               <div><label>Tempo de produção (min)</label><input class="input" id="pTempo" type="number" step="1"></div>
               <div>
                 <label>Foto do produto</label>
                 <input class="input" id="pFoto" type="file" accept="image/*">
-                <div class="mini" style="margin-top:6px">Imagem convertida para 500px por 500px e enviada ao Storage.</div>
+                <div class="mini" style="margin-top:6px">Imagem enviada para o Storage do Supabase.</div>
               </div>
               <div><label>SKU</label><input class="input" id="pSku"></div>
-              <div><label>Ativo</label>
-                <select id="pAtivo" class="input">
-                  <option value="true">Sim</option>
-                  <option value="false">Não</option>
-                </select>
-              </div>
+              <div><label>Ativo</label><select id="pAtivo" class="input"><option value="true">Sim</option><option value="false">Não</option></select></div>
             </div>
-
             <div style="margin-top:14px">
               <label>Descrição</label>
               <textarea id="pDescricao" rows="4" class="input"></textarea>
             </div>
-
             <div style="margin-top:14px">
               <label>Campos de personalização (separados por vírgula)</label>
               <input class="input" id="pCampos" placeholder="Nome, Tema, Cor, Tamanho, Turma">
             </div>
-
             <div style="margin-top:14px" class="toolbar">
-              <div id="previewFotoBox" class="hidden">
-                <img id="previewFoto" class="thumb" alt="Prévia da foto">
-              </div>
+              <div id="previewFotoBox" class="hidden"><img id="previewFoto" class="thumb" alt="Prévia"></div>
               <span class="spacer"></span>
               <button class="btn primary" id="salvarProduto">Salvar produto</button>
             </div>
-
             <div id="statusProduto" class="status">Preencha os dados e clique em salvar.</div>
           </div>
 
           <div class="card">
-            <h2>Cadastro rápido de pedido</h2>
-
-            <div class="form-grid-2">
-              <div><label>Cliente</label><input class="input" id="oCliente"></div>
-              <div><label>Telefone</label><input class="input" id="oTelefone"></div>
-              <div><label>Data</label><input class="input" id="oData" type="date"></div>
-              <div>
-                <label>Forma de pagamento</label>
-                <select class="input" id="oPagamento">
-                  <option value="PIX">PIX</option>
-                  <option value="Crédito (+ R$5,00 da taxa do Mercado Pago)">Crédito (+ R$5,00 da taxa do Mercado Pago)</option>
-                </select>
-              </div>
-            </div>
-
-            <div class="form-grid-3" style="margin-top:12px">
-              <div><label>Produto</label><select id="oProduto" class="input"></select></div>
-              <div><label>Quantidade</label><input class="input" id="oQtd" type="number" value="1" min="1"></div>
-              <div><label>Personalização</label><input class="input" id="oPers" placeholder="Nome, tema..."></div>
-            </div>
-
-            <div class="toolbar" style="margin-top:14px">
-              <button class="btn primary" id="addOrderItem">Adicionar item</button>
-              <button class="btn ghost" id="clearOrderDraft">Limpar rascunho</button>
-            </div>
-
-            <div class="table-wrap" style="margin-top:14px">
-              <table>
-                <thead><tr><th>Produto</th><th>Qtd</th><th>Personalização</th><th>Subtotal</th></tr></thead>
-                <tbody id="draftOrderTable"></tbody>
-              </table>
-            </div>
-
-            <div class="toolbar" style="margin-top:14px">
-              <div class="tag">Total do pedido: <span id="draftTotal">R$ 0,00</span></div>
-              <button class="btn success right" id="saveOrder">Salvar pedido</button>
-            </div>
-          </div>
-        </div>
-
-        <div class="section card">
-          <div class="toolbar">
-            <h2 style="margin:0">Produtos cadastrados</h2>
-            <span class="spacer"></span>
-            <input class="input" id="buscaProduto" placeholder="Buscar produto" style="max-width:280px">
-          </div>
-
-          <div class="table-wrap" style="margin-top:14px">
-            <table>
-              <thead>
-                <tr>
-                  <th>Foto</th>
-                  <th>Nome</th>
-                  <th>Categoria</th>
-                  <th>Preço</th>
-                  <th>Custo</th>
-                  <th>Margem</th>
-                  <th>Ativo</th>
-                  <th>Ações</th>
-                </tr>
-              </thead>
-              <tbody id="productsTable"></tbody>
-            </table>
-          </div>
-        </div>
-      </section>
-
-      <section id="pedidos" class="view hidden">
-        <div class="card">
-          <h2>Pedidos cadastrados</h2>
-          <div class="table-wrap">
-            <table>
-              <thead><tr><th>Cliente</th><th>Telefone</th><th>Data</th><th>Pagamento</th><th>Itens</th><th>Total</th></tr></thead>
-              <tbody id="ordersTable"></tbody>
-            </table>
-          </div>
-        </div>
-      </section>
-
-      <section id="config" class="view hidden">
-        <div class="grid grid-2">
-          <div class="card">
-            <h2>Configurações da loja</h2>
+            <h2>Configurações rápidas da loja</h2>
             <div class="form-grid-2">
               <div><label>Nome da loja</label><input class="input" id="cfgLoja"></div>
-              <div><label>WhatsApp principal</label><input class="input" id="cfgWhatsapp" placeholder="5511911173222"></div>
+              <div><label>WhatsApp principal</label><input class="input" id="cfgWhatsapp"></div>
               <div><label>Mensagem inicial</label><input class="input" id="cfgMsg"></div>
               <div><label>Moeda</label><input class="input" id="cfgMoeda" value="BRL"></div>
             </div>
@@ -317,113 +217,310 @@
               <button class="btn success" id="saveConfig">Salvar configurações</button>
             </div>
           </div>
+        </div>
 
-          <div class="card">
-            <h2>Observação</h2>
-            <div class="status ok">Se o login não funcionar, confira a URL, a anon key, o e-mail, a senha e se as policies foram criadas no SQL Editor.</div>
+        <div class="section card">
+          <div class="toolbar">
+            <h2 style="margin:0">Produtos cadastrados</h2>
+            <span class="spacer"></span>
+            <input class="input" id="buscaProduto" placeholder="Buscar produto" style="max-width:280px">
+          </div>
+          <div class="table-wrap" style="margin-top:14px">
+            <table>
+              <thead>
+                <tr><th>Foto</th><th>Nome</th><th>Categoria</th><th>Preço</th><th>Custo</th><th>Margem</th><th>Ativo</th><th>Ações</th></tr>
+              </thead>
+              <tbody id="productsTable"></tbody>
+            </table>
           </div>
         </div>
       </section>
-    </div>
+
+      <section id="pedidos" class="view hidden">
+        <div class="card">
+          <div class="toolbar">
+            <h2 style="margin:0">Pedidos recebidos</h2>
+            <span class="spacer"></span>
+            <span class="pill" id="ordersCount">0 pedidos</span>
+          </div>
+          <div class="table-wrap" style="margin-top:14px">
+            <table>
+              <thead><tr><th>Cliente</th><th>Telefone</th><th>E-mail</th><th>Data</th><th>Pagamento</th><th>Itens</th><th>Total</th><th>Ação</th></tr></thead>
+              <tbody id="ordersTable"></tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <section id="config" class="view hidden">
+        <div class="card">
+          <h2 style="margin-top:0">Informações da conexão</h2>
+          <div class="status ok">Esta versão já está pronta para conectar automaticamente ao seu Supabase após você inserir as credenciais no código.</div>
+        </div>
+      </section>
+    </section>
   </div>
 
   <script>
+    const SUPABASE_URL = 'https://xwaflarqkooltziusmbl.supabase.co';
+    const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inh3YWZsYXJxa29vbHR6aXVzbWJsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzU0ODkyNDgsImV4cCI6MjA5MTA2NTI0OH0.v4YFHMEc8Ryu_97J5UV5nVU7wPjFKetd10WP9MJ60u4';
+    const IMAGE_BUCKET = 'product-images';
+
     let supabaseClient = null;
-    let sessionUser = null;
-    let state = {
-      config: {
-        loja: 'Minha Loja',
-        whatsapp: '5511911173222',
-        mensagem: 'Olá! Gostaria de fazer este pedido:',
-        moeda: 'BRL',
-        banner: 'Coleção personalizada pronta para encantar seus clientes.'
-      },
-      products: [],
-      orders: [],
-      draftOrder: { items: [] },
-      editingProductId: null,
-      currentPhotoFile: null,
-      currentPhotoPreview: '',
-      currentImagePath: null
-    };
+    let currentUser = null;
+    let products = [];
+    let orders = [];
+    let editingProductId = null;
+    let currentUploadFile = null;
 
-    const AUTH_STORAGE_KEY = 'personaliza_hub_supabase_auth';
+    function qs(id){ return document.getElementById(id); }
+    function currency(v){ return new Intl.NumberFormat('pt-BR',{style:'currency',currency:'BRL'}).format(Number(v||0)); }
+    function pct(v){ return `${(Number(v||0)*100).toFixed(1)}%`; }
+    function escapeHtml(str=''){ return String(str).replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[m])); }
 
-    function uid(){ return Math.random().toString(36).slice(2,10); }
-    function currency(v){ return new Intl.NumberFormat('pt-BR',{style:'currency',currency: state.config.moeda || 'BRL'}).format(Number(v || 0)); }
-    function pct(v){ return `${(Number(v || 0) * 100).toFixed(1)}%`; }
-    function escapeHtml(str=''){ return String(str).replace(/[&<>"]+/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[m] || m)); }
-
-    function setAuthStatus(msg, type=''){
-      const el = document.getElementById('authStatus');
-      el.textContent = msg;
-      el.className = 'status';
-      if(type) el.classList.add(type);
+    function setAuthStatus(message, type=''){
+      const el = qs('authStatus');
+      el.classList.remove('hidden');
+      el.textContent = message;
+      el.className = 'status ' + type;
     }
 
-    function setStatus(msg, type=''){
-      const el = document.getElementById('statusProduto');
-      el.textContent = msg;
-      el.className = 'status';
-      if(type) el.classList.add(type);
+    function setProductStatus(message, type=''){
+      const el = qs('statusProduto');
+      el.textContent = message;
+      el.className = 'status ' + type;
     }
 
-    function showPhotoPreview(src){
-      const box = document.getElementById('previewFotoBox');
-      const img = document.getElementById('previewFoto');
-      if(src){ img.src = src; box.classList.remove('hidden'); }
-      else { img.src = ''; box.classList.add('hidden'); }
+    function showApp(){
+      qs('authView').classList.add('hidden');
+      qs('appView').classList.remove('hidden');
+      qs('btnLogout').classList.remove('hidden');
     }
 
-    function storeConfig(){
-      localStorage.setItem(AUTH_STORAGE_KEY, JSON.stringify({
-        url: document.getElementById('sbUrl').value.trim(),
-        anon: document.getElementById('sbAnon').value.trim(),
-        email: document.getElementById('adminEmail').value.trim()
-      }));
+    function showAuth(){
+      qs('authView').classList.remove('hidden');
+      qs('appView').classList.add('hidden');
+      qs('btnLogout').classList.add('hidden');
     }
 
-    function restoreConfig(){
-      const raw = localStorage.getItem(AUTH_STORAGE_KEY);
-      if(!raw) return;
+    function setView(view){
+      document.querySelectorAll('#appView .view').forEach(v => v.classList.add('hidden'));
+      qs(view).classList.remove('hidden');
+      document.querySelectorAll('.nav button').forEach(btn => btn.classList.toggle('active', btn.dataset.view === view));
+    }
+
+    async function initSupabase(){
+      if(!SUPABASE_URL || SUPABASE_URL.includes('COLE_') || !SUPABASE_ANON_KEY || SUPABASE_ANON_KEY.includes('COLE_')){
+        throw new Error('Edite o arquivo e cole sua SUPABASE_URL e SUPABASE_ANON_KEY no JavaScript.');
+      }
+      supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+      const { data: { session } } = await supabaseClient.auth.getSession();
+      if(session?.user){
+        currentUser = session.user;
+        showApp();
+        await refreshAll();
+      } else {
+        showAuth();
+      }
+    }
+
+    async function login(){
       try{
-        const parsed = JSON.parse(raw);
-        document.getElementById('sbUrl').value = parsed.url || '';
-        document.getElementById('sbAnon').value = parsed.anon || '';
-        document.getElementById('adminEmail').value = parsed.email || '';
-      }catch{}
+        const email = qs('authEmail').value.trim();
+        const password = qs('authPassword').value;
+        const { data, error } = await supabaseClient.auth.signInWithPassword({ email, password });
+        if(error) throw error;
+        currentUser = data.user;
+        setAuthStatus('Login realizado com sucesso.', 'ok');
+        showApp();
+        await refreshAll();
+      }catch(err){
+        console.error(err);
+        setAuthStatus(err.message || 'Erro ao entrar.', 'error');
+      }
     }
 
-    function initClient(){
-      const url = document.getElementById('sbUrl').value.trim();
-      const anon = document.getElementById('sbAnon').value.trim();
-      if(!url || !anon) throw new Error('Preencha a URL e a anon key.');
-      supabaseClient = window.supabase.createClient(url, anon);
-      storeConfig();
+    async function signup(){
+      try{
+        const email = qs('authEmail').value.trim();
+        const password = qs('authPassword').value;
+        const { error } = await supabaseClient.auth.signUp({ email, password });
+        if(error) throw error;
+        setAuthStatus('Conta criada. Faça login em seguida.', 'ok');
+      }catch(err){
+        console.error(err);
+        setAuthStatus(err.message || 'Erro ao criar conta.', 'error');
+      }
     }
 
-    async function resizeImageTo500File(file){
+    async function logout(){
+      await supabaseClient.auth.signOut();
+      currentUser = null;
+      showAuth();
+    }
+
+    async function fetchStoreConfig(){
+      const { data, error } = await supabaseClient.from('store_config').select('*').order('updated_at',{ascending:false}).limit(1).maybeSingle();
+      if(error && error.code !== 'PGRST116') throw error;
+      if(data){
+        qs('cfgLoja').value = data.loja || '';
+        qs('cfgWhatsapp').value = data.whatsapp || '';
+        qs('cfgMsg').value = data.mensagem || '';
+        qs('cfgMoeda').value = data.moeda || 'BRL';
+        qs('cfgBanner').value = data.banner || '';
+      }
+    }
+
+    async function saveConfig(){
+      try{
+        const payload = {
+          loja: qs('cfgLoja').value.trim(),
+          whatsapp: qs('cfgWhatsapp').value.trim(),
+          mensagem: qs('cfgMsg').value.trim(),
+          moeda: qs('cfgMoeda').value.trim() || 'BRL',
+          banner: qs('cfgBanner').value.trim(),
+          updated_at: new Date().toISOString()
+        };
+        const { error } = await supabaseClient.from('store_config').upsert(payload);
+        if(error) throw error;
+        alert('Configurações salvas.');
+      }catch(err){
+        console.error(err);
+        alert(err.message || 'Erro ao salvar configurações.');
+      }
+    }
+
+    async function fetchProducts(){
+      const { data, error } = await supabaseClient.from('products').select('*').order('created_at',{ascending:false});
+      if(error) throw error;
+      products = (data || []).map(p => ({
+        ...p,
+        campos: Array.isArray(p.campos) ? p.campos : (typeof p.campos === 'string' ? p.campos.split(',').map(s=>s.trim()).filter(Boolean) : [])
+      }));
+      renderProducts();
+    }
+
+    async function fetchOrders(){
+      const { data, error } = await supabaseClient.from('orders').select('*').order('created_at',{ascending:false});
+      if(error) throw error;
+      orders = data || [];
+      renderOrders();
+      renderDashboard();
+    }
+
+    function renderProducts(){
+      const q = (qs('buscaProduto').value || '').toLowerCase().trim();
+      const tbody = qs('productsTable');
+      tbody.innerHTML = '';
+      const filtered = products.filter(p =>
+        (p.nome || '').toLowerCase().includes(q) ||
+        (p.categoria || '').toLowerCase().includes(q) ||
+        (p.sku || '').toLowerCase().includes(q)
+      );
+
+      if(!filtered.length){
+        tbody.innerHTML = `<tr><td colspan="8" class="mini">Nenhum produto cadastrado.</td></tr>`;
+        return;
+      }
+
+      filtered.forEach(p => {
+        const margin = p.preco ? (Number(p.preco)-Number(p.custo||0))/Number(p.preco) : 0;
+        tbody.insertAdjacentHTML('beforeend', `
+          <tr>
+            <td>${p.image_url ? `<img src="${p.image_url}" class="thumb" alt="Foto">` : '<div class="mini">sem foto</div>'}</td>
+            <td><strong>${escapeHtml(p.nome)}</strong><div class="mini">${escapeHtml(p.sku||'')}</div></td>
+            <td>${escapeHtml(p.categoria||'')}</td>
+            <td>${currency(p.preco)}</td>
+            <td>${currency(p.custo)}</td>
+            <td>${pct(margin)}</td>
+            <td>${p.ativo ? 'Sim' : 'Não'}</td>
+            <td>
+              <div class="toolbar">
+                <button class="btn ghost small" onclick="editProduct('${p.id}')">Editar</button>
+                <button class="btn danger small" onclick="removeProduct('${p.id}')">Excluir</button>
+              </div>
+            </td>
+          </tr>
+        `);
+      });
+    }
+
+    function renderOrders(){
+      const tbody = qs('ordersTable');
+      tbody.innerHTML = '';
+      qs('ordersCount').textContent = `${orders.length} pedido(s)`;
+
+      if(!orders.length){
+        tbody.innerHTML = `<tr><td colspan="8" class="mini">Nenhum pedido recebido.</td></tr>`;
+        return;
+      }
+
+      orders.forEach(order => {
+        const items = Array.isArray(order.items) ? order.items.map(i => `${i.qtd}x ${escapeHtml(i.nome)}`).join('<br>') : '—';
+        tbody.insertAdjacentHTML('beforeend', `
+          <tr>
+            <td>${escapeHtml(order.customer_name || order.cliente || '')}</td>
+            <td>${escapeHtml(order.phone || '')}</td>
+            <td>${escapeHtml(order.email || '')}</td>
+            <td>${order.created_at ? new Date(order.created_at).toLocaleString('pt-BR') : '—'}</td>
+            <td>${escapeHtml(order.payment_method || order.pagamento || '')}</td>
+            <td>${items}</td>
+            <td>${currency(order.total)}</td>
+            <td><button class="btn danger small" onclick="removeOrder('${order.id}')">Excluir</button></td>
+          </tr>
+        `);
+      });
+    }
+
+    function renderDashboard(){
+      const revenue = orders.reduce((sum, o) => sum + Number(o.total || 0), 0);
+      let cost = 0;
+      let marginList = [];
+
+      orders.forEach(order => {
+        const items = Array.isArray(order.items) ? order.items : [];
+        items.forEach(item => {
+          const prod = products.find(p => String(p.id) === String(item.productId));
+          if(prod){
+            cost += Number(prod.custo || 0) * Number(item.qtd || 0);
+            if(Number(prod.preco || 0) > 0){
+              marginList.push((Number(prod.preco)-Number(prod.custo||0))/Number(prod.preco));
+            }
+          }
+        });
+      });
+
+      const profit = revenue - cost;
+      const ticket = orders.length ? revenue / orders.length : 0;
+      const margin = marginList.length ? marginList.reduce((a,b)=>a+b,0)/marginList.length : 0;
+
+      qs('heroProdutos').textContent = products.length;
+      qs('heroPedidos').textContent = orders.length;
+      qs('heroReceita').textContent = currency(revenue);
+      qs('heroLucro').textContent = currency(profit);
+
+      qs('kpiReceita').textContent = currency(revenue);
+      qs('kpiLucro').textContent = currency(profit);
+      qs('kpiTicket').textContent = currency(ticket);
+      qs('kpiMargem').textContent = pct(margin);
+    }
+
+    async function resizeImageTo500Blob(file){
       return new Promise((resolve, reject) => {
         const reader = new FileReader();
         reader.onload = e => {
           const img = new Image();
           img.onload = () => {
             const canvas = document.createElement('canvas');
-            canvas.width = 500;
-            canvas.height = 500;
+            canvas.width = 500; canvas.height = 500;
             const ctx = canvas.getContext('2d');
             ctx.fillStyle = '#ffffff';
             ctx.fillRect(0,0,500,500);
-            const scale = Math.min(500 / img.width, 500 / img.height);
-            const nw = img.width * scale;
-            const nh = img.height * scale;
-            const x = (500 - nw) / 2;
-            const y = (500 - nh) / 2;
-            ctx.drawImage(img, x, y, nw, nh);
-            canvas.toBlob(blob => {
-              if(!blob) return reject(new Error('Falha ao converter imagem.'));
-              resolve(new File([blob], `produto-${Date.now()}.jpg`, { type: 'image/jpeg' }));
-            }, 'image/jpeg', 0.82);
+            const scale = Math.min(500/img.width, 500/img.height);
+            const w = img.width*scale, h = img.height*scale;
+            const x = (500-w)/2, y = (500-h)/2;
+            ctx.drawImage(img, x, y, w, h);
+            canvas.toBlob(blob => blob ? resolve(blob) : reject(new Error('Falha ao gerar a imagem')), 'image/jpeg', 0.82);
           };
           img.onerror = reject;
           img.src = e.target.result;
@@ -433,385 +530,150 @@
       });
     }
 
-    async function uploadImage(file){
-      if(!file) return { image_url: null, image_path: null };
-      const filename = `products/${Date.now()}-${Math.random().toString(36).slice(2,8)}.jpg`;
-      const { error: uploadError } = await supabaseClient.storage.from('product-images').upload(filename, file, { upsert: true, contentType: 'image/jpeg' });
-      if(uploadError) throw uploadError;
-      const { data } = supabaseClient.storage.from('product-images').getPublicUrl(filename);
-      return { image_url: data.publicUrl, image_path: filename };
-    }
-
-    async function deleteImage(path){
-      if(!path) return;
-      const { error } = await supabaseClient.storage.from('product-images').remove([path]);
-      if(error) console.error(error);
-    }
-
-    async function fetchConfig(){
-      const { data, error } = await supabaseClient.from('store_config').select('*').limit(1).maybeSingle();
+    async function uploadImage(file, productId){
+      const blob = await resizeImageTo500Blob(file);
+      const path = `${productId}-${Date.now()}.jpg`;
+      const { error } = await supabaseClient.storage.from(IMAGE_BUCKET).upload(path, blob, { upsert: true, contentType: 'image/jpeg' });
       if(error) throw error;
-      if(data) state.config = { ...state.config, ...data };
-    }
-
-    async function saveConfigToDb(){
-      const payload = {
-        id: 1,
-        loja: document.getElementById('cfgLoja').value.trim() || 'Minha Loja',
-        whatsapp: document.getElementById('cfgWhatsapp').value.trim() || '',
-        mensagem: document.getElementById('cfgMsg').value.trim() || 'Olá! Gostaria de fazer este pedido:',
-        moeda: document.getElementById('cfgMoeda').value.trim() || 'BRL',
-        banner: document.getElementById('cfgBanner').value.trim() || ''
-      };
-      const { error } = await supabaseClient.from('store_config').upsert(payload);
-      if(error) throw error;
-      state.config = payload;
-    }
-
-    async function fetchProducts(){
-      const { data, error } = await supabaseClient.from('products').select('*').order('created_at', { ascending:false });
-      if(error) throw error;
-      state.products = data || [];
-    }
-
-    async function fetchOrders(){
-      const { data, error } = await supabaseClient.from('orders').select('*').order('created_at', { ascending:false });
-      if(error) throw error;
-      state.orders = data || [];
-    }
-
-    function renderSelects(){
-      const select = document.getElementById('oProduto');
-      const activeProducts = state.products.filter(p => p.active);
-      select.innerHTML = `<option value="">Selecione</option>` + activeProducts.map(p => `<option value="${p.id}">${escapeHtml(p.name)}</option>`).join('');
-    }
-
-    function renderProductsTable(){
-      const tbody = document.getElementById('productsTable');
-      const q = (document.getElementById('buscaProduto')?.value || '').toLowerCase().trim();
-      tbody.innerHTML = '';
-      const filtered = state.products.filter(p => p.name.toLowerCase().includes(q) || (p.category || '').toLowerCase().includes(q) || (p.sku || '').toLowerCase().includes(q));
-      if(!filtered.length){ tbody.innerHTML = `<tr><td colspan="8" class="mini">Nenhum produto cadastrado.</td></tr>`; return; }
-      filtered.forEach(p => {
-        const margem = p.sale_price ? (Number(p.sale_price) - Number(p.cost || 0)) / Number(p.sale_price) : 0;
-        tbody.insertAdjacentHTML('beforeend', `
-          <tr>
-            <td>${p.image_url ? `<img src="${p.image_url}" class="thumb" alt="Foto">` : '<div class="mini">sem foto</div>'}</td>
-            <td><strong>${escapeHtml(p.name)}</strong><div class="mini">${escapeHtml(p.sku || '')}</div></td>
-            <td>${escapeHtml(p.category || '')}</td>
-            <td>${currency(p.sale_price)}</td>
-            <td>${currency(p.cost)}</td>
-            <td>${pct(margem)}</td>
-            <td>${p.active ? 'Sim' : 'Não'}</td>
-            <td><div class="toolbar"><button class="btn ghost small" onclick="editProduct('${p.id}')">Editar</button><button class="btn danger small" onclick="removeProduct('${p.id}')">Excluir</button></div></td>
-          </tr>
-        `);
-      });
-    }
-
-    function renderDraftOrder(){
-      const tbody = document.getElementById('draftOrderTable');
-      tbody.innerHTML = '';
-      let total = 0;
-      if(!state.draftOrder.items.length){ tbody.innerHTML = `<tr><td colspan="4" class="mini">Nenhum item no rascunho.</td></tr>`; }
-      else {
-        state.draftOrder.items.forEach((item,index) => {
-          const subtotal = Number(item.price || 0) * Number(item.quantity || 0);
-          total += subtotal;
-          tbody.insertAdjacentHTML('beforeend', `<tr><td>${escapeHtml(item.name)}</td><td>${item.quantity}</td><td>${escapeHtml(item.customization || '')}</td><td>${currency(subtotal)}<div style="margin-top:8px"><button class="btn ghost small" onclick="removeDraftItem(${index})">Remover</button></div></td></tr>`);
-        });
-      }
-      document.getElementById('draftTotal').textContent = currency(total);
-    }
-
-    function renderOrders(){
-      const tbody = document.getElementById('ordersTable');
-      tbody.innerHTML = '';
-      if(!state.orders.length){ tbody.innerHTML = `<tr><td colspan="7" class="mini">Nenhum pedido salvo.</td></tr>`; return; }
-      state.orders.forEach(order => {
-        const itens = Array.isArray(order.items) ? order.items.map(item => `${item.quantity}x ${escapeHtml(item.name)}`).join('<br>') : '';
-        tbody.insertAdjacentHTML('beforeend', `<tr><td>${escapeHtml(order.client_name || 'Cliente')}</td><td>${escapeHtml(order.phone || '')}</td><td>${escapeHtml(order.order_date || '')}</td><td>${escapeHtml(order.payment_method || '')}</td><td>${itens}</td><td>${currency(order.total_amount || 0)}</td><td><button class="btn danger small" onclick="removeOrder('${order.id}')">Excluir</button></td></tr>`);
-      });
-    }
-
-    function renderDashboard(){
-      let receita = 0, custo = 0, margins = [];
-      state.orders.forEach(order => {
-        (order.items || []).forEach(item => {
-          receita += Number(item.price || 0) * Number(item.quantity || 0);
-          custo += Number(item.cost || 0) * Number(item.quantity || 0);
-          if(Number(item.price || 0) > 0) margins.push((Number(item.price) - Number(item.cost || 0)) / Number(item.price));
-        });
-      });
-      const lucro = receita - custo;
-      const ticket = state.orders.length ? receita / state.orders.length : 0;
-      const margem = margins.length ? margins.reduce((a,b)=>a+b,0)/margins.length : 0;
-      document.getElementById('heroProdutos').textContent = state.products.length;
-      document.getElementById('heroPedidos').textContent = state.orders.length;
-      document.getElementById('heroReceita').textContent = currency(receita);
-      document.getElementById('heroLucro').textContent = currency(lucro);
-      document.getElementById('kpiReceita').textContent = currency(receita);
-      document.getElementById('kpiLucro').textContent = currency(lucro);
-      document.getElementById('kpiTicket').textContent = currency(ticket);
-      document.getElementById('kpiMargem').textContent = pct(margem);
-    }
-
-    function renderConfig(){
-      document.getElementById('cfgLoja').value = state.config.loja || '';
-      document.getElementById('cfgWhatsapp').value = state.config.whatsapp || '';
-      document.getElementById('cfgMsg').value = state.config.mensagem || '';
-      document.getElementById('cfgMoeda').value = state.config.moeda || 'BRL';
-      document.getElementById('cfgBanner').value = state.config.banner || '';
-    }
-
-    async function refreshAll(){
-      await fetchConfig();
-      await fetchProducts();
-      await fetchOrders();
-      renderSelects();
-      renderProductsTable();
-      renderDraftOrder();
-      renderOrders();
-      renderDashboard();
-      renderConfig();
-    }
-
-    function setView(view){
-      document.querySelectorAll('.view').forEach(v => v.classList.add('hidden'));
-      document.getElementById(view).classList.remove('hidden');
-      document.querySelectorAll('.nav button').forEach(btn => btn.classList.toggle('active', btn.dataset.view === view));
-    }
-
-    async function handleLogin(){
-      try{
-        initClient();
-        const email = document.getElementById('adminEmail').value.trim();
-        const password = document.getElementById('adminPassword').value;
-        const { data, error } = await supabaseClient.auth.signInWithPassword({ email, password });
-        if(error) throw error;
-        sessionUser = data.user;
-        document.getElementById('loginArea').classList.add('hidden');
-        document.getElementById('appArea').classList.remove('hidden');
-        setAuthStatus('Login realizado com sucesso.', 'ok');
-        await refreshAll();
-      }catch(err){
-        console.error(err);
-        setAuthStatus(err.message || 'Erro ao fazer login.', 'error');
-      }
-    }
-
-    async function handleSignup(){
-      try{
-        initClient();
-        const email = document.getElementById('adminEmail').value.trim();
-        const password = document.getElementById('adminPassword').value;
-        const { error } = await supabaseClient.auth.signUp({ email, password });
-        if(error) throw error;
-        setAuthStatus('Conta criada. Se o projeto exigir confirmação por e-mail, confirme antes de entrar.', 'ok');
-      }catch(err){
-        console.error(err);
-        setAuthStatus(err.message || 'Erro ao criar conta.', 'error');
-      }
-    }
-
-    async function handleLogout(){
-      if(!supabase) return;
-      await supabaseClient.auth.signOut();
-      sessionUser = null;
-      document.getElementById('appArea').classList.add('hidden');
-      document.getElementById('loginArea').classList.remove('hidden');
-      setAuthStatus('Sessão encerrada.', 'warn');
-    }
-
-    async function handlePhotoUpload(){
-      const file = document.getElementById('pFoto').files[0];
-      if(!file){ state.currentPhotoFile = null; state.currentPhotoPreview = ''; showPhotoPreview(''); return; }
-      try{
-        setStatus('Processando foto...', 'warn');
-        const resized = await resizeImageTo500File(file);
-        state.currentPhotoFile = resized;
-        state.currentPhotoPreview = URL.createObjectURL(resized);
-        showPhotoPreview(state.currentPhotoPreview);
-        setStatus('Foto pronta para envio.', 'ok');
-      }catch(err){
-        console.error(err);
-        state.currentPhotoFile = null;
-        state.currentPhotoPreview = '';
-        showPhotoPreview('');
-        setStatus('Erro ao processar a foto.', 'error');
-      }
+      const { data } = supabaseClient.storage.from(IMAGE_BUCKET).getPublicUrl(path);
+      return data.publicUrl;
     }
 
     function clearProductForm(){
-      ['pNome','pCategoria','pPreco','pCusto','pTempo','pSku','pDescricao','pCampos'].forEach(id => document.getElementById(id).value = '');
-      document.getElementById('pAtivo').value = 'true';
-      document.getElementById('pFoto').value = '';
-      state.editingProductId = null;
-      state.currentPhotoFile = null;
-      state.currentPhotoPreview = '';
-      state.currentImagePath = null;
-      showPhotoPreview('');
-      document.getElementById('salvarProduto').textContent = 'Salvar produto';
-      setStatus('Preencha os dados e clique em salvar.');
+      ['pNome','pCategoria','pPreco','pCusto','pTempo','pSku','pDescricao','pCampos'].forEach(id => qs(id).value = '');
+      qs('pAtivo').value = 'true';
+      qs('pFoto').value = '';
+      currentUploadFile = null;
+      editingProductId = null;
+      qs('salvarProduto').textContent = 'Salvar produto';
+      qs('previewFotoBox').classList.add('hidden');
+      setProductStatus('Preencha os dados e clique em salvar.');
     }
 
-    async function handleSaveProduct(){
+    async function saveProduct(){
       try{
-        const name = document.getElementById('pNome').value.trim();
-        const category = document.getElementById('pCategoria').value.trim() || 'Sem categoria';
-        const sale_price = Number(document.getElementById('pPreco').value || 0);
-        const cost = Number(document.getElementById('pCusto').value || 0);
-        const production_time = Number(document.getElementById('pTempo').value || 0);
-        const sku = document.getElementById('pSku').value.trim();
-        const active = document.getElementById('pAtivo').value === 'true';
-        const description = document.getElementById('pDescricao').value.trim();
-        const custom_fields = document.getElementById('pCampos').value.split(',').map(s => s.trim()).filter(Boolean);
-        if(!name){ setStatus('Informe o nome do produto.', 'error'); return; }
-        if(sale_price < 0 || cost < 0 || production_time < 0){ setStatus('Preço, custo e tempo não podem ser negativos.', 'error'); return; }
+        const nome = qs('pNome').value.trim();
+        const categoria = qs('pCategoria').value.trim() || 'Sem categoria';
+        const preco = Number(qs('pPreco').value || 0);
+        const custo = Number(qs('pCusto').value || 0);
+        const tempo = Number(qs('pTempo').value || 0);
+        const sku = qs('pSku').value.trim();
+        const ativo = qs('pAtivo').value === 'true';
+        const descricao = qs('pDescricao').value.trim();
+        const campos = qs('pCampos').value.split(',').map(s=>s.trim()).filter(Boolean);
 
-        let image_url = null;
-        let image_path = state.currentImagePath;
-        if(state.currentPhotoFile){
-          if(state.editingProductId && state.currentImagePath) await deleteImage(state.currentImagePath);
-          const upload = await uploadImage(state.currentPhotoFile);
-          image_url = upload.image_url;
-          image_path = upload.image_path;
-        } else if(state.editingProductId) {
-          const existing = state.products.find(p => p.id === state.editingProductId);
-          image_url = existing?.image_url || null;
-          image_path = existing?.image_path || null;
+        if(!nome){
+          setProductStatus('Informe o nome do produto.', 'error');
+          return;
         }
 
-        const payload = { name, category, sale_price, cost, production_time, sku, active, description, custom_fields, image_url, image_path };
-        if(state.editingProductId){
-          const { error } = await supabaseClient.from('products').update(payload).eq('id', state.editingProductId);
-          if(error) throw error;
-          setStatus('Produto atualizado com sucesso.', 'ok');
-        } else {
-          const { error } = await supabaseClient.from('products').insert(payload);
-          if(error) throw error;
-          setStatus('Produto cadastrado com sucesso.', 'ok');
+        setProductStatus('Salvando produto...', 'warn');
+
+        const id = editingProductId || crypto.randomUUID();
+        let imageUrl = products.find(p => p.id === id)?.image_url || null;
+
+        if(currentUploadFile){
+          imageUrl = await uploadImage(currentUploadFile, id);
         }
-        await refreshAll();
+
+        const payload = {
+          id, nome, categoria, preco, custo, tempo, sku, ativo, descricao, campos,
+          image_url: imageUrl
+        };
+
+        const { error } = await supabaseClient.from('products').upsert(payload);
+        if(error) throw error;
+
+        setProductStatus('Produto salvo com sucesso.', 'ok');
         clearProductForm();
+        await fetchProducts();
       }catch(err){
         console.error(err);
-        setStatus(err.message || 'Erro ao salvar o produto.', 'error');
+        setProductStatus(err.message || 'Erro ao salvar produto.', 'error');
       }
     }
 
     window.editProduct = function(id){
-      const p = state.products.find(x => x.id === id);
+      const p = products.find(x => String(x.id) === String(id));
       if(!p) return;
-      state.editingProductId = id;
-      state.currentPhotoFile = null;
-      state.currentPhotoPreview = p.image_url || '';
-      state.currentImagePath = p.image_path || null;
-      document.getElementById('pNome').value = p.name || '';
-      document.getElementById('pCategoria').value = p.category || '';
-      document.getElementById('pPreco').value = p.sale_price ?? '';
-      document.getElementById('pCusto').value = p.cost ?? '';
-      document.getElementById('pTempo').value = p.production_time ?? '';
-      document.getElementById('pSku').value = p.sku || '';
-      document.getElementById('pAtivo').value = String(!!p.active);
-      document.getElementById('pDescricao').value = p.description || '';
-      document.getElementById('pCampos').value = Array.isArray(p.custom_fields) ? p.custom_fields.join(', ') : '';
-      document.getElementById('pFoto').value = '';
-      showPhotoPreview(p.image_url || '');
-      document.getElementById('salvarProduto').textContent = 'Atualizar produto';
-      setStatus(`Editando: ${p.name}`, 'warn');
+      editingProductId = p.id;
+      qs('pNome').value = p.nome || '';
+      qs('pCategoria').value = p.categoria || '';
+      qs('pPreco').value = p.preco ?? '';
+      qs('pCusto').value = p.custo ?? '';
+      qs('pTempo').value = p.tempo ?? '';
+      qs('pSku').value = p.sku || '';
+      qs('pAtivo').value = String(!!p.ativo);
+      qs('pDescricao').value = p.descricao || '';
+      qs('pCampos').value = Array.isArray(p.campos) ? p.campos.join(', ') : '';
+      qs('salvarProduto').textContent = 'Atualizar produto';
+      if(p.image_url){
+        qs('previewFoto').src = p.image_url;
+        qs('previewFotoBox').classList.remove('hidden');
+      } else {
+        qs('previewFotoBox').classList.add('hidden');
+      }
+      setProductStatus(`Editando: ${p.nome}`, 'warn');
       setView('cadastro');
-      window.scrollTo({ top: 0, behavior: 'smooth' });
-    };
+    }
 
     window.removeProduct = async function(id){
       if(!confirm('Excluir este produto?')) return;
-      const p = state.products.find(x => x.id === id);
-      if(p?.image_path) await deleteImage(p.image_path);
       const { error } = await supabaseClient.from('products').delete().eq('id', id);
-      if(error){ alert(error.message); return; }
-      await refreshAll();
-      setStatus('Produto excluído.', 'ok');
-    };
-
-    window.removeDraftItem = function(index){
-      state.draftOrder.items.splice(index, 1);
-      renderDraftOrder();
-    };
+      if(error){
+        alert(error.message || 'Erro ao excluir produto.');
+        return;
+      }
+      await fetchProducts();
+      renderDashboard();
+    }
 
     window.removeOrder = async function(id){
       if(!confirm('Excluir este pedido?')) return;
       const { error } = await supabaseClient.from('orders').delete().eq('id', id);
-      if(error){ alert(error.message); return; }
-      await refreshAll();
-    };
-
-    async function saveOrder(){
-      if(!state.draftOrder.items.length){ alert('Adicione itens ao pedido.'); return; }
-      const total_amount = state.draftOrder.items.reduce((sum, item) => sum + Number(item.price || 0) * Number(item.quantity || 0), 0);
-      const payload = {
-        client_name: document.getElementById('oCliente').value || 'Cliente',
-        phone: document.getElementById('oTelefone').value || '',
-        order_date: document.getElementById('oData').value || new Date().toISOString().slice(0,10),
-        payment_method: document.getElementById('oPagamento').value || 'PIX',
-        items: state.draftOrder.items,
-        total_amount
-      };
-      const { error } = await supabaseClient.from('orders').insert(payload);
-      if(error){ alert(error.message); return; }
-      state.draftOrder.items = [];
-      ['oCliente','oTelefone','oData','oPers'].forEach(id => document.getElementById(id).value = '');
-      document.getElementById('oQtd').value = 1;
-      document.getElementById('oPagamento').value = 'PIX';
-      await refreshAll();
-      alert('Pedido salvo com sucesso.');
+      if(error){
+        alert(error.message || 'Erro ao excluir pedido.');
+        return;
+      }
+      await fetchOrders();
     }
 
-    async function initSessionIfPossible(){
-      try{
-        initClient();
-        const { data } = await supabaseClient.auth.getSession();
-        if(data.session){
-          sessionUser = data.session.user;
-          document.getElementById('loginArea').classList.add('hidden');
-          document.getElementById('appArea').classList.remove('hidden');
-          await refreshAll();
-        }
-      }catch{}
+    async function refreshAll(){
+      await Promise.all([fetchStoreConfig(), fetchProducts(), fetchOrders()]);
     }
 
-    function initEvents(){
+    function bindEvents(){
       document.querySelectorAll('.nav button').forEach(btn => btn.addEventListener('click', () => setView(btn.dataset.view)));
-      document.getElementById('btnLogin').addEventListener('click', handleLogin);
-      document.getElementById('btnSignup').addEventListener('click', handleSignup);
-      document.getElementById('btnLogout').addEventListener('click', handleLogout);
-      document.getElementById('btnPreviewCliente').addEventListener('click', () => window.open('index.html', '_blank'));
-      document.getElementById('btnRefreshData').addEventListener('click', refreshAll);
-      document.getElementById('resetProduto').addEventListener('click', clearProductForm);
-      document.getElementById('pFoto').addEventListener('change', handlePhotoUpload);
-      document.getElementById('salvarProduto').addEventListener('click', handleSaveProduct);
-      document.getElementById('buscaProduto').addEventListener('input', renderProductsTable);
-      document.getElementById('addOrderItem').addEventListener('click', () => {
-        const pid = document.getElementById('oProduto').value;
-        const p = state.products.find(x => x.id === pid);
-        if(!p){ alert('Selecione um produto.'); return; }
-        const quantity = Math.max(1, Number(document.getElementById('oQtd').value || 1));
-        state.draftOrder.items.push({ product_id: pid, name: p.name, quantity, customization: document.getElementById('oPers').value || '', price: Number(p.sale_price || 0), cost: Number(p.cost || 0) });
-        renderDraftOrder();
+      qs('btnLogin').addEventListener('click', login);
+      qs('btnSignup').addEventListener('click', signup);
+      qs('btnLogout').addEventListener('click', logout);
+      qs('btnRefresh').addEventListener('click', refreshAll);
+      qs('btnPreviewCliente').addEventListener('click', () => window.open('index.html', '_blank'));
+      qs('saveConfig').addEventListener('click', saveConfig);
+      qs('salvarProduto').addEventListener('click', saveProduct);
+      qs('resetProduto').addEventListener('click', clearProductForm);
+      qs('buscaProduto').addEventListener('input', renderProducts);
+      qs('pFoto').addEventListener('change', e => {
+        currentUploadFile = e.target.files[0] || null;
+        if(currentUploadFile){
+          const url = URL.createObjectURL(currentUploadFile);
+          qs('previewFoto').src = url;
+          qs('previewFotoBox').classList.remove('hidden');
+        } else {
+          qs('previewFotoBox').classList.add('hidden');
+        }
       });
-      document.getElementById('clearOrderDraft').addEventListener('click', () => { state.draftOrder.items = []; renderDraftOrder(); });
-      document.getElementById('saveOrder').addEventListener('click', saveOrder);
-      document.getElementById('saveConfig').addEventListener('click', async () => {
-        try{ await saveConfigToDb(); alert('Configurações salvas.'); }
-        catch(err){ alert(err.message); }
-      });
-      document.getElementById('btnExportJson').addEventListener('click', () => exportJson('personaliza-hub-backup.json', { config: state.config, products: state.products, orders: state.orders }));
     }
 
-    restoreConfig();
-    initEvents();
-    setView('inicio');
-    initSessionIfPossible();
+    (async function init(){
+      bindEvents();
+      try{
+        await initSupabase();
+      }catch(err){
+        console.error(err);
+        setAuthStatus(err.message || 'Erro ao iniciar conexão com Supabase.', 'error');
+      }
+    })();
   </script>
 </body>
 </html>

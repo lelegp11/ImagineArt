@@ -3,12 +3,17 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Personaliza Hub — Catálogo</title>
+  <title>Personaliza Hub — Catálogo Final</title>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <style>
-    :root{--bg:#f7f7fb;--card:#ffffff;--text:#1f2430;--muted:#6b7280;--line:#e5e7eb;--primary:#6d28d9;--primary-2:#8b5cf6;--accent:#ec4899;--success:#16a34a;--shadow:0 16px 40px rgba(22,27,45,.08);--radius:20px}
+    :root{
+      --bg:#f7f7fb;--card:#ffffff;--text:#1f2430;--muted:#6b7280;--line:#e5e7eb;
+      --primary:#6d28d9;--primary-2:#8b5cf6;--accent:#ec4899;--success:#16a34a;
+      --shadow:0 16px 40px rgba(22,27,45,.08);--radius:20px;
+    }
     *{box-sizing:border-box}
     html,body{margin:0;padding:0;background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Inter,Arial,sans-serif}
+    .hidden{display:none!important}
     .container{max-width:1380px;margin:0 auto;padding:20px}
     .topbar{position:sticky;top:0;z-index:50;backdrop-filter:saturate(180%) blur(16px);background:rgba(247,247,251,.82);border-bottom:1px solid rgba(229,231,235,.7)}
     .topbar-inner{display:flex;align-items:center;gap:16px;justify-content:space-between;padding:14px 20px;max-width:1380px;margin:0 auto}
@@ -38,19 +43,22 @@
     .grid-2{display:grid;grid-template-columns:repeat(2,1fr);gap:18px}
     .card{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);padding:18px}
     .toolbar{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+    .toolbar .spacer{flex:1}
     .notice{padding:14px 16px;border-radius:16px;background:#fdf2f8;border:1px solid #fbcfe8;color:#9d174d;font-size:14px}
     .table-wrap{overflow:auto;border:1px solid var(--line);border-radius:18px}
     table{width:100%;border-collapse:collapse;background:#fff}
     th,td{padding:12px 14px;border-bottom:1px solid var(--line);text-align:left;font-size:14px;vertical-align:top}
     th{background:#fafafa;color:#4b5563}
     .checkout-bar{position:sticky;bottom:16px;z-index:20;background:rgba(255,255,255,.92);backdrop-filter:blur(12px);border:1px solid var(--line);border-radius:24px;box-shadow:var(--shadow);padding:14px 16px;display:flex;align-items:center;gap:14px;justify-content:space-between;margin-top:20px}
-    .hidden{display:none!important}
     .qty{display:flex;align-items:center;border:1px solid var(--line);border-radius:999px;overflow:hidden}
     .qty button{border:none;background:#fff;padding:10px 14px;cursor:pointer;font-size:18px}
     .qty span{padding:0 14px;font-weight:800}
+    .status{margin-top:10px;padding:12px 14px;border-radius:14px;border:1px solid var(--line);background:#fff}
+    .status.ok{color:#166534;border-color:#bbf7d0;background:#f0fdf4}
+    .status.warn{color:#92400e;border-color:#fde68a;background:#fffbeb}
+    .status.error{color:#991b1b;border-color:#fecaca;background:#fef2f2}
     .footer-note{margin-top:12px;color:var(--muted);font-size:13px}
-    .setup{max-width:840px;margin:24px auto}
-    @media (max-width:1200px){.catalog-grid,.form-grid{grid-template-columns:repeat(2,1fr)}.hero-content,.grid-2{grid-template-columns:1fr}}
+    @media (max-width:1200px){.catalog-grid,.form-grid{grid-template-columns:repeat(2,1fr)} .hero-content,.grid-2{grid-template-columns:1fr}}
     @media (max-width:700px){.container{padding:14px}.topbar-inner{padding:12px 14px}.hero-content{padding:22px}.hero h1{font-size:30px}.catalog-grid,.form-grid,.grid-2{grid-template-columns:1fr}.checkout-bar{flex-direction:column;align-items:stretch}}
   </style>
 </head>
@@ -64,7 +72,6 @@
           <small>Catálogo • Pedido via WhatsApp</small>
         </div>
       </div>
-
       <div class="toolbar">
         <select id="filtroCategoria" class="input" style="max-width:220px"></select>
         <input class="input" id="buscaCatalogo" placeholder="Buscar produto" style="max-width:260px">
@@ -73,142 +80,177 @@
   </div>
 
   <div class="container">
-    <section id="setupArea" class="setup">
-      <div class="card">
-        <h2>Bem Vindo!</h2>
-        <div class="toolbar" style="margin-top:14px"><button class="btn primary" id="btnConnect">Entre Aqui!</button></div>
+    <section class="hero">
+      <div class="hero-content">
+        <div>
+          <div class="smallcaps" style="color:#ddd">Catálogo online</div>
+          <h1>Escolha seus produtos personalizados.</h1>
+          <p id="bannerText">Coleção personalizada pronta para encantar seus clientes.</p>
+        </div>
+        <div class="hero-panel">
+          <div class="smallcaps" style="color:#e9d5ff">Como funciona</div>
+          <p style="margin:10px 0 0;color:#fff">Escolha os produtos, informe a personalização, preencha seus dados e salve o pedido no sistema ou envie pelo WhatsApp.</p>
+        </div>
       </div>
     </section>
 
-    <div id="catalogArea" class="hidden">
-      <section class="hero">
-        <div class="hero-content">
+    <div class="notice" style="margin-top:16px">
+      Selecione os itens, informe a personalização e toque em <strong>Salvar pedido</strong> ou em <strong>Enviar pedido no WhatsApp</strong>.
+    </div>
+
+    <section class="catalog-grid" id="catalogGrid"></section>
+
+    <div class="checkout-bar">
+      <div>
+        <div class="smallcaps">Resumo do pedido</div>
+        <div><strong id="cartCount">0 item(s)</strong> • <span id="cartTotal">R$ 0,00</span></div>
+      </div>
+      <div class="toolbar">
+        <button class="btn ghost" id="openResumo">Ver resumo</button>
+        <button class="btn primary" id="saveOrderBtn">Salvar pedido</button>
+        <button class="btn success" id="sendWhatsapp">Enviar pedido no WhatsApp</button>
+      </div>
+    </div>
+
+    <div class="grid-2" style="margin-top:18px">
+      <div class="card">
+        <h2>Dados do cliente</h2>
+        <div class="form-grid">
+          <div><label>Nome</label><input class="input" id="cNome"></div>
+          <div><label>Telefone</label><input class="input" id="cTelefone"></div>
+          <div><label>E-mail</label><input class="input" id="cEmail"></div>
           <div>
-            <div class="smallcaps" style="color:#ddd">Catálogo online</div>
-            <h1>Escolha seus produtos personalizados.</h1>
-            <p id="bannerText">Coleção personalizada pronta para encantar seus clientes.</p>
-          </div>
-          <div class="hero-panel">
-            <div class="smallcaps" style="color:#e9d5ff">Como funciona</div>
-            <p style="margin:10px 0 0;color:#fff">Escolha os produtos, informe a personalização, preencha seus dados e envie o pedido direto no WhatsApp.</p>
+            <label>Forma de pagamento</label>
+            <select class="input" id="cPagamento">
+              <option value="PIX">PIX</option>
+              <option value="Crédito (+ R$5,00 da taxa do Mercado Pago)">Crédito (+ R$5,00 da taxa do Mercado Pago)</option>
+            </select>
           </div>
         </div>
-      </section>
-
-      <div class="notice" style="margin-top:16px">Selecione os itens, informe a personalização e toque em <strong>Enviar pedido no WhatsApp</strong>.</div>
-
-      <section class="catalog-grid" id="catalogGrid"></section>
-
-      <div class="checkout-bar">
-        <div>
-          <div class="smallcaps">Resumo do pedido</div>
-          <div><strong id="cartCount">0 item(s)</strong> • <span id="cartTotal">R$ 0,00</span></div>
+        <div style="margin-top:12px">
+          <label>Observações gerais</label>
+          <textarea class="input" id="cObs" rows="3" placeholder="Prazo, cor, nome, tema, detalhes..."></textarea>
         </div>
-        <div class="toolbar">
-          <button class="btn ghost" id="openResumo">Ver resumo</button>
-          <button class="btn primary" id="saveOrderBtn">Salvar pedido</button>
-          <button class="btn success" id="sendWhatsapp">Enviar pedido no WhatsApp</button>
-        </div>
+        <div id="orderStatus" class="status hidden"></div>
       </div>
 
-      <div class="grid-2" style="margin-top:18px">
-        <div class="card">
-          <h2>Dados do cliente</h2>
-          <div class="form-grid">
-            <div><label>Nome</label><input class="input" id="cNome"></div>
-            <div><label>Telefone</label><input class="input" id="cTelefone"></div>
-            <div><label>E-mail</label><input class="input" id="cEmail"></div>
-            <div>
-              <label>Forma de pagamento</label>
-              <select class="input" id="cPagamento">
-                <option value="PIX">PIX</option>
-                <option value="Crédito (+ R$5,00 da taxa do Mercado Pago)">Crédito (+ R$5,00 da taxa do Mercado Pago)</option>
-              </select>
-            </div>
-          </div>
-          <div style="margin-top:12px">
-            <label>Observações gerais</label>
-            <textarea class="input" id="cObs" rows="3" placeholder="Prazo, cor, nome, tema, detalhes..."></textarea>
-          </div>
+      <div class="card hidden" id="resumoCard">
+        <div class="toolbar">
+          <h2 style="margin:0">Resumo do pedido</h2>
+          <span class="spacer"></span>
+          <button class="btn ghost" id="hideResumo">Fechar</button>
         </div>
-
-        <div class="card hidden" id="resumoCard">
-          <div class="toolbar"><h2 style="margin:0">Resumo do pedido</h2><span class="spacer"></span><button class="btn ghost" id="hideResumo">Fechar</button></div>
-          <div class="table-wrap" style="margin-top:14px">
-            <table>
-              <thead><tr><th>Produto</th><th>Qtd</th><th>Personalização</th><th>Subtotal</th><th>Ação</th></tr></thead>
-              <tbody id="resumoPedido"></tbody>
-            </table>
-          </div>
-          <div class="footer-note">Confira tudo antes de enviar.</div>
+        <div class="table-wrap" style="margin-top:14px">
+          <table>
+            <thead><tr><th>Produto</th><th>Qtd</th><th>Personalização</th><th>Subtotal</th><th>Ação</th></tr></thead>
+            <tbody id="resumoPedido"></tbody>
+          </table>
         </div>
+        <div class="footer-note">Confira tudo antes de salvar ou enviar.</div>
       </div>
     </div>
   </div>
 
   <script>
-    const STORAGE_KEY = 'personaliza_hub_supabase_auth';
+    const SUPABASE_URL = 'https://xwaflarqkooltziusmbl.supabase.co';
+    const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inh3YWZsYXJxa29vbHR6aXVzbWJsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzU0ODkyNDgsImV4cCI6MjA5MTA2NTI0OH0.v4YFHMEc8Ryu_97J5UV5nVU7wPjFKetd10WP9MJ60u4';
+
     let supabaseClient = null;
-    let state = { config: { loja:'Minha Loja', whatsapp:'5511911173222', mensagem:'Olá! Gostaria de fazer este pedido:', moeda:'BRL', banner:'Coleção personalizada pronta para encantar seus clientes.' }, products: [], cart: [] };
+    let state = {
+      config: { loja:'Minha Loja', whatsapp:'', mensagem:'Olá! Gostaria de fazer este pedido:', moeda:'BRL', banner:'Coleção personalizada pronta para encantar seus clientes.' },
+      products: [],
+      cart: []
+    };
 
-    function escapeHtml(str=''){ return String(str).replace(/[&<>"]+/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[m] || m)); }
-    function currency(v){ return new Intl.NumberFormat('pt-BR',{style:'currency',currency: state.config.moeda || 'BRL'}).format(Number(v || 0)); }
-    function setSetupStatus(msg){ document.getElementById('setupStatus').textContent = msg; }
-    function setOrderStatus(msg, isError=false){ const el = document.getElementById('orderStatus'); el.textContent = msg; el.classList.remove('hidden'); el.style.background = isError ? '#fef2f2' : '#f0fdf4'; el.style.borderColor = isError ? '#fecaca' : '#bbf7d0'; el.style.color = isError ? '#991b1b' : '#166534'; }
-
-    function initClient(){
-      const url = 'https://xwaflarqkooltziusmbl.supabase.co'
-      const anon = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inh3YWZsYXJxa29vbHR6aXVzbWJsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzU0ODkyNDgsImV4cCI6MjA5MTA2NTI0OH0.v4YFHMEc8Ryu_97J5UV5nVU7wPjFKetd10WP9MJ60u4'
-      supabaseClient = window.supabase.createClient(url, anon);
+    function escapeHtml(str=''){ return String(str).replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[m])); }
+    function currency(v){ return new Intl.NumberFormat('pt-BR',{style:'currency',currency:state.config.moeda || 'BRL'}).format(Number(v||0)); }
+    function qs(id){ return document.getElementById(id); }
+    function setOrderStatus(message, type=''){
+      const el = qs('orderStatus');
+      if(!el) return;
+      el.classList.remove('hidden');
+      el.textContent = message;
+      el.className = 'status ' + type;
     }
 
-    async function fetchConfig(){
-      const { data, error } = await supabaseClient.from('store_config').select('*').limit(1).maybeSingle();
-      if(error) throw error;
-      if(data) state.config = { ...state.config, ...data };
+    async function initSupabase(){
+      if(!SUPABASE_URL || SUPABASE_URL.includes('COLE_') || !SUPABASE_ANON_KEY || SUPABASE_ANON_KEY.includes('COLE_')){
+        throw new Error('Edite o arquivo e cole sua SUPABASE_URL e SUPABASE_ANON_KEY no JavaScript.');
+      }
+      supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+    }
+
+    async function fetchStoreConfig(){
+      const { data, error } = await supabaseClient.from('store_config').select('*').order('updated_at',{ascending:false}).limit(1).maybeSingle();
+      if(error && error.code !== 'PGRST116') throw error;
+      if(data){
+        state.config.loja = data.loja || state.config.loja;
+        state.config.whatsapp = data.whatsapp || state.config.whatsapp;
+        state.config.mensagem = data.mensagem || state.config.mensagem;
+        state.config.moeda = data.moeda || state.config.moeda;
+        state.config.banner = data.banner || state.config.banner;
+      }
     }
 
     async function fetchProducts(){
-      const { data, error } = await supabaseClient.from('products').select('*').eq('active', true).order('created_at', { ascending:false });
+      const { data, error } = await supabaseClient.from('products').select('*').eq('ativo', true).order('created_at',{ascending:false});
       if(error) throw error;
-      state.products = data || [];
+      state.products = (data || []).map(p => ({
+        ...p,
+        campos: Array.isArray(p.campos) ? p.campos : (typeof p.campos === 'string' ? p.campos.split(',').map(s=>s.trim()).filter(Boolean) : [])
+      }));
     }
 
     function buildCategoryFilter(){
-      const select = document.getElementById('filtroCategoria');
-      const cats = [...new Set(state.products.map(p => p.category || 'Sem categoria'))].sort();
+      const select = qs('filtroCategoria');
+      const cats = [...new Set(state.products.filter(p => p.ativo).map(p => p.categoria || 'Sem categoria'))].sort();
       select.innerHTML = `<option value="">Todas as categorias</option>` + cats.map(c => `<option value="${escapeHtml(c)}">${escapeHtml(c)}</option>`).join('');
     }
 
     function getFilteredProducts(){
-      const busca = (document.getElementById('buscaCatalogo').value || '').toLowerCase().trim();
-      const cat = document.getElementById('filtroCategoria').value || '';
-      return state.products.filter(p => {
-        const okBusca = p.name.toLowerCase().includes(busca) || (p.category || '').toLowerCase().includes(busca) || (p.description || '').toLowerCase().includes(busca);
-        const okCat = !cat || (p.category || '') === cat;
+      const busca = (qs('buscaCatalogo').value || '').toLowerCase().trim();
+      const cat = qs('filtroCategoria').value || '';
+      return state.products.filter(p => p.ativo).filter(p => {
+        const okBusca = (p.nome||'').toLowerCase().includes(busca) || (p.categoria||'').toLowerCase().includes(busca) || (p.descricao||'').toLowerCase().includes(busca);
+        const okCat = !cat || (p.categoria || '') === cat;
         return okBusca && okCat;
       });
     }
 
-    function renderCatalog(){
-      const grid = document.getElementById('catalogGrid');
+    async function renderCatalog(){
+      const grid = qs('catalogGrid');
       const products = getFilteredProducts();
       grid.innerHTML = '';
-      if(!products.length){ grid.innerHTML = `<div class="card"><strong>Nenhum produto disponível.</strong></div>`; return; }
+
+      if(!products.length){
+        grid.innerHTML = `<div class="card"><strong>Nenhum produto disponível.</strong><div class="muted" style="margin-top:6px">Cadastre produtos no admin para exibir aqui.</div></div>`;
+        return;
+      }
+
       products.forEach(p => {
-        const fields = Array.isArray(p.custom_fields) ? p.custom_fields : [];
-        const fieldsHtml = fields.map((field, idx) => `<div><label>${escapeHtml(field)}</label><input class="input" id="field-${p.id}-${idx}" placeholder="${escapeHtml(field)}"></div>`).join('');
+        const imageHtml = p.image_url ? `<img src="${p.image_url}" class="product-image" alt="${escapeHtml(p.nome)}">` : `<div class="muted">Sem imagem</div>`;
+        const fields = Array.isArray(p.campos) ? p.campos : [];
+        const fieldsHtml = fields.map((field, idx) => `
+          <div>
+            <label>${escapeHtml(field)}</label>
+            <input class="input" id="field-${p.id}-${idx}" placeholder="${escapeHtml(field)}">
+          </div>`).join('');
+
         grid.insertAdjacentHTML('beforeend', `
           <div class="product-card">
-            <div class="product-image-wrap">${p.image_url ? `<img src="${p.image_url}" class="product-image" alt="${escapeHtml(p.name)}">` : `<div class="muted">Sem imagem</div>`}</div>
+            <div class="product-image-wrap">${imageHtml}</div>
             <div class="product-info">
-              <div class="smallcaps">${escapeHtml(p.category || 'Produto')}</div>
-              <div><strong>${escapeHtml(p.name)}</strong></div>
-              <div class="muted">${escapeHtml(p.description || '')}</div>
-              <div class="price">${currency(p.sale_price)}</div>
+              <div class="smallcaps">${escapeHtml(p.categoria || 'Produto')}</div>
+              <div><strong>${escapeHtml(p.nome)}</strong></div>
+              <div class="muted">${escapeHtml(p.descricao || '')}</div>
+              <div class="price">${currency(p.preco)}</div>
               ${fieldsHtml ? `<div>${fieldsHtml}</div>` : ''}
               <div class="toolbar">
-                <div class="qty"><button type="button" onclick="changeQty('${p.id}',-1)">−</button><span id="qty-${p.id}">1</span><button type="button" onclick="changeQty('${p.id}',1)">+</button></div>
+                <div class="qty">
+                  <button type="button" onclick="changeQty('${p.id}',-1)">−</button>
+                  <span id="qty-${p.id}">1</span>
+                  <button type="button" onclick="changeQty('${p.id}',1)">+</button>
+                </div>
                 <button class="btn primary" onclick="addToCart('${p.id}')">Adicionar</button>
               </div>
             </div>
@@ -217,136 +259,182 @@
       });
     }
 
-    window.changeQty = function(id, delta){
-      const el = document.getElementById(`qty-${id}`);
-      let n = Number(el.textContent || 1) + delta;
-      if(n < 1) n = 1;
-      el.textContent = String(n);
-    };
-
-    window.addToCart = function(id){
-      const p = state.products.find(x => x.id === id);
-      if(!p) return;
-      const qty = Number(document.getElementById(`qty-${id}`).textContent || 1);
-      const fields = Array.isArray(p.custom_fields) ? p.custom_fields : [];
-      const personalizacao = fields.map((field, idx) => {
-        const value = document.getElementById(`field-${id}-${idx}`)?.value?.trim() || '';
-        return value ? `${field}: ${value}` : '';
-      }).filter(Boolean).join(' | ');
-      state.cart.push({ id: Math.random().toString(36).slice(2,10), product_id: p.id, name: p.name, qtd: qty, price: Number(p.sale_price || 0), customization: personalizacao });
-      document.getElementById(`qty-${id}`).textContent = '1';
-      renderCart();
-      alert('Produto adicionado ao pedido.');
-    };
-
     function renderCart(){
       const count = state.cart.reduce((sum, item) => sum + Number(item.qtd || 0), 0);
-      const total = state.cart.reduce((sum, item) => sum + Number(item.price || 0) * Number(item.qtd || 0), 0);
-      document.getElementById('cartCount').textContent = `${count} item(s)`;
-      document.getElementById('cartTotal').textContent = currency(total);
-      const tbody = document.getElementById('resumoPedido');
+      const total = state.cart.reduce((sum, item) => sum + Number(item.preco || 0) * Number(item.qtd || 0), 0);
+      qs('cartCount').textContent = `${count} item(s)`;
+      qs('cartTotal').textContent = currency(total);
+
+      const tbody = qs('resumoPedido');
       tbody.innerHTML = '';
-      if(!state.cart.length){ tbody.innerHTML = `<tr><td colspan="5">Nenhum item adicionado.</td></tr>`; return; }
+      if(!state.cart.length){
+        tbody.innerHTML = `<tr><td colspan="5">Nenhum item adicionado.</td></tr>`;
+        return;
+      }
       state.cart.forEach(item => {
-        const subtotal = Number(item.price || 0) * Number(item.qtd || 0);
-        tbody.insertAdjacentHTML('beforeend', `<tr><td>${escapeHtml(item.name)}</td><td>${item.qtd}</td><td>${escapeHtml(item.customization || '—')}</td><td>${currency(subtotal)}</td><td><button class="btn ghost" onclick="removeCartItem('${item.id}')">Remover</button></td></tr>`);
+        const subtotal = Number(item.preco || 0) * Number(item.qtd || 0);
+        tbody.insertAdjacentHTML('beforeend', `
+          <tr>
+            <td>${escapeHtml(item.nome)}</td>
+            <td>${item.qtd}</td>
+            <td>${escapeHtml(item.personalizacao || '—')}</td>
+            <td>${currency(subtotal)}</td>
+            <td><button class="btn ghost" onclick="removeCartItem('${item.id}')">Remover</button></td>
+          </tr>
+        `);
       });
     }
 
-    window.removeCartItem = function(id){ state.cart = state.cart.filter(item => item.id !== id); renderCart(); };
+    function applyConfig(){
+      qs('storeNameTop').textContent = state.config.loja || 'Minha Loja';
+      qs('bannerText').textContent = state.config.banner || 'Coleção personalizada pronta para encantar seus clientes.';
+    }
 
     async function saveOrderToDb(){
-      if(!supabaseClient){ setOrderStatus('Conecte o catálogo primeiro.', true); return; }
-      if(!state.cart.length){ setOrderStatus('Adicione ao menos um item.', true); return; }
-      const client_name = document.getElementById('cNome').value.trim();
-      const phone = document.getElementById('cTelefone').value.trim();
-      const email = document.getElementById('cEmail').value.trim();
-      const payment_method = document.getElementById('cPagamento').value.trim();
-      const obs = document.getElementById('cObs').value.trim();
-      if(!client_name || !phone){ setOrderStatus('Preencha pelo menos nome e telefone para salvar o pedido.', true); return; }
-      const items = state.cart.map(item => ({
-        product_id: item.product_id,
-        name: item.name,
-        quantity: item.qtd,
-        customization: item.customization || '',
-        price: Number(item.price || 0),
-        cost: Number((state.products.find(p => p.id === item.product_id)?.cost) || 0)
-      }));
-      const total_amount = items.reduce((sum, item) => sum + item.price * item.quantity, 0);
+      if(!state.cart.length){
+        setOrderStatus('Adicione ao menos um item.', 'error');
+        return;
+      }
+
+      const customer_name = qs('cNome').value.trim();
+      const phone = qs('cTelefone').value.trim();
+      const email = qs('cEmail').value.trim();
+      const payment_method = qs('cPagamento').value.trim();
+      const notes = qs('cObs').value.trim();
+
+      if(!customer_name || !phone){
+        setOrderStatus('Preencha nome e telefone para salvar o pedido.', 'error');
+        return;
+      }
+
+      const total = state.cart.reduce((sum, item) => sum + Number(item.preco || 0) * Number(item.qtd || 0), 0);
+
       const payload = {
-        client_name,
+        customer_name,
         phone,
-        email,
-        order_date: new Date().toISOString().slice(0,10),
         payment_method,
-        items,
-        total_amount,
-        notes: obs
+        notes,
+        total,
+        items: state.cart.map(item => ({
+          productId: item.productId,
+          nome: item.nome,
+          qtd: item.qtd,
+          preco: item.preco,
+          personalizacao: item.personalizacao || ''
+        }))
       };
-      const { error } = await supabaseClient.from('orders').insert(payload);
-      if(error){ console.error(error); setOrderStatus(error.message || 'Erro ao salvar o pedido.', true); return; }
-      setOrderStatus('Pedido salvo com sucesso!');
+      if(email) payload.email = email;
+
+      try{
+        setOrderStatus('Salvando pedido...', 'warn');
+        const { error } = await supabaseClient.from('orders').insert(payload);
+        if(error) throw error;
+        setOrderStatus('Pedido salvo com sucesso!', 'ok');
+        state.cart = [];
+        renderCart();
+      }catch(err){
+        console.error(err);
+        setOrderStatus(`Erro ao salvar pedido: ${err.message || err}`, 'error');
+      }
     }
 
     function sendWhatsapp(){
-      if(!state.cart.length){ alert('Adicione ao menos um item.'); return; }
-      const nome = document.getElementById('cNome').value.trim();
-      const telefone = document.getElementById('cTelefone').value.trim();
-      const email = document.getElementById('cEmail').value.trim();
-      const pagamento = document.getElementById('cPagamento').value.trim();
-      const obs = document.getElementById('cObs').value.trim();
-      let msg = `${state.config.mensagem || 'Olá! Gostaria de fazer este pedido:'}\n\n`;
-      msg += `*Pedido:*\n`;
+      if(!state.cart.length){
+        setOrderStatus('Adicione ao menos um item.', 'error');
+        return;
+      }
+
+      const nome = qs('cNome').value.trim();
+      const telefone = qs('cTelefone').value.trim();
+      const email = qs('cEmail').value.trim();
+      const pagamento = qs('cPagamento').value.trim();
+      const obs = qs('cObs').value.trim();
+
+      let msg = `${state.config.mensagem || 'Olá! Gostaria de fazer este pedido:'}\n\n*Pedido:*\n`;
       state.cart.forEach((item, idx) => {
-        msg += `${idx + 1}. ${item.qtd}x ${item.name} — ${currency(item.price * item.qtd)}\n`;
-        if(item.customization) msg += `   Personalização: ${item.customization}\n`;
+        msg += `${idx + 1}. ${item.qtd}x ${item.nome} — ${currency(item.preco * item.qtd)}\n`;
+        if(item.personalizacao) msg += `   Personalização: ${item.personalizacao}\n`;
       });
-      const total = state.cart.reduce((sum, item) => sum + Number(item.price || 0) * Number(item.qtd || 0), 0);
+
+      const total = state.cart.reduce((sum, item) => sum + Number(item.preco || 0) * Number(item.qtd || 0), 0);
       msg += `\n*Total:* ${currency(total)}\n\n`;
       msg += `*Cliente:* ${nome || 'Não informado'}\n`;
       msg += `*Telefone:* ${telefone || 'Não informado'}\n`;
       if(email) msg += `*E-mail:* ${email}\n`;
       if(pagamento) msg += `*Pagamento:* ${pagamento}\n`;
       if(obs) msg += `*Observações:* ${obs}\n`;
+
       const numero = (state.config.whatsapp || '').replace(/\D/g, '');
-      if(!numero){ alert('O WhatsApp da loja não foi configurado no admin.'); return; }
+      if(!numero){
+        setOrderStatus('O WhatsApp da loja não foi configurado.', 'error');
+        return;
+      }
       window.open(`https://wa.me/${numero}?text=${encodeURIComponent(msg)}`, '_blank');
     }
 
-    function applyConfig(){
-      document.getElementById('storeNameTop').textContent = state.config.loja || 'Minha Loja';
-      document.getElementById('bannerText').textContent = state.config.banner || 'Coleção personalizada pronta para encantar seus clientes.';
-    }
-
     function initEvents(){
-      document.getElementById('btnConnect').addEventListener('click', connectCatalog);
-      document.getElementById('buscaCatalogo').addEventListener('input', renderCatalog);
-      document.getElementById('filtroCategoria').addEventListener('change', renderCatalog);
-      document.getElementById('saveOrderBtn').addEventListener('click', saveOrderToDb);
-      document.getElementById('sendWhatsapp').addEventListener('click', sendWhatsapp);
-      document.getElementById('openResumo').addEventListener('click', () => { document.getElementById('resumoCard').classList.remove('hidden'); document.getElementById('resumoCard').scrollIntoView({ behavior:'smooth', block:'start' }); });
-      document.getElementById('hideResumo').addEventListener('click', () => document.getElementById('resumoCard').classList.add('hidden'));
+      qs('buscaCatalogo').addEventListener('input', renderCatalog);
+      qs('filtroCategoria').addEventListener('change', renderCatalog);
+      qs('saveOrderBtn').addEventListener('click', saveOrderToDb);
+      qs('sendWhatsapp').addEventListener('click', sendWhatsapp);
+      qs('openResumo').addEventListener('click', () => {
+        qs('resumoCard').classList.remove('hidden');
+        qs('resumoCard').scrollIntoView({ behavior:'smooth', block:'start' });
+      });
+      qs('hideResumo').addEventListener('click', () => qs('resumoCard').classList.add('hidden'));
     }
 
-    async function connectCatalog(){
+    window.changeQty = function(id, delta){
+      const el = qs(`qty-${id}`);
+      let n = Number(el.textContent || 1) + delta;
+      if(n < 1) n = 1;
+      el.textContent = String(n);
+    };
+
+    window.addToCart = function(id){
+      const p = state.products.find(x => x.id === id && x.ativo);
+      if(!p) return;
+      const qty = Number(qs(`qty-${id}`).textContent || 1);
+      const fields = Array.isArray(p.campos) ? p.campos : [];
+      const personalizacao = fields.map((field, idx) => {
+        const value = qs(`field-${id}-${idx}`)?.value?.trim() || '';
+        return value ? `${field}: ${value}` : '';
+      }).filter(Boolean).join(' | ');
+
+      state.cart.push({
+        id: Math.random().toString(36).slice(2,10),
+        productId: p.id,
+        nome: p.nome,
+        qtd: qty,
+        preco: Number(p.preco || 0),
+        personalizacao
+      });
+
+      qs(`qty-${id}`).textContent = '1';
+      renderCart();
+      setOrderStatus('Produto adicionado ao pedido.', 'ok');
+    };
+
+    window.removeCartItem = function(id){
+      state.cart = state.cart.filter(item => item.id !== id);
+      renderCart();
+    };
+
+    (async function init(){
+      initEvents();
       try{
-        initClient();
-        await fetchConfig();
+        await initSupabase();
+        await fetchStoreConfig();
         await fetchProducts();
-        buildCategoryFilter();
         applyConfig();
-        renderCatalog();
+        buildCategoryFilter();
+        await renderCatalog();
         renderCart();
-        document.getElementById('setupArea').classList.add('hidden');
-        document.getElementById('catalogArea').classList.remove('hidden');
       }catch(err){
         console.error(err);
-        setSetupStatus(err.message || 'Erro ao conectar o catálogo.');
+        setOrderStatus(err.message || 'Erro ao conectar ao catálogo.', 'error');
       }
-    }
-
-    initEvents();
-    connectCatalog();
+    })();
   </script>
 </body>
 </html>
