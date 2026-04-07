@@ -384,19 +384,13 @@
       const obs = qs('cObs').value.trim();
 
       const numero = (state.config.whatsapp || '').replace(/\D/g, '');
-      let whatsappWindow = null;
-
-      if(numero){
-        whatsappWindow = window.open('', '_blank');
+      if(!numero){
+        setOrderStatus('O WhatsApp da loja não foi configurado.', 'error');
+        return;
       }
 
       const saved = await saveOrderToDb();
-      if(!saved){
-        if(whatsappWindow && !whatsappWindow.closed){
-          whatsappWindow.close();
-        }
-        return;
-      }
+      if(!saved) return;
 
       let msg = `${state.config.mensagem || 'Olá! Gostaria de fazer este pedido:'}\n\n`;
       msg += `*Pedido:*\n`;
@@ -416,25 +410,14 @@
       if(pagamento) msg += `*Pagamento:* ${pagamento}\n`;
       if(obs) msg += `*Observações:* ${obs}\n`;
 
-      if(!numero){
-        setOrderStatus('O WhatsApp da loja não foi configurado.', 'error');
-        if(whatsappWindow && !whatsappWindow.closed){
-          whatsappWindow.close();
-        }
-        return;
-      }
-
       const waUrl = `https://wa.me/${numero}?text=${encodeURIComponent(msg)}`;
 
-      if(whatsappWindow && !whatsappWindow.closed){
-        whatsappWindow.location.href = waUrl;
-      } else {
-        window.open(waUrl, '_blank');
-      }
+      setOrderStatus('Pedido salvo. Redirecionando para o WhatsApp...', 'ok');
 
       state.cart = [];
       renderCart();
-      setOrderStatus('Pedido salvo e enviado para o WhatsApp.', 'ok');
+
+      window.location.href = waUrl;
     }
 
     function initEvents(){
