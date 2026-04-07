@@ -106,6 +106,7 @@
         </div>
         <div class="toolbar">
           <button class="btn ghost" id="openResumo">Ver resumo</button>
+          <button class="btn primary" id="saveOrderBtn">Salvar pedido</button>
           <button class="btn success" id="sendWhatsapp">Enviar pedido no WhatsApp</button>
         </div>
       </div>
@@ -153,10 +154,9 @@
     function escapeHtml(str=''){ return String(str).replace(/[&<>"]+/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[m] || m)); }
     function currency(v){ return new Intl.NumberFormat('pt-BR',{style:'currency',currency: state.config.moeda || 'BRL'}).format(Number(v || 0)); }
     function setSetupStatus(msg){ document.getElementById('setupStatus').textContent = msg; }
+    function setOrderStatus(msg, isError=false){ const el = document.getElementById('orderStatus'); el.textContent = msg; el.classList.remove('hidden'); el.style.background = isError ? '#fef2f2' : '#f0fdf4'; el.style.borderColor = isError ? '#fecaca' : '#bbf7d0'; el.style.color = isError ? '#991b1b' : '#166534'; }
 
     function initClient(){
-      //const url = document.getElementById('sbUrl').value.trim();
-      //const anon = document.getElementById('sbAnon').value.trim();
       const url = 'https://xwaflarqkooltziusmbl.supabase.co'
       const anon = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inh3YWZsYXJxa29vbHR6aXVzbWJsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzU0ODkyNDgsImV4cCI6MjA5MTA2NTI0OH0.v4YFHMEc8Ryu_97J5UV5nVU7wPjFKetd10WP9MJ60u4'
       supabaseClient = window.supabase.createClient(url, anon);
@@ -255,6 +255,39 @@
 
     window.removeCartItem = function(id){ state.cart = state.cart.filter(item => item.id !== id); renderCart(); };
 
+    async function saveOrderToDb(){
+      if(!supabaseClient){ setOrderStatus('Conecte o catálogo primeiro.', true); return; }
+      if(!state.cart.length){ setOrderStatus('Adicione ao menos um item.', true); return; }
+      const client_name = document.getElementById('cNome').value.trim();
+      const phone = document.getElementById('cTelefone').value.trim();
+      const email = document.getElementById('cEmail').value.trim();
+      const payment_method = document.getElementById('cPagamento').value.trim();
+      const obs = document.getElementById('cObs').value.trim();
+      if(!client_name || !phone){ setOrderStatus('Preencha pelo menos nome e telefone para salvar o pedido.', true); return; }
+      const items = state.cart.map(item => ({
+        product_id: item.product_id,
+        name: item.name,
+        quantity: item.qtd,
+        customization: item.customization || '',
+        price: Number(item.price || 0),
+        cost: Number((state.products.find(p => p.id === item.product_id)?.cost) || 0)
+      }));
+      const total_amount = items.reduce((sum, item) => sum + item.price * item.quantity, 0);
+      const payload = {
+        client_name,
+        phone,
+        email,
+        order_date: new Date().toISOString().slice(0,10),
+        payment_method,
+        items,
+        total_amount,
+        notes: obs
+      };
+      const { error } = await supabaseClient.from('orders').insert(payload);
+      if(error){ console.error(error); setOrderStatus(error.message || 'Erro ao salvar o pedido.', true); return; }
+      setOrderStatus('Pedido salvo com sucesso!');
+    }
+
     function sendWhatsapp(){
       if(!state.cart.length){ alert('Adicione ao menos um item.'); return; }
       const nome = document.getElementById('cNome').value.trim();
@@ -289,6 +322,7 @@
       document.getElementById('btnConnect').addEventListener('click', connectCatalog);
       document.getElementById('buscaCatalogo').addEventListener('input', renderCatalog);
       document.getElementById('filtroCategoria').addEventListener('change', renderCatalog);
+      document.getElementById('saveOrderBtn').addEventListener('click', saveOrderToDb);
       document.getElementById('sendWhatsapp').addEventListener('click', sendWhatsapp);
       document.getElementById('openResumo').addEventListener('click', () => { document.getElementById('resumoCard').classList.remove('hidden'); document.getElementById('resumoCard').scrollIntoView({ behavior:'smooth', block:'start' }); });
       document.getElementById('hideResumo').addEventListener('click', () => document.getElementById('resumoCard').classList.add('hidden'));
@@ -311,8 +345,8 @@
       }
     }
 
-    //restoreConfig();
     initEvents();
+    connectCatalog();
   </script>
 </body>
 </html>
