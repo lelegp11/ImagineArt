@@ -101,6 +101,7 @@
 
       <div class="toolbar" id="toolbarAdmin">
         <button class="btn ghost small" id="btnPreviewCliente">Visualização do cliente</button>
+        <button class="btn ghost small" id="btnRefreshData">Atualizar dados</button>
         <button class="btn ghost small" id="btnExportJson">Exportar JSON</button>
         <button class="btn danger small" id="btnLogout">Sair</button>
       </div>
@@ -526,10 +527,10 @@
     function renderOrders(){
       const tbody = document.getElementById('ordersTable');
       tbody.innerHTML = '';
-      if(!state.orders.length){ tbody.innerHTML = `<tr><td colspan="6" class="mini">Nenhum pedido salvo.</td></tr>`; return; }
+      if(!state.orders.length){ tbody.innerHTML = `<tr><td colspan="7" class="mini">Nenhum pedido salvo.</td></tr>`; return; }
       state.orders.forEach(order => {
         const itens = Array.isArray(order.items) ? order.items.map(item => `${item.quantity}x ${escapeHtml(item.name)}`).join('<br>') : '';
-        tbody.insertAdjacentHTML('beforeend', `<tr><td>${escapeHtml(order.client_name || 'Cliente')}</td><td>${escapeHtml(order.phone || '')}</td><td>${escapeHtml(order.order_date || '')}</td><td>${escapeHtml(order.payment_method || '')}</td><td>${itens}</td><td>${currency(order.total_amount || 0)}</td></tr>`);
+        tbody.insertAdjacentHTML('beforeend', `<tr><td>${escapeHtml(order.client_name || 'Cliente')}</td><td>${escapeHtml(order.phone || '')}</td><td>${escapeHtml(order.order_date || '')}</td><td>${escapeHtml(order.payment_method || '')}</td><td>${itens}</td><td>${currency(order.total_amount || 0)}</td><td><button class="btn danger small" onclick="removeOrder('${order.id}')">Excluir</button></td></tr>`);
       });
     }
 
@@ -738,6 +739,13 @@
       renderDraftOrder();
     };
 
+    window.removeOrder = async function(id){
+      if(!confirm('Excluir este pedido?')) return;
+      const { error } = await supabaseClient.from('orders').delete().eq('id', id);
+      if(error){ alert(error.message); return; }
+      await refreshAll();
+    };
+
     async function saveOrder(){
       if(!state.draftOrder.items.length){ alert('Adicione itens ao pedido.'); return; }
       const total_amount = state.draftOrder.items.reduce((sum, item) => sum + Number(item.price || 0) * Number(item.quantity || 0), 0);
@@ -778,6 +786,7 @@
       document.getElementById('btnSignup').addEventListener('click', handleSignup);
       document.getElementById('btnLogout').addEventListener('click', handleLogout);
       document.getElementById('btnPreviewCliente').addEventListener('click', () => window.open('index.html', '_blank'));
+      document.getElementById('btnRefreshData').addEventListener('click', refreshAll);
       document.getElementById('resetProduto').addEventListener('click', clearProductForm);
       document.getElementById('pFoto').addEventListener('change', handlePhotoUpload);
       document.getElementById('salvarProduto').addEventListener('click', handleSaveProduct);
