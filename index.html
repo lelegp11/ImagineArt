@@ -410,14 +410,26 @@
       if(pagamento) msg += `*Pagamento:* ${pagamento}\n`;
       if(obs) msg += `*Observações:* ${obs}\n`;
 
-      const waUrl = `https://wa.me/${numero}?text=${encodeURIComponent(msg)}`;
+      const encoded = encodeURIComponent(msg);
+      const isMobile = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent || '');
+      const appUrl = `whatsapp://send?phone=${numero}&text=${encoded}`;
+      const webUrl = `https://wa.me/${numero}?text=${encoded}`;
 
-      setOrderStatus('Pedido salvo. Redirecionando para o WhatsApp...', 'ok');
+      setOrderStatus('Pedido salvo. Abrindo o WhatsApp...', 'ok');
 
       state.cart = [];
       renderCart();
 
-      window.location.href = waUrl;
+      if(isMobile){
+        // Tenta abrir o app primeiro; se falhar, cai para o link web.
+        const fallback = setTimeout(() => {
+          window.location.href = webUrl;
+        }, 1200);
+        window.location.href = appUrl;
+        setTimeout(() => clearTimeout(fallback), 1800);
+      } else {
+        window.open(webUrl, '_blank');
+      }
     }
 
     function initEvents(){
