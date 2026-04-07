@@ -298,7 +298,9 @@
 
       const client_name = qs('cNome').value.trim();
       const phone = qs('cTelefone').value.trim();
-            const payment_method = qs('cPagamento').value.trim();
+      const email = qs('cEmail').value.trim();
+      const payment_method = qs('cPagamento').value.trim();
+      const notes = qs('cObs').value.trim();
       
       if(!client_name || !phone){
         setOrderStatus('Preencha nome e telefone para salvar o pedido.', 'error');
@@ -310,8 +312,10 @@
       const payload = {
         client_name,
         phone,
+        email,
         order_date: new Date().toISOString().slice(0,10),
         payment_method,
+        notes,
         total_amount,
         items: state.cart.map(item => ({
           productId: item.productId,
@@ -343,7 +347,8 @@
 
       const nome = qs('cNome').value.trim();
       const telefone = qs('cTelefone').value.trim();
-            const pagamento = qs('cPagamento').value.trim();
+      const email = qs('cEmail').value.trim();
+      const pagamento = qs('cPagamento').value.trim();
       const obs = qs('cObs').value.trim();
 
       let msg = `${state.config.mensagem || 'Olá! Gostaria de fazer este pedido:'}\n\n*Pedido:*\n`;
