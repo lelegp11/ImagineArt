@@ -417,7 +417,7 @@
 
       return orders.filter(order => {
         const orderDate = order.order_date || '';
-        const items = Array.isArray(order.items) ? order.items : [];
+        const items = getVisibleItemsForOrder(order);
         const schoolNames = [order.school_name || '', ...items.map(i => i.school_name || '')]
           .join(' | ')
           .toLowerCase();
@@ -427,6 +427,29 @@
         return dateOk && schoolOk;
       });
     }
+
+    function getVisibleItemsForOrder(order){
+      const schoolFilter = (qs('reportSchoolFilter')?.value || '').trim().toLowerCase();
+      const items = Array.isArray(order.items) ? order.items : [];
+      if(!schoolFilter) return items;
+      return items.filter(item => String(item.school_name || order.school_name || '').trim().toLowerCase() === schoolFilter);
+    }
+
+    function getVisibleRepasseForOrder(order){
+      return getVisibleItemsForOrder(order).reduce((sum, item) => sum + getSchoolRepasseForItem(item).repasseTotal, 0);
+    }
+
+    function getVisibleCostForOrder(order){
+      return getVisibleItemsForOrder(order).reduce((sum, item) => {
+        const prod = products.find(p => String(p.id) === String(item.productId));
+        return sum + (prod ? Number(prod.cost || 0) * Number(item.qtd || 0) : 0);
+      }, 0);
+    }
+
+    function getVisibleSubtotalForOrder(order){
+      return getVisibleItemsForOrder(order).reduce((sum, item) => sum + Number(item.sale_price || 0) * Number(item.qtd || 0), 0);
+    }
+
 
     function populateReportSchoolFilter(){
       const select = qs('reportSchoolFilter');
@@ -442,7 +465,7 @@
     function getReportRows(filteredOrders){
       const rows = [];
       filteredOrders.forEach(order => {
-        const items = Array.isArray(order.items) ? order.items : [];
+        const items = getVisibleItemsForOrder(order);
         items.forEach(item => {
           const rep = getSchoolRepasseForItem(item);
           const subtotal = Number(item.sale_price || 0) * Number(item.qtd || 0);
@@ -462,7 +485,7 @@
             'Subtotal item': subtotal,
             'Repasse %': Number(rep.percentage || 0),
             'Repasse item': Number(rep.repasseTotal || 0),
-            'Total pedido': Number(order.total_amount || 0),
+            'Total filtrado': Number(subtotal || 0),
             'Obs.': order.notes || ''
           });
         });
@@ -498,7 +521,7 @@
       const school = qs('reportSchoolFilter')?.value?.trim() || 'Todas as escolas';
       const start = qs('reportStartDate')?.value || 'Início';
       const end = qs('reportEndDate')?.value || 'Fim';
-      const totalRepasse = filtered.reduce((sum, order) => sum + getOrderSchoolRepasse(order), 0);
+      const totalRepasse = filtered.reduce((sum, order) => sum + getVisibleRepasseForOrder(order), 0);
 
       doc.setFontSize(14);
       doc.text('Relatório de pedidos', 14, 14);
@@ -785,7 +808,7 @@
       tbody.innerHTML = '';
       const filteredOrders = getFilteredOrders();
       qs('ordersCount').textContent = `${filteredOrders.length} de ${orders.length} pedido(s)`;
-      qs('reportRepasseTotal').textContent = `Repasse: ${currency(filteredOrders.reduce((sum, order) => sum + getOrderSchoolRepasse(order), 0))}`;
+      qs('reportRepasseTotal').textContent = `Repasse: ${currency(filteredOrders.reduce((sum, order) => sum + getVisibleRepasseForOrder(order), 0))}`;
 
       if(!filteredOrders.length){
         tbody.innerHTML = `<tr><td colspan="9" class="mini">Nenhum pedido recebido no filtro selecionado.</td></tr>`;
@@ -825,9 +848,10 @@
           order.email ? `<div class="mini">${escapeHtml(order.email)}</div>` : ''
         ].join('');
 
-        const orderRepasse = getOrderSchoolRepasse(order);
-        const orderCost = getOrderCost(order);
-        const netProfit = Number(order.total_amount || 0) - orderCost - orderRepasse;
+        const visibleSubtotal = getVisibleSubtotalForOrder(order);
+        const orderRepasse = getVisibleRepasseForOrder(order);
+        const orderCost = getVisibleCostForOrder(order);
+        const netProfit = visibleSubtotal - orderCost - orderRepasse;
 
         tbody.insertAdjacentHTML('beforeend', `
           <tr>
@@ -836,7 +860,7 @@
             <td>${escapeHtml(order.order_date || '')}</td>
             <td>${escapeHtml(order.payment_method || '')}</td>
             <td>${itemDetailsHtml(order)}</td>
-            <td>${currency(order.total_amount)}</td>
+            <td>${currency(visibleSubtotal)}</td>
             <td>${currency(orderRepasse)}</td>
             <td>${currency(netProfit)}</td>
             <td><button class="btn danger small" onclick="removeOrder('${order.id}')">Excluir</button></td>
