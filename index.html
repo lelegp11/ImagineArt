@@ -128,13 +128,7 @@
         </div>
 
         <div class="form-grid" style="margin-top:12px">
-          <div>
-            <label>Escola</label>
-            <select class="input" id="schoolSelect">
-              <option value="">Selecione a escola</option>
-            </select>
-          </div>
-          <div style="grid-column: span 3;">
+          <div style="grid-column: span 4;">
             <label>Observações gerais</label>
             <input class="input" id="cObs" placeholder="Prazo, detalhes, observações do pedido">
           </div>
@@ -206,7 +200,6 @@
       const { data, error } = await supabaseClient.from('schools').select('*').eq('active', true).order('name',{ascending:true});
       if(error) throw error;
       state.schools = data || [];
-      renderSchools();
     }
 
     async function fetchProducts(){
@@ -218,9 +211,11 @@
       }));
     }
 
-    function renderSchools(){
-      const select = qs('schoolSelect');
-      select.innerHTML = '<option value="">Selecione a escola</option>' + state.schools.map(s => `<option value="${escapeHtml(s.name)}">${escapeHtml(s.name)}</option>`).join('');
+    function getSchoolOptions(selected=''){
+      return '<option value="">Selecione a escola</option>' + state.schools.map(s => {
+        const sel = s.name === selected ? 'selected' : '';
+        return `<option value="${escapeHtml(s.name)}" ${sel}>${escapeHtml(s.name)}</option>`;
+      }).join('');
     }
 
     function buildCategoryFilter(){
@@ -252,6 +247,14 @@
       products.forEach(p => {
         const imageHtml = p.image_url ? `<img src="${p.image_url}" class="product-image" alt="${escapeHtml(p.name)}">` : `<div class="muted">Sem imagem</div>`;
         const fields = Array.isArray(p.custom_fields) ? p.custom_fields : [];
+        const schoolFieldHtml = `
+          <div>
+            <label>Escola</label>
+            <select class="input" id="school-${p.id}">
+              ${getSchoolOptions()}
+            </select>
+          </div>`;
+
         const fieldsHtml = fields.map((field, idx) => `
           <div>
             <label>${escapeHtml(field)}</label>
@@ -266,7 +269,7 @@
               <div><strong>${escapeHtml(p.name)}</strong></div>
               <div class="muted">${escapeHtml(p.description || '')}</div>
               <div class="price">${currency(p.sale_price)}</div>
-              ${fieldsHtml ? `<div>${fieldsHtml}</div>` : ''}
+              <div>${schoolFieldHtml}${fieldsHtml}</div>
               <div class="toolbar">
                 <div class="qty">
                   <button type="button" onclick="changeQty('${p.id}',-1)">−</button>
@@ -318,14 +321,16 @@
       const client_name = qs('cNome').value.trim();
       const phone = qs('cTelefone').value.trim();
       const email = qs('cEmail').value.trim();
-      const school_name = qs('schoolSelect').value.trim();
       const payment_method = qs('cPagamento').value.trim();
       const notes = qs('cObs').value.trim();
 
       if(!client_name || !phone){ setOrderStatus('Preencha nome e telefone para salvar o pedido.', 'error'); return false; }
-      if(!school_name){ setOrderStatus('Selecione a escola.', 'error'); return false; }
+
+      const schools = [...new Set(state.cart.map(i => i.school_name).filter(Boolean))];
+      if(!schools.length){ setOrderStatus('Selecione a escola em cada produto.', 'error'); return false; }
 
       const total_amount = state.cart.reduce((sum, item) => sum + Number(item.sale_price || 0) * Number(item.qtd || 0), 0);
+      const school_name = schools.join(', ');
       const child_name = state.cart.map(i => i.child_name).filter(Boolean).join(', ');
       const classroom = state.cart.map(i => i.classroom).filter(Boolean).join(', ');
 
@@ -346,7 +351,7 @@
           qtd: item.qtd,
           sale_price: item.sale_price,
           personalizacao: item.personalizacao || '',
-          school_name,
+          school_name: item.school_name || '',
           child_name: item.child_name || '',
           classroom: item.classroom || ''
         }))
@@ -371,7 +376,6 @@
       const nome = qs('cNome').value.trim();
       const telefone = qs('cTelefone').value.trim();
       const email = qs('cEmail').value.trim();
-      const escola = qs('schoolSelect').value.trim();
       const pagamento = qs('cPagamento').value.trim();
       const obs = qs('cObs').value.trim();
 
@@ -387,7 +391,8 @@
 
       msgCart.forEach((item, idx) => {
         msg += `${idx + 1}. ${item.qtd}x ${item.nome} — ${currency(item.sale_price * item.qtd)}\n`;
-        if(item.personalizacao){ msg += `   Personalização: ${item.personalizacao}\n`; }
+        if(item.school_name) msg += `   Escola: ${item.school_name}\n`;
+        if(item.personalizacao) msg += `   Personalização: ${item.personalizacao}\n`;
         if(item.child_name) msg += `   Criança: ${item.child_name}\n`;
         if(item.classroom) msg += `   Turma/Sala: ${item.classroom}\n`;
       });
@@ -397,7 +402,6 @@
       msg += `*Cliente:* ${nome}\n`;
       msg += `*Telefone:* ${telefone}\n`;
       if(email) msg += `*E-mail:* ${email}\n`;
-      msg += `*Escola:* ${escola}\n`;
       if(pagamento) msg += `*Pagamento:* ${pagamento}\n`;
       if(obs) msg += `*Observações:* ${obs}\n`;
 
@@ -434,6 +438,7 @@
       if(!p) return;
       const qty = Number(qs(`qty-${id}`).textContent || 1);
       const fields = Array.isArray(p.custom_fields) ? p.custom_fields : [];
+      const school_name = qs(`school-${id}`)?.value?.trim() || '';
 
       let child_name = '';
       let classroom = '';
@@ -450,6 +455,11 @@
         return value ? `${field}: ${value}` : '';
       }).filter(Boolean).join(' | ');
 
+      if(!school_name){
+        setOrderStatus('Selecione a escola deste produto antes de adicionar.', 'error');
+        return;
+      }
+
       state.cart.push({
         id: Math.random().toString(36).slice(2,10),
         productId: p.id,
@@ -457,6 +467,7 @@
         qtd: qty,
         sale_price: Number(p.sale_price || 0),
         personalizacao,
+        school_name,
         child_name,
         classroom
       });
