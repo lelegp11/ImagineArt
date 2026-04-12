@@ -80,6 +80,9 @@
     @media (max-width:1200px){.grid-4,.form-grid{grid-template-columns:repeat(2,1fr)} .hero-content,.grid-2,.grid-3{grid-template-columns:1fr}}
     @media (max-width:700px){.container{padding:14px}.topbar-inner{padding:12px 14px}.hero-content{padding:22px}.hero h1{font-size:30px}.grid-2,.grid-3,.grid-4,.form-grid,.form-grid-2,.form-grid-3{grid-template-columns:1fr}.nav{display:none}}
   </style>
+  <script src="https://cdn.jsdelivr.net/npm/xlsx/dist/xlsx.full.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/jspdf-autotable@3.8.2/dist/jspdf.plugin.autotable.min.js"></script>
 </head>
 <body>
   <div class="topbar">
@@ -244,7 +247,32 @@
             <h2 style="margin:0">Pedidos recebidos</h2>
             <span class="spacer"></span>
             <span class="pill" id="ordersCount">0 pedidos</span>
+            <span class="pill" id="reportRepasseTotal">Repasse: R$ 0,00</span>
           </div>
+
+          <div class="grid grid-4" style="margin-top:14px">
+            <div>
+              <label>Data inicial</label>
+              <input class="input" id="reportStartDate" type="date">
+            </div>
+            <div>
+              <label>Data final</label>
+              <input class="input" id="reportEndDate" type="date">
+            </div>
+            <div>
+              <label>Filtrar por escola</label>
+              <select class="input" id="reportSchoolFilter">
+                <option value="">Todas as escolas</option>
+              </select>
+            </div>
+            <div class="toolbar" style="align-items:end">
+              <button class="btn ghost" id="applyReportFilter">Aplicar filtro</button>
+              <button class="btn ghost" id="clearReportFilter">Limpar</button>
+              <button class="btn success" id="exportReportExcel">Exportar Excel</button>
+              <button class="btn primary" id="exportReportPdf">Exportar PDF</button>
+            </div>
+          </div>
+
           <div class="table-wrap" style="margin-top:14px">
             <table>
               <thead><tr><th>Cliente</th><th>Contato</th><th>Data</th><th>Pagamento</th><th>Produtos e personalização</th><th>Total</th><th>Repasse escola</th><th>Lucro líquido</th><th>Ação</th></tr></thead>
@@ -372,6 +400,138 @@
     function getOrderSchoolRepasse(order){
       const items = Array.isArray(order.items) ? order.items : [];
       return items.reduce((sum, item) => sum + getSchoolRepasseForItem(item).repasseTotal, 0);
+    }
+
+    function getOrderCost(order){
+      const items = Array.isArray(order.items) ? order.items : [];
+      return items.reduce((sum, item) => {
+        const prod = products.find(p => String(p.id) === String(item.productId));
+        return sum + (prod ? Number(prod.cost || 0) * Number(item.qtd || 0) : 0);
+      }, 0);
+    }
+
+    function getFilteredOrders(){
+      const start = qs('reportStartDate')?.value || '';
+      const end = qs('reportEndDate')?.value || '';
+      const schoolFilter = (qs('reportSchoolFilter')?.value || '').trim().toLowerCase();
+
+      return orders.filter(order => {
+        const orderDate = order.order_date || '';
+        const items = Array.isArray(order.items) ? order.items : [];
+        const schoolNames = [order.school_name || '', ...items.map(i => i.school_name || '')]
+          .join(' | ')
+          .toLowerCase();
+
+        const dateOk = (!start || orderDate >= start) && (!end || orderDate <= end);
+        const schoolOk = !schoolFilter || schoolNames.includes(schoolFilter);
+        return dateOk && schoolOk;
+      });
+    }
+
+    function populateReportSchoolFilter(){
+      const select = qs('reportSchoolFilter');
+      if(!select) return;
+      const current = select.value;
+      select.innerHTML = '<option value="">Todas as escolas</option>' +
+        schools.map(s => `<option value="${escapeHtml(s.name)}">${escapeHtml(s.name)}</option>`).join('');
+      if ([...select.options].some(o => o.value === current)) {
+        select.value = current;
+      }
+    }
+
+    function getReportRows(filteredOrders){
+      const rows = [];
+      filteredOrders.forEach(order => {
+        const items = Array.isArray(order.items) ? order.items : [];
+        items.forEach(item => {
+          const rep = getSchoolRepasseForItem(item);
+          const subtotal = Number(item.sale_price || 0) * Number(item.qtd || 0);
+          rows.push({
+            'Data': order.order_date || '',
+            'Cliente': order.client_name || '',
+            'Telefone': order.phone || '',
+            'E-mail': order.email || '',
+            'Pagamento': order.payment_method || '',
+            'Produto': item.nome || '',
+            'Qtd': Number(item.qtd || 0),
+            'Escola': item.school_name || order.school_name || '',
+            'Criança': item.child_name || '',
+            'Turma/Sala': item.classroom || '',
+            'Personalização': item.personalizacao || '',
+            'Venda un. considerada': Number(rep.roundedSalePrice || 0),
+            'Subtotal item': subtotal,
+            'Repasse %': Number(rep.percentage || 0),
+            'Repasse item': Number(rep.repasseTotal || 0),
+            'Total pedido': Number(order.total_amount || 0),
+            'Obs.': order.notes || ''
+          });
+        });
+      });
+      return rows;
+    }
+
+    function exportFilteredOrdersExcel(){
+      const filtered = getFilteredOrders();
+      const rows = getReportRows(filtered);
+      if(!rows.length){
+        alert('Não há pedidos no filtro selecionado.');
+        return;
+      }
+      const wb = XLSX.utils.book_new();
+      const ws = XLSX.utils.json_to_sheet(rows);
+      XLSX.utils.book_append_sheet(wb, ws, 'Relatório');
+      const school = qs('reportSchoolFilter')?.value?.trim() || 'todas-escolas';
+      const start = qs('reportStartDate')?.value || 'inicio';
+      const end = qs('reportEndDate')?.value || 'fim';
+      XLSX.writeFile(wb, `relatorio-pedidos-${school}-${start}-${end}.xlsx`);
+    }
+
+    function exportFilteredOrdersPdf(){
+      const filtered = getFilteredOrders();
+      const rows = getReportRows(filtered);
+      if(!rows.length){
+        alert('Não há pedidos no filtro selecionado.');
+        return;
+      }
+      const { jsPDF } = window.jspdf;
+      const doc = new jsPDF({ orientation: 'landscape' });
+      const school = qs('reportSchoolFilter')?.value?.trim() || 'Todas as escolas';
+      const start = qs('reportStartDate')?.value || 'Início';
+      const end = qs('reportEndDate')?.value || 'Fim';
+      const totalRepasse = filtered.reduce((sum, order) => sum + getOrderSchoolRepasse(order), 0);
+
+      doc.setFontSize(14);
+      doc.text('Relatório de pedidos', 14, 14);
+      doc.setFontSize(10);
+      doc.text(`Período: ${start} até ${end}`, 14, 21);
+      doc.text(`Escola: ${school}`, 14, 27);
+      doc.text(`Repasse total: ${currency(totalRepasse)}`, 14, 33);
+
+      doc.autoTable({
+        startY: 38,
+        styles: { fontSize: 8, cellWidth: 'wrap' },
+        head: [[
+          'Data','Cliente','Produto','Qtd','Escola','Criança','Turma/Sala','Personalização','Venda un.','Subtotal','Repasse %','Repasse','Pagamento'
+        ]],
+        body: rows.map(r => [
+          r['Data'],
+          r['Cliente'],
+          r['Produto'],
+          r['Qtd'],
+          r['Escola'],
+          r['Criança'],
+          r['Turma/Sala'],
+          r['Personalização'],
+          currency(r['Venda un. considerada']),
+          currency(r['Subtotal item']),
+          `${r['Repasse %']}%`,
+          currency(r['Repasse item']),
+          r['Pagamento']
+        ])
+      });
+
+      const safeSchool = school.toLowerCase().replace(/[^a-z0-9]+/gi, '-');
+      doc.save(`relatorio-pedidos-${safeSchool}-${start}-${end}.pdf`);
     }
 
     function setAuthStatus(message, type=''){
@@ -524,6 +684,7 @@
       if(error) throw error;
       schools = data || [];
       renderSchools();
+      populateReportSchoolFilter();
     }
 
     function renderSchools(){
@@ -622,10 +783,12 @@
     function renderOrders(){
       const tbody = qs('ordersTable');
       tbody.innerHTML = '';
-      qs('ordersCount').textContent = `${orders.length} pedido(s)`;
+      const filteredOrders = getFilteredOrders();
+      qs('ordersCount').textContent = `${filteredOrders.length} de ${orders.length} pedido(s)`;
+      qs('reportRepasseTotal').textContent = `Repasse: ${currency(filteredOrders.reduce((sum, order) => sum + getOrderSchoolRepasse(order), 0))}`;
 
-      if(!orders.length){
-        tbody.innerHTML = `<tr><td colspan="9" class="mini">Nenhum pedido recebido.</td></tr>`;
+      if(!filteredOrders.length){
+        tbody.innerHTML = `<tr><td colspan="9" class="mini">Nenhum pedido recebido no filtro selecionado.</td></tr>`;
         return;
       }
 
@@ -656,18 +819,14 @@
         }).join('');
       };
 
-      orders.forEach(order => {
+      filteredOrders.forEach(order => {
         const contact = [
           order.phone ? `<div>${escapeHtml(order.phone)}</div>` : '',
           order.email ? `<div class="mini">${escapeHtml(order.email)}</div>` : ''
         ].join('');
 
         const orderRepasse = getOrderSchoolRepasse(order);
-        const items = Array.isArray(order.items) ? order.items : [];
-        const orderCost = items.reduce((sum, item) => {
-          const prod = products.find(p => String(p.id) === String(item.productId));
-          return sum + (prod ? Number(prod.cost || 0) * Number(item.qtd || 0) : 0);
-        }, 0);
+        const orderCost = getOrderCost(order);
         const netProfit = Number(order.total_amount || 0) - orderCost - orderRepasse;
 
         tbody.insertAdjacentHTML('beforeend', `
@@ -987,6 +1146,10 @@
       qs('btnLogout').addEventListener('click', logout);
       qs('btnRefresh').addEventListener('click', refreshAll);
       qs('btnPreviewCliente').addEventListener('click', () => window.open('index.html', '_blank'));
+      qs('applyReportFilter').addEventListener('click', renderOrders);
+      qs('clearReportFilter').addEventListener('click', () => { qs('reportStartDate').value = ''; qs('reportEndDate').value = ''; qs('reportSchoolFilter').value = ''; renderOrders(); });
+      qs('exportReportExcel').addEventListener('click', exportFilteredOrdersExcel);
+      qs('exportReportPdf').addEventListener('click', exportFilteredOrdersPdf);
       qs('saveConfig').addEventListener('click', saveConfig);
       qs('salvarProduto').addEventListener('click', saveProduct);
       qs('resetProduto').addEventListener('click', clearProductForm);
