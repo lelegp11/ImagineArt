@@ -367,6 +367,14 @@
       el.className = 'status ' + type;
     }
 
+
+    function setPaymentMethodStatus(message, type=''){
+      const el = qs('paymentMethodStatus');
+      if(!el) return;
+      el.textContent = message;
+      el.className = 'status ' + type;
+    }
+
     function showApp(){
       qs('authView').classList.add('hidden');
       qs('appView').classList.remove('hidden');
