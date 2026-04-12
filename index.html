@@ -478,6 +478,15 @@
       });
 
       qs(`qty-${id}`).textContent = '1';
+
+      const schoolEl = qs(`school-${id}`);
+      if (schoolEl) schoolEl.value = '';
+
+      fields.forEach((field, idx) => {
+        const input = qs(`field-${id}-${idx}`);
+        if (input) input.value = '';
+      });
+
       renderCart();
       setOrderStatus('Produto adicionado ao pedido.', 'ok');
     };
