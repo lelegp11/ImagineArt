@@ -97,6 +97,7 @@
         <button data-view="cadastro">Cadastro</button>
         <button data-view="pedidos">Pedidos</button>
         <button data-view="escolas">Escolas</button>
+        <button data-view="pagamentos">Pagamentos</button>
         <button data-view="config">Configurações</button>
       </div>
       <div class="toolbar">
@@ -284,6 +285,39 @@
         </div>
       </section>
 
+
+      <section id="pagamentos" class="view hidden">
+        <div class="grid grid-2">
+          <div class="card">
+            <div class="toolbar">
+              <h2 style="margin:0">Cadastro de forma de pagamento</h2>
+              <span class="spacer"></span>
+              <button class="btn ghost small" id="resetPaymentMethod">Limpar</button>
+            </div>
+            <div class="form-grid-2" style="margin-top:12px">
+              <div><label>Nome</label><input class="input" id="paymentMethodName" placeholder="Ex.: PIX, Cartão de Crédito"></div>
+              <div><label>Ativa</label><select id="paymentMethodActive" class="input"><option value="true">Sim</option><option value="false">Não</option></select></div>
+              <div><label>Acrescentar valor fixo</label><input class="input" id="paymentMethodFee" type="number" step="0.01" value="0"></div>
+              <div><label>Descrição</label><input class="input" id="paymentMethodDescription" placeholder="Ex.: + R$5,00 taxa do Mercado Pago"></div>
+            </div>
+            <div class="toolbar" style="margin-top:14px">
+              <button class="btn primary" id="savePaymentMethodBtn">Salvar forma de pagamento</button>
+            </div>
+            <div id="paymentMethodStatus" class="status">Cadastre aqui as formas de pagamento e a taxa extra, quando houver.</div>
+          </div>
+
+          <div class="card">
+            <h2 style="margin-top:0">Formas de pagamento cadastradas</h2>
+            <div class="table-wrap">
+              <table>
+                <thead><tr><th>Nome</th><th>Taxa fixa</th><th>Ativa</th><th>Ação</th></tr></thead>
+                <tbody id="paymentMethodsTable"></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </section>
+
       <section id="config" class="view hidden">
         <div class="card">
           <h2 style="margin-top:0">Informações da conexão</h2>
@@ -303,8 +337,10 @@
     let products = [];
     let orders = [];
     let schools = [];
+    let paymentMethods = [];
     let editingProductId = null;
     let editingSchoolId = null;
+    let editingPaymentMethodId = null;
     let currentUploadFile = null;
 
     function qs(id){ return document.getElementById(id); }
@@ -472,6 +508,38 @@
               <div class="toolbar">
                 <button class="btn ghost small" onclick="editSchool('${s.id}')">Editar</button>
                 <button class="btn danger small" onclick="removeSchool('${s.id}')">Excluir</button>
+              </div>
+            </td>
+          </tr>
+        `);
+      });
+    }
+
+
+    async function fetchPaymentMethods(){
+      const { data, error } = await supabaseClient.from('payment_methods').select('*').order('name',{ascending:true});
+      if(error) throw error;
+      paymentMethods = data || [];
+      renderPaymentMethods();
+    }
+
+    function renderPaymentMethods(){
+      const tbody = qs('paymentMethodsTable');
+      tbody.innerHTML = '';
+      if(!paymentMethods.length){
+        tbody.innerHTML = `<tr><td colspan="4" class="mini">Nenhuma forma de pagamento cadastrada.</td></tr>`;
+        return;
+      }
+      paymentMethods.forEach(pm => {
+        tbody.insertAdjacentHTML('beforeend', `
+          <tr>
+            <td><strong>${escapeHtml(pm.name)}</strong><div class="mini">${escapeHtml(pm.description || '')}</div></td>
+            <td>${currency(pm.extra_fee || 0)}</td>
+            <td>${pm.active ? 'Sim' : 'Não'}</td>
+            <td>
+              <div class="toolbar">
+                <button class="btn ghost small" onclick="editPaymentMethod('${pm.id}')">Editar</button>
+                <button class="btn danger small" onclick="removePaymentMethod('${pm.id}')">Excluir</button>
               </div>
             </td>
           </tr>
@@ -794,6 +862,67 @@
       await fetchSchools();
     }
 
+
+    function clearPaymentMethodForm(){
+      qs('paymentMethodName').value = '';
+      qs('paymentMethodActive').value = 'true';
+      qs('paymentMethodFee').value = '0';
+      qs('paymentMethodDescription').value = '';
+      editingPaymentMethodId = null;
+      setPaymentMethodStatus('Cadastre aqui as formas de pagamento e a taxa extra, quando houver.');
+    }
+
+    async function savePaymentMethod(){
+      try{
+        const name = qs('paymentMethodName').value.trim();
+        const active = qs('paymentMethodActive').value === 'true';
+        const extra_fee = Number(qs('paymentMethodFee').value || 0);
+        const description = qs('paymentMethodDescription').value.trim();
+
+        if(!name){
+          setPaymentMethodStatus('Informe o nome da forma de pagamento.', 'error');
+          return;
+        }
+
+        setPaymentMethodStatus('Salvando forma de pagamento...', 'warn');
+        const payload = editingPaymentMethodId
+          ? { id: editingPaymentMethodId, name, active, extra_fee, description }
+          : { name, active, extra_fee, description };
+
+        const { error } = await supabaseClient.from('payment_methods').upsert(payload);
+        if(error) throw error;
+
+        clearPaymentMethodForm();
+        setPaymentMethodStatus('Forma de pagamento salva com sucesso.', 'ok');
+        await fetchPaymentMethods();
+      }catch(err){
+        console.error(err);
+        setPaymentMethodStatus(err.message || 'Erro ao salvar forma de pagamento.', 'error');
+      }
+    }
+
+    window.editPaymentMethod = function(id){
+      const pm = paymentMethods.find(x => String(x.id) === String(id));
+      if(!pm) return;
+      editingPaymentMethodId = pm.id;
+      qs('paymentMethodName').value = pm.name || '';
+      qs('paymentMethodActive').value = String(!!pm.active);
+      qs('paymentMethodFee').value = pm.extra_fee ?? 0;
+      qs('paymentMethodDescription').value = pm.description || '';
+      setPaymentMethodStatus(`Editando: ${pm.name}`, 'warn');
+      setView('pagamentos');
+    }
+
+    window.removePaymentMethod = async function(id){
+      if(!confirm('Excluir esta forma de pagamento?')) return;
+      const { error } = await supabaseClient.from('payment_methods').delete().eq('id', id);
+      if(error){
+        alert(error.message || 'Erro ao excluir forma de pagamento.');
+        return;
+      }
+      await fetchPaymentMethods();
+    }
+
     async function refreshAll(){
       await Promise.all([fetchStoreConfig(), fetchProducts(), fetchOrders(), fetchSchools()]);
     }
@@ -810,6 +939,8 @@
       qs('resetProduto').addEventListener('click', clearProductForm);
       qs('saveSchoolBtn').addEventListener('click', saveSchool);
       qs('resetEscola').addEventListener('click', clearSchoolForm);
+      qs('savePaymentMethodBtn').addEventListener('click', savePaymentMethod);
+      qs('resetPaymentMethod').addEventListener('click', clearPaymentMethodForm);
       qs('buscaProduto').addEventListener('input', renderProducts);
       qs('pFoto').addEventListener('change', e => {
         currentUploadFile = e.target.files[0] || null;

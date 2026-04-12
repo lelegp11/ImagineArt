@@ -120,10 +120,7 @@
           <div><label>E-mail</label><input class="input" id="cEmail"></div>
           <div>
             <label>Forma de pagamento</label>
-            <select class="input" id="cPagamento">
-              <option value="PIX">PIX</option>
-              <option value="Crédito (+ R$5,00 da taxa do Mercado Pago)">Crédito (+ R$5,00 da taxa do Mercado Pago)</option>
-            </select>
+            <select class="input" id="cPagamento"></select>
           </div>
         </div>
 
@@ -163,6 +160,7 @@
       config: { loja:'Minha Loja', whatsapp:'', mensagem:'Olá! Gostaria de fazer este pedido:', moeda:'BRL', banner:'Coleção personalizada pronta para encantar seus clientes.' },
       products: [],
       schools: [],
+      paymentMethods: [],
       cart: []
     };
 
@@ -200,6 +198,29 @@
       const { data, error } = await supabaseClient.from('schools').select('*').eq('active', true).order('name',{ascending:true});
       if(error) throw error;
       state.schools = data || [];
+    }
+
+
+    async function fetchPaymentMethods(){
+      const { data, error } = await supabaseClient.from('payment_methods').select('*').eq('active', true).order('name',{ascending:true});
+      if(error) throw error;
+      state.paymentMethods = data || [];
+      renderPaymentMethods();
+    }
+
+    function renderPaymentMethods(){
+      const select = qs('cPagamento');
+      const methods = state.paymentMethods || [];
+      if(!methods.length){
+        select.innerHTML = '<option value="">Nenhuma forma de pagamento disponível</option>';
+        return;
+      }
+      select.innerHTML = methods.map(pm => {
+        const extra = Number(pm.extra_fee || 0);
+        const label = extra > 0 ? `${pm.name} (+ ${currency(extra)})` : pm.name;
+        return `<option value="${escapeHtml(pm.name)}" data-fee="${extra}">${escapeHtml(label)}</option>`;
+      }).join('');
+      updateCartSummary();
     }
 
     async function fetchProducts(){
@@ -284,11 +305,32 @@
       });
     }
 
-    function renderCart(){
+
+    function getSelectedPaymentFee(){
+      const select = qs('cPagamento');
+      const opt = select?.selectedOptions?.[0];
+      return Number(opt?.dataset?.fee || 0);
+    }
+
+    function getCartSubtotal(){
+      return state.cart.reduce((sum, item) => sum + Number(item.sale_price || 0) * Number(item.qtd || 0), 0);
+    }
+
+    function getCartTotalWithFee(){
+      return getCartSubtotal() + getSelectedPaymentFee();
+    }
+
+    function updateCartSummary(){
       const count = state.cart.reduce((sum, item) => sum + Number(item.qtd || 0), 0);
-      const total_amount = state.cart.reduce((sum, item) => sum + Number(item.sale_price || 0) * Number(item.qtd || 0), 0);
       qs('cartCount').textContent = `${count} item(s)`;
-      qs('cartTotal').textContent = currency(total_amount);
+      qs('cartTotal').textContent = currency(getCartTotalWithFee());
+    }
+
+    function renderCart(){
+      const subtotal_amount = getCartSubtotal();
+      const fee_amount = getSelectedPaymentFee();
+      const total_amount = subtotal_amount + fee_amount;
+      updateCartSummary();
 
       const tbody = qs('resumoPedido');
       tbody.innerHTML = '';
@@ -308,6 +350,18 @@
           </tr>
         `);
       });
+
+      if(fee_amount > 0){
+        tbody.insertAdjacentHTML('beforeend', `
+          <tr>
+            <td><strong>Taxa da forma de pagamento</strong></td>
+            <td>—</td>
+            <td>${escapeHtml(qs('cPagamento')?.selectedOptions?.[0]?.textContent || '')}</td>
+            <td>${currency(fee_amount)}</td>
+            <td>—</td>
+          </tr>
+        `);
+      }
     }
 
     function applyConfig(){
@@ -329,7 +383,9 @@
       const schools = [...new Set(state.cart.map(i => i.school_name).filter(Boolean))];
       if(!schools.length){ setOrderStatus('Selecione a escola em cada produto.', 'error'); return false; }
 
-      const total_amount = state.cart.reduce((sum, item) => sum + Number(item.sale_price || 0) * Number(item.qtd || 0), 0);
+      const subtotal_amount = getCartSubtotal();
+      const extra_fee = getSelectedPaymentFee();
+      const total_amount = subtotal_amount + extra_fee;
       const school_name = schools.join(', ');
       const child_name = state.cart.map(i => i.child_name).filter(Boolean).join(', ');
       const classroom = state.cart.map(i => i.classroom).filter(Boolean).join(', ');
@@ -344,6 +400,8 @@
         order_date: new Date().toISOString().slice(0,10),
         payment_method,
         notes,
+        subtotal_amount,
+        extra_fee,
         total_amount,
         items: state.cart.map(item => ({
           productId: item.productId,
@@ -397,12 +455,15 @@
         if(item.classroom) msg += `   Turma/Sala: ${item.classroom}\n`;
       });
 
-      const total_amount = msgCart.reduce((sum, item) => sum + Number(item.sale_price || 0) * Number(item.qtd || 0), 0);
-      msg += `\n*Total:* ${currency(total_amount)}\n\n`;
+      const subtotal_amount = msgCart.reduce((sum, item) => sum + Number(item.sale_price || 0) * Number(item.qtd || 0), 0);
+      const extra_fee = getSelectedPaymentFee();
+      const total_amount = subtotal_amount + extra_fee;
+      if(extra_fee > 0) msg += `\n*Subtotal:* ${currency(subtotal_amount)}\n*Taxa:* ${currency(extra_fee)}\n`;
+      msg += `*Total:* ${currency(total_amount)}\n\n`;
       msg += `*Cliente:* ${nome}\n`;
       msg += `*Telefone:* ${telefone}\n`;
       if(email) msg += `*E-mail:* ${email}\n`;
-      if(pagamento) msg += `*Pagamento:* ${pagamento}\n`;
+      if(pagamento) msg += `*Pagamento:* ${pagamento}${extra_fee > 0 ? ' (+ ' + currency(extra_fee) + ')' : ''}\n`;
       if(obs) msg += `*Observações:* ${obs}\n`;
 
       const encoded = encodeURIComponent(msg);
@@ -421,6 +482,7 @@
     function initEvents(){
       qs('buscaCatalogo').addEventListener('input', renderCatalog);
       qs('filtroCategoria').addEventListener('change', renderCatalog);
+      qs('cPagamento').addEventListener('change', renderCart);
       qs('saveAndSendBtn').addEventListener('click', saveAndSendOrder);
       qs('openResumo').addEventListener('click', () => { qs('resumoCard').classList.remove('hidden'); qs('resumoCard').scrollIntoView({ behavior:'smooth', block:'start' }); });
       qs('hideResumo').addEventListener('click', () => qs('resumoCard').classList.add('hidden'));
@@ -478,15 +540,6 @@
       });
 
       qs(`qty-${id}`).textContent = '1';
-
-      const schoolEl = qs(`school-${id}`);
-      if (schoolEl) schoolEl.value = '';
-
-      fields.forEach((field, idx) => {
-        const input = qs(`field-${id}-${idx}`);
-        if (input) input.value = '';
-      });
-
       renderCart();
       setOrderStatus('Produto adicionado ao pedido.', 'ok');
     };
@@ -502,6 +555,7 @@
         await initSupabase();
         await fetchStoreConfig();
         await fetchSchools();
+        await fetchPaymentMethods();
         await fetchProducts();
         applyConfig();
         buildCategoryFilter();
