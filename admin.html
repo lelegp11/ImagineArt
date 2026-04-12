@@ -96,6 +96,7 @@
         <button data-view="dashboard">Dashboard</button>
         <button data-view="cadastro">Cadastro</button>
         <button data-view="pedidos">Pedidos</button>
+        <button data-view="escolas">Escolas</button>
         <button data-view="config">Configurações</button>
       </div>
       <div class="toolbar">
@@ -252,6 +253,37 @@
         </div>
       </section>
 
+
+      <section id="escolas" class="view hidden">
+        <div class="grid grid-2">
+          <div class="card">
+            <div class="toolbar">
+              <h2 style="margin:0">Cadastro de escola</h2>
+              <span class="spacer"></span>
+              <button class="btn ghost small" id="resetEscola">Limpar</button>
+            </div>
+            <div class="form-grid-2" style="margin-top:12px">
+              <div><label>Nome da escola</label><input class="input" id="schoolName"></div>
+              <div><label>Ativa</label><select id="schoolActive" class="input"><option value="true">Sim</option><option value="false">Não</option></select></div>
+            </div>
+            <div class="toolbar" style="margin-top:14px">
+              <button class="btn primary" id="saveSchoolBtn">Salvar escola</button>
+            </div>
+            <div id="schoolStatus" class="status">Cadastre aqui as escolas que o cliente poderá selecionar.</div>
+          </div>
+
+          <div class="card">
+            <h2 style="margin-top:0">Escolas cadastradas</h2>
+            <div class="table-wrap">
+              <table>
+                <thead><tr><th>Nome</th><th>Ativa</th><th>Ação</th></tr></thead>
+                <tbody id="schoolsTable"></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </section>
+
       <section id="config" class="view hidden">
         <div class="card">
           <h2 style="margin-top:0">Informações da conexão</h2>
@@ -270,7 +302,9 @@
     let currentUser = null;
     let products = [];
     let orders = [];
+    let schools = [];
     let editingProductId = null;
+    let editingSchoolId = null;
     let currentUploadFile = null;
 
     function qs(id){ return document.getElementById(id); }
@@ -287,6 +321,12 @@
 
     function setProductStatus(message, type=''){
       const el = qs('statusProduto');
+      el.textContent = message;
+      el.className = 'status ' + type;
+    }
+
+    function setSchoolStatus(message, type=''){
+      const el = qs('schoolStatus');
       el.textContent = message;
       el.className = 'status ' + type;
     }
@@ -406,6 +446,37 @@
       orders = data || [];
       renderOrders();
       renderDashboard();
+    }
+
+
+    async function fetchSchools(){
+      const { data, error } = await supabaseClient.from('schools').select('*').order('name',{ascending:true});
+      if(error) throw error;
+      schools = data || [];
+      renderSchools();
+    }
+
+    function renderSchools(){
+      const tbody = qs('schoolsTable');
+      tbody.innerHTML = '';
+      if(!schools.length){
+        tbody.innerHTML = `<tr><td colspan="3" class="mini">Nenhuma escola cadastrada.</td></tr>`;
+        return;
+      }
+      schools.forEach(s => {
+        tbody.insertAdjacentHTML('beforeend', `
+          <tr>
+            <td>${escapeHtml(s.name)}</td>
+            <td>${s.active ? 'Sim' : 'Não'}</td>
+            <td>
+              <div class="toolbar">
+                <button class="btn ghost small" onclick="editSchool('${s.id}')">Editar</button>
+                <button class="btn danger small" onclick="removeSchool('${s.id}')">Excluir</button>
+              </div>
+            </td>
+          </tr>
+        `);
+      });
     }
 
     function renderProducts(){
@@ -674,8 +745,57 @@
       await fetchOrders();
     }
 
+
+    function clearSchoolForm(){
+      qs('schoolName').value = '';
+      qs('schoolActive').value = 'true';
+      editingSchoolId = null;
+      setSchoolStatus('Cadastre aqui as escolas que o cliente poderá selecionar.');
+    }
+
+    async function saveSchool(){
+      try{
+        const name = qs('schoolName').value.trim();
+        const active = qs('schoolActive').value === 'true';
+        if(!name){
+          setSchoolStatus('Informe o nome da escola.', 'error');
+          return;
+        }
+        setSchoolStatus('Salvando escola...', 'warn');
+        const payload = editingSchoolId ? { id: editingSchoolId, name, active } : { name, active };
+        const { error } = await supabaseClient.from('schools').upsert(payload);
+        if(error) throw error;
+        clearSchoolForm();
+        setSchoolStatus('Escola salva com sucesso.', 'ok');
+        await fetchSchools();
+      }catch(err){
+        console.error(err);
+        setSchoolStatus(err.message || 'Erro ao salvar escola.', 'error');
+      }
+    }
+
+    window.editSchool = function(id){
+      const s = schools.find(x => String(x.id) === String(id));
+      if(!s) return;
+      editingSchoolId = s.id;
+      qs('schoolName').value = s.name || '';
+      qs('schoolActive').value = String(!!s.active);
+      setSchoolStatus(`Editando: ${s.name}`, 'warn');
+      setView('escolas');
+    }
+
+    window.removeSchool = async function(id){
+      if(!confirm('Excluir esta escola?')) return;
+      const { error } = await supabaseClient.from('schools').delete().eq('id', id);
+      if(error){
+        alert(error.message || 'Erro ao excluir escola.');
+        return;
+      }
+      await fetchSchools();
+    }
+
     async function refreshAll(){
-      await Promise.all([fetchStoreConfig(), fetchProducts(), fetchOrders()]);
+      await Promise.all([fetchStoreConfig(), fetchProducts(), fetchOrders(), fetchSchools()]);
     }
 
     function bindEvents(){
@@ -688,6 +808,8 @@
       qs('saveConfig').addEventListener('click', saveConfig);
       qs('salvarProduto').addEventListener('click', saveProduct);
       qs('resetProduto').addEventListener('click', clearProductForm);
+      qs('saveSchoolBtn').addEventListener('click', saveSchool);
+      qs('resetEscola').addEventListener('click', clearSchoolForm);
       qs('buscaProduto').addEventListener('input', renderProducts);
       qs('pFoto').addEventListener('change', e => {
         currentUploadFile = e.target.files[0] || null;
