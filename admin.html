@@ -159,7 +159,7 @@
       <section id="dashboard" class="view hidden">
         <div class="grid grid-4">
           <div class="card kpi"><div class="k">Receita total</div><div class="v" id="kpiReceita">R$ 0,00</div><div class="s">Soma de todos os pedidos</div></div>
-          <div class="card kpi"><div class="k">Lucro estimado</div><div class="v" id="kpiLucro">R$ 0,00</div><div class="s">Receita menos custo dos itens vendidos</div></div>
+          <div class="card kpi"><div class="k">Lucro estimado</div><div class="v" id="kpiLucro">R$ 0,00</div><div class="s">Receita menos custo e repasse escolar</div></div>
           <div class="card kpi"><div class="k">Ticket médio</div><div class="v" id="kpiTicket">R$ 0,00</div><div class="s">Valor médio por pedido</div></div>
           <div class="card kpi"><div class="k">Margem média</div><div class="v" id="kpiMargem">0%</div><div class="s">Média dos itens vendidos</div></div>
         </div>
@@ -247,7 +247,7 @@
           </div>
           <div class="table-wrap" style="margin-top:14px">
             <table>
-              <thead><tr><th>Cliente</th><th>Contato</th><th>Data</th><th>Pagamento</th><th>Produtos e personalização</th><th>Total</th><th>Ação</th></tr></thead>
+              <thead><tr><th>Cliente</th><th>Contato</th><th>Data</th><th>Pagamento</th><th>Produtos e personalização</th><th>Total</th><th>Repasse escola</th><th>Lucro líquido</th><th>Ação</th></tr></thead>
               <tbody id="ordersTable"></tbody>
             </table>
           </div>
@@ -263,21 +263,22 @@
               <span class="spacer"></span>
               <button class="btn ghost small" id="resetEscola">Limpar</button>
             </div>
-            <div class="form-grid-2" style="margin-top:12px">
+            <div class="form-grid-3" style="margin-top:12px">
               <div><label>Nome da escola</label><input class="input" id="schoolName"></div>
+              <div><label>% de repasse</label><input class="input" id="schoolPercentage" type="number" step="0.01" min="0" value="0" placeholder="Ex.: 10"></div>
               <div><label>Ativa</label><select id="schoolActive" class="input"><option value="true">Sim</option><option value="false">Não</option></select></div>
             </div>
             <div class="toolbar" style="margin-top:14px">
               <button class="btn primary" id="saveSchoolBtn">Salvar escola</button>
             </div>
-            <div id="schoolStatus" class="status">Cadastre aqui as escolas que o cliente poderá selecionar.</div>
+            <div id="schoolStatus" class="status">Cadastre aqui as escolas e o percentual de repasse sobre a venda.</div>
           </div>
 
           <div class="card">
             <h2 style="margin-top:0">Escolas cadastradas</h2>
             <div class="table-wrap">
               <table>
-                <thead><tr><th>Nome</th><th>Ativa</th><th>Ação</th></tr></thead>
+                <thead><tr><th>Nome</th><th>% repasse</th><th>Ativa</th><th>Ação</th></tr></thead>
                 <tbody id="schoolsTable"></tbody>
               </table>
             </div>
@@ -347,6 +348,31 @@
     function currency(v){ return new Intl.NumberFormat('pt-BR',{style:'currency',currency:'BRL'}).format(Number(v||0)); }
     function pct(v){ return `${(Number(v||0)*100).toFixed(1)}%`; }
     function escapeHtml(str=''){ return String(str).replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[m])); }
+
+    function roundUpToNextTen(value){
+      const n = Number(value || 0);
+      if (n <= 0) return 0;
+      return Math.ceil(n / 10) * 10;
+    }
+
+    function findSchoolByName(name){
+      return schools.find(s => String(s.name).trim().toLowerCase() === String(name || '').trim().toLowerCase()) || null;
+    }
+
+    function getSchoolRepasseForItem(item){
+      const school = findSchoolByName(item.school_name);
+      const percentage = Number(school?.percentage || 0);
+      const qty = Number(item.qtd || 0);
+      const roundedSalePrice = roundUpToNextTen(item.sale_price || 0);
+      const repasseUnit = roundedSalePrice * (percentage / 100);
+      const repasseTotal = repasseUnit * qty;
+      return { school, percentage, roundedSalePrice, repasseUnit, repasseTotal };
+    }
+
+    function getOrderSchoolRepasse(order){
+      const items = Array.isArray(order.items) ? order.items : [];
+      return items.reduce((sum, item) => sum + getSchoolRepasseForItem(item).repasseTotal, 0);
+    }
 
     function setAuthStatus(message, type=''){
       const el = qs('authStatus');
@@ -504,13 +530,14 @@
       const tbody = qs('schoolsTable');
       tbody.innerHTML = '';
       if(!schools.length){
-        tbody.innerHTML = `<tr><td colspan="3" class="mini">Nenhuma escola cadastrada.</td></tr>`;
+        tbody.innerHTML = `<tr><td colspan="4" class="mini">Nenhuma escola cadastrada.</td></tr>`;
         return;
       }
       schools.forEach(s => {
         tbody.insertAdjacentHTML('beforeend', `
           <tr>
             <td>${escapeHtml(s.name)}</td>
+            <td>${pct(Number(s.percentage || 0) / 100)}</td>
             <td>${s.active ? 'Sim' : 'Não'}</td>
             <td>
               <div class="toolbar">
@@ -598,7 +625,7 @@
       qs('ordersCount').textContent = `${orders.length} pedido(s)`;
 
       if(!orders.length){
-        tbody.innerHTML = `<tr><td colspan="7" class="mini">Nenhum pedido recebido.</td></tr>`;
+        tbody.innerHTML = `<tr><td colspan="9" class="mini">Nenhum pedido recebido.</td></tr>`;
         return;
       }
 
@@ -612,6 +639,7 @@
           const classroom = item.classroom || '—';
           const personalization = item.personalizacao || '—';
           const subtotal = Number(item.sale_price || 0) * Number(item.qtd || 0);
+          const repasse = getSchoolRepasseForItem(item);
 
           return `
             <div style="padding:10px 0; ${idx < items.length - 1 ? 'border-bottom:1px solid #e5e7eb;' : ''}">
@@ -620,6 +648,8 @@
               <div class="mini"><strong>Criança:</strong> ${escapeHtml(child)}</div>
               <div class="mini"><strong>Turma/Sala:</strong> ${escapeHtml(classroom)}</div>
               <div class="mini"><strong>Personalização:</strong> ${escapeHtml(personalization)}</div>
+              <div class="mini"><strong>Venda un. considerada:</strong> ${currency(repasse.roundedSalePrice)}</div>
+              <div class="mini"><strong>Repasse escola:</strong> ${pct(repasse.percentage / 100)} = ${currency(repasse.repasseTotal)}</div>
               <div class="mini"><strong>Subtotal:</strong> ${currency(subtotal)}</div>
             </div>
           `;
@@ -632,6 +662,14 @@
           order.email ? `<div class="mini">${escapeHtml(order.email)}</div>` : ''
         ].join('');
 
+        const orderRepasse = getOrderSchoolRepasse(order);
+        const items = Array.isArray(order.items) ? order.items : [];
+        const orderCost = items.reduce((sum, item) => {
+          const prod = products.find(p => String(p.id) === String(item.productId));
+          return sum + (prod ? Number(prod.cost || 0) * Number(item.qtd || 0) : 0);
+        }, 0);
+        const netProfit = Number(order.total_amount || 0) - orderCost - orderRepasse;
+
         tbody.insertAdjacentHTML('beforeend', `
           <tr>
             <td><strong>${escapeHtml(order.client_name || '')}</strong></td>
@@ -640,6 +678,8 @@
             <td>${escapeHtml(order.payment_method || '')}</td>
             <td>${itemDetailsHtml(order)}</td>
             <td>${currency(order.total_amount)}</td>
+            <td>${currency(orderRepasse)}</td>
+            <td>${currency(netProfit)}</td>
             <td><button class="btn danger small" onclick="removeOrder('${order.id}')">Excluir</button></td>
           </tr>
         `);
@@ -649,6 +689,7 @@
     function renderDashboard(){
       const revenue = orders.reduce((sum, o) => sum + Number(o.total_amount || 0), 0);
       let cost = 0;
+      let schoolRepasse = 0;
       let marginList = [];
 
       orders.forEach(order => {
@@ -661,10 +702,11 @@
               marginList.push((Number(prod.sale_price)-Number(prod.cost||0))/Number(prod.sale_price));
             }
           }
+          schoolRepasse += getSchoolRepasseForItem(item).repasseTotal;
         });
       });
 
-      const profit = revenue - cost;
+      const profit = revenue - cost - schoolRepasse;
       const ticket = orders.length ? revenue / orders.length : 0;
       const margin = marginList.length ? marginList.reduce((a,b)=>a+b,0)/marginList.length : 0;
 
@@ -824,21 +866,23 @@
 
     function clearSchoolForm(){
       qs('schoolName').value = '';
+      qs('schoolPercentage').value = '0';
       qs('schoolActive').value = 'true';
       editingSchoolId = null;
-      setSchoolStatus('Cadastre aqui as escolas que o cliente poderá selecionar.');
+      setSchoolStatus('Cadastre aqui as escolas e o percentual de repasse sobre a venda.');
     }
 
     async function saveSchool(){
       try{
         const name = qs('schoolName').value.trim();
+        const percentage = Number(qs('schoolPercentage').value || 0);
         const active = qs('schoolActive').value === 'true';
         if(!name){
           setSchoolStatus('Informe o nome da escola.', 'error');
           return;
         }
         setSchoolStatus('Salvando escola...', 'warn');
-        const payload = editingSchoolId ? { id: editingSchoolId, name, active } : { name, active };
+        const payload = editingSchoolId ? { id: editingSchoolId, name, percentage, active } : { name, percentage, active };
         const { error } = await supabaseClient.from('schools').upsert(payload);
         if(error) throw error;
         clearSchoolForm();
@@ -855,6 +899,7 @@
       if(!s) return;
       editingSchoolId = s.id;
       qs('schoolName').value = s.name || '';
+      qs('schoolPercentage').value = Number(s.percentage || 0);
       qs('schoolActive').value = String(!!s.active);
       setSchoolStatus(`Editando: ${s.name}`, 'warn');
       setView('escolas');
