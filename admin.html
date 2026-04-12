@@ -383,15 +383,31 @@
       return Math.ceil(n / 10) * 10;
     }
 
+    function normalizeText(value){
+      return String(value || '')
+        .trim()
+        .toLowerCase()
+        .normalize('NFD')
+        .replace(/[\u0300-\u036f]/g, '');
+    }
+
+    function parsePercent(value){
+      if (typeof value === 'string') {
+        return Number(value.replace(',', '.')) || 0;
+      }
+      return Number(value || 0);
+    }
+
     function findSchoolByName(name){
-      return schools.find(s => String(s.name).trim().toLowerCase() === String(name || '').trim().toLowerCase()) || null;
+      const target = normalizeText(name);
+      return schools.find(s => normalizeText(s.name) === target) || null;
     }
 
     function getSchoolRepasseForItem(item){
       const school = findSchoolByName(item.school_name);
-      const percentage = Number(school?.percentage || 0);
+      const percentage = parsePercent(school?.percentage);
       const qty = Number(item.qtd || 0);
-      const roundedSalePrice = roundUpToNextTen(item.sale_price || 0);
+      const roundedSalePrice = roundUpToNextTen(Number(item.sale_price || 0));
       const repasseUnit = roundedSalePrice * (percentage / 100);
       const repasseTotal = repasseUnit * qty;
       return { school, percentage, roundedSalePrice, repasseUnit, repasseTotal };
@@ -516,7 +532,7 @@
         return;
       }
       const { jsPDF } = window.jspdf;
-      const doc = new jsPDF({ orientation: 'landscape' });
+      const doc = new jsPDF({ orientation: 'landscape', unit: 'mm', format: 'a4' });
       const school = qs('reportSchoolFilter')?.value?.trim() || 'Todas as escolas';
       const start = qs('reportStartDate')?.value || 'Início';
       const end = qs('reportEndDate')?.value || 'Fim';
@@ -529,26 +545,72 @@
       doc.text(`Escola: ${school}`, 14, 27);
       doc.text(`Repasse total: ${currency(totalRepasse)}`, 14, 33);
 
+      const body = rows.map(r => [
+        r['Data'],
+        r['Cliente'],
+        r['Produto'],
+        String(r['Qtd']),
+        r['Escola'],
+        r['Criança'],
+        r['Turma/Sala'],
+        currency(r['Venda un. considerada']),
+        currency(r['Subtotal item']),
+        `${r['Repasse %']}%`,
+        currency(r['Repasse item']),
+        r['Pagamento']
+      ]);
+
       doc.autoTable({
         startY: 38,
-        styles: { fontSize: 8, cellWidth: 'wrap' },
+        tableWidth: 'auto',
+        theme: 'grid',
+        styles: {
+          fontSize: 7,
+          cellPadding: 2,
+          overflow: 'linebreak',
+          valign: 'middle',
+          lineColor: [220, 220, 220],
+          lineWidth: 0.1
+        },
+        headStyles: {
+          fillColor: [52, 132, 189],
+          textColor: 255,
+          fontStyle: 'bold',
+          halign: 'left'
+        },
+        bodyStyles: {
+          textColor: 40
+        },
+        alternateRowStyles: {
+          fillColor: [245, 245, 245]
+        },
+        columnStyles: {
+          0: { cellWidth: 20 },  // Data
+          1: { cellWidth: 42 },  // Cliente
+          2: { cellWidth: 36 },  // Produto
+          3: { cellWidth: 10, halign: 'center' },  // Qtd
+          4: { cellWidth: 46 },  // Escola
+          5: { cellWidth: 18 },  // Criança
+          6: { cellWidth: 18 },  // Turma/Sala
+          7: { cellWidth: 18, halign: 'right' },  // Venda un.
+          8: { cellWidth: 18, halign: 'right' },  // Subtotal
+          9: { cellWidth: 14, halign: 'center' }, // Repasse %
+          10:{ cellWidth: 18, halign: 'right' },  // Repasse
+          11:{ cellWidth: 30 }   // Pagamento
+        },
         head: [[
           'Data','Cliente','Produto','Qtd','Escola','Criança','Turma/Sala','Venda un.','Subtotal','Repasse %','Repasse','Pagamento'
         ]],
-        body: rows.map(r => [
-          r['Data'],
-          r['Cliente'],
-          r['Produto'],
-          r['Qtd'],
-          r['Escola'],
-          r['Criança'],
-          r['Turma/Sala'],
-          currency(r['Venda un. considerada']),
-          currency(r['Subtotal item']),
-          `${r['Repasse %']}%`,
-          currency(r['Repasse item']),
-          r['Pagamento']
-        ])
+        body,
+        margin: { left: 8, right: 8 },
+        didDrawPage: function(data) {
+          const pageCount = doc.internal.getNumberOfPages();
+          const pageSize = doc.internal.pageSize;
+          const pageWidth = pageSize.width || pageSize.getWidth();
+          const pageHeight = pageSize.height || pageSize.getHeight();
+          doc.setFontSize(8);
+          doc.text(`Página ${data.pageNumber} de ${pageCount}`, pageWidth - 28, pageHeight - 6);
+        }
       });
 
       const safeSchool = school.toLowerCase().replace(/[^a-z0-9]+/gi, '-');
@@ -821,7 +883,6 @@
           const school = item.school_name || order.school_name || '—';
           const child = item.child_name || '—';
           const classroom = item.classroom || '—';
-          const personalization = item.personalizacao || '—';
           const subtotal = Number(item.sale_price || 0) * Number(item.qtd || 0);
           const repasse = getSchoolRepasseForItem(item);
 
@@ -831,7 +892,6 @@
               <div class="mini" style="margin-top:4px"><strong>Escola:</strong> ${escapeHtml(school)}</div>
               <div class="mini"><strong>Criança:</strong> ${escapeHtml(child)}</div>
               <div class="mini"><strong>Turma/Sala:</strong> ${escapeHtml(classroom)}</div>
-              <div class="mini"><strong>Personalização:</strong> ${escapeHtml(personalization)}</div>
               <div class="mini"><strong>Venda un. considerada:</strong> ${currency(repasse.roundedSalePrice)}</div>
               <div class="mini"><strong>Repasse escola:</strong> ${pct(repasse.percentage / 100)} = ${currency(repasse.repasseTotal)}</div>
               <div class="mini"><strong>Subtotal:</strong> ${currency(subtotal)}</div>
