@@ -461,10 +461,21 @@
       return getVisibleItemsForOrder(order).reduce((sum, item) => sum + getSchoolRepasseForItem(item).repasseTotal, 0);
     }
 
+    function getProductCostForItem(item){
+      const byId = products.find(p => String(p.id) === String(item.productId));
+      if (byId) return Number(byId.cost || 0);
+
+      const byName = products.find(p =>
+        String(p.name || '').trim().toLowerCase() === String(item.nome || '').trim().toLowerCase()
+      );
+      if (byName) return Number(byName.cost || 0);
+
+      return Number(item.cost || 0);
+    }
+
     function getVisibleCostForOrder(order){
       return getVisibleItemsForOrder(order).reduce((sum, item) => {
-        const prod = products.find(p => String(p.id) === String(item.productId));
-        return sum + (prod ? Number(prod.cost || 0) * Number(item.qtd || 0) : 0);
+        return sum + (getProductCostForItem(item) * Number(item.qtd || 0));
       }, 0);
     }
 
@@ -899,6 +910,7 @@
               <div class="mini" style="margin-top:4px"><strong>Escola:</strong> ${escapeHtml(school)}</div>
               <div class="mini"><strong>Criança:</strong> ${escapeHtml(child)}</div>
               <div class="mini"><strong>Turma/Sala:</strong> ${escapeHtml(classroom)}</div>
+              <div class="mini"><strong>Custo un.:</strong> ${currency(getProductCostForItem(item))}</div>
               <div class="mini"><strong>Venda original:</strong> ${currency(repasse.unitSale)}</div>
               <div class="mini"><strong>Venda un. considerada:</strong> ${currency(repasse.roundedSalePrice)}</div>
               <div class="mini"><strong>Repasse escola:</strong> ${pct(repasse.percentage / 100)} = ${currency(repasse.repasseTotal)}</div>
@@ -944,13 +956,16 @@
       orders.forEach(order => {
         const items = Array.isArray(order.items) ? order.items : [];
         items.forEach(item => {
-          const prod = products.find(p => String(p.id) === String(item.productId));
-          if(prod){
-            cost += Number(prod.cost || 0) * Number(item.qtd || 0);
-            if(Number(prod.sale_price || 0) > 0){
-              marginList.push((Number(prod.sale_price)-Number(prod.cost||0))/Number(prod.sale_price));
-            }
+          const itemCost = getProductCostForItem(item);
+          cost += itemCost * Number(item.qtd || 0);
+
+          const prod = products.find(p => String(p.id) === String(item.productId)) ||
+                       products.find(p => String(p.name || '').trim().toLowerCase() === String(item.nome || '').trim().toLowerCase());
+          const saleForMargin = Number(prod?.sale_price || item.sale_price || 0);
+          if(saleForMargin > 0){
+            marginList.push((saleForMargin - itemCost) / saleForMargin);
           }
+
           schoolRepasse += getSchoolRepasseForItem(item).repasseTotal;
         });
       });
