@@ -480,7 +480,6 @@
             'Escola': item.school_name || order.school_name || '',
             'Criança': item.child_name || '',
             'Turma/Sala': item.classroom || '',
-            'Personalização': item.personalizacao || '',
             'Venda un. considerada': Number(rep.roundedSalePrice || 0),
             'Subtotal item': subtotal,
             'Repasse %': Number(rep.percentage || 0),
@@ -534,7 +533,7 @@
         startY: 38,
         styles: { fontSize: 8, cellWidth: 'wrap' },
         head: [[
-          'Data','Cliente','Produto','Qtd','Escola','Criança','Turma/Sala','Personalização','Venda un.','Subtotal','Repasse %','Repasse','Pagamento'
+          'Data','Cliente','Produto','Qtd','Escola','Criança','Turma/Sala','Venda un.','Subtotal','Repasse %','Repasse','Pagamento'
         ]],
         body: rows.map(r => [
           r['Data'],
@@ -544,7 +543,6 @@
           r['Escola'],
           r['Criança'],
           r['Turma/Sala'],
-          r['Personalização'],
           currency(r['Venda un. considerada']),
           currency(r['Subtotal item']),
           `${r['Repasse %']}%`,
