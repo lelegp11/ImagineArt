@@ -460,13 +460,18 @@
         return;
       }
 
+      const personalizacaoCompleta = [
+        school_name ? `Escola: ${school_name}` : '',
+        personalizacao
+      ].filter(Boolean).join(' | ');
+
       state.cart.push({
         id: Math.random().toString(36).slice(2,10),
         productId: p.id,
         nome: p.name,
         qtd: qty,
         sale_price: Number(p.sale_price || 0),
-        personalizacao,
+        personalizacao: personalizacaoCompleta,
         school_name,
         child_name,
         classroom
