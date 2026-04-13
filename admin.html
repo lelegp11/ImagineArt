@@ -79,6 +79,8 @@
     .smallcaps{font-size:12px;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);font-weight:800}
     @media (max-width:1200px){.grid-4,.form-grid{grid-template-columns:repeat(2,1fr)} .hero-content,.grid-2,.grid-3{grid-template-columns:1fr}}
     @media (max-width:700px){.container{padding:14px}.topbar-inner{padding:12px 14px}.hero-content{padding:22px}.hero h1{font-size:30px}.grid-2,.grid-3,.grid-4,.form-grid,.form-grid-2,.form-grid-3{grid-template-columns:1fr}.nav{display:none}}
+  
+    #exportSchoolTransferExcel{display:none!important}
   </style>
   <script src="https://cdn.jsdelivr.net/npm/xlsx/dist/xlsx.full.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js"></script>
@@ -279,7 +281,6 @@
             <div class="toolbar" style="align-items:end">
               <button class="btn ghost" id="applyReportFilter">Aplicar filtro</button>
               <button class="btn ghost" id="clearReportFilter">Limpar</button>
-              <button class="btn ghost" id="exportSchoolTransferExcel">Relatório de repasse por escola</button>
               <button class="btn success" id="exportReportExcel">Exportar Excel</button>
               <button class="btn primary" id="exportReportPdf">Exportar PDF</button>
             </div>
@@ -484,7 +485,7 @@
 
         return dateOk && schoolOk && statusOk;
       });
-    };
+    }
 
     function getVisibleItemsForOrder(order){
       const schoolFilter = (qs('reportSchoolFilter')?.value || '').trim().toLowerCase();
@@ -1461,7 +1462,6 @@
       qs('applyReportFilter').addEventListener('click', renderOrders);
       qs('reportStatusFilter').addEventListener('change', renderOrders);
       qs('clearReportFilter').addEventListener('click', () => { qs('reportStartDate').value = ''; qs('reportEndDate').value = ''; qs('reportSchoolFilter').value = ''; renderOrders(); });
-      qs('exportSchoolTransferExcel').addEventListener('click', exportSchoolTransferExcel);
       qs('exportReportExcel').addEventListener('click', exportFilteredOrdersExcel);
       qs('exportReportPdf').addEventListener('click', exportFilteredOrdersPdf);
       qs('saveConfig').addEventListener('click', saveConfig);
