@@ -248,9 +248,20 @@
             <span class="spacer"></span>
             <span class="pill" id="ordersCount">0 pedidos</span>
             <span class="pill" id="reportRepasseTotal">Repasse: R$ 0,00</span>
+            <span class="pill" id="ordersDeliveredCount">Entregues: 0</span>
           </div>
 
-          <div class="grid grid-4" style="margin-top:14px">
+          <div class="grid grid-5" style="margin-top:14px">
+            <div>
+              <label>Status do pedido</label>
+              <select class="input" id="reportStatusFilter">
+                <option value="">Todos</option>
+                <option value="pending">Pendentes</option>
+                <option value="delivered">Entregues</option>
+                <option value="paid">Pagos</option>
+                <option value="open">Em aberto</option>
+              </select>
+            </div>
             <div>
               <label>Data inicial</label>
               <input class="input" id="reportStartDate" type="date">
@@ -268,6 +279,7 @@
             <div class="toolbar" style="align-items:end">
               <button class="btn ghost" id="applyReportFilter">Aplicar filtro</button>
               <button class="btn ghost" id="clearReportFilter">Limpar</button>
+              <button class="btn ghost" id="exportSchoolTransferExcel">Relatório de repasse por escola</button>
               <button class="btn success" id="exportReportExcel">Exportar Excel</button>
               <button class="btn primary" id="exportReportPdf">Exportar PDF</button>
             </div>
@@ -275,7 +287,7 @@
 
           <div class="table-wrap" style="margin-top:14px">
             <table>
-              <thead><tr><th>Cliente</th><th>Contato</th><th>Data</th><th>Pagamento</th><th>Produtos e personalização</th><th>Total</th><th>Repasse escola</th><th>Lucro líquido</th><th>Ação</th></tr></thead>
+              <thead><tr><th>Cliente</th><th>Contato</th><th>Data</th><th>Pagamento</th><th>Produtos e personalização</th><th>Total</th><th>Já pago</th><th>Saldo</th><th>Entrega</th><th>Status</th><th>Ação</th></tr></thead>
               <tbody id="ordersTable"></tbody>
             </table>
           </div>
@@ -399,6 +411,18 @@
       return Number(value || 0);
     }
 
+    function extractSchoolName(item, order = null){
+      const direct = String(item?.school_name || '').trim();
+      if (direct) return direct;
+
+      const fromOrder = String(order?.school_name || '').trim();
+      if (fromOrder && !fromOrder.includes(',')) return fromOrder;
+
+      const personalization = String(item?.personalizacao || '');
+      const match = personalization.match(/Escola:\s*([^|]+)/i);
+      return match ? match[1].trim() : '';
+    }
+
     function findSchoolByName(name){
       const target = normalizeText(name);
       if(!target) return null;
@@ -408,15 +432,16 @@
       }) || null;
     }
 
-    function getSchoolRepasseForItem(item){
-      const school = findSchoolByName(item.school_name || '');
+    function getSchoolRepasseForItem(item, order = null){
+      const schoolName = extractSchoolName(item, order);
+      const school = findSchoolByName(schoolName);
       const percentage = parsePercent(school?.percentage);
-      const qty = Number(item.qtd || 0);
-      const unitSale = Number(item.sale_price || 0);
+      const qty = Number(item?.qtd || 0);
+      const unitSale = Number(item?.sale_price || 0);
       const roundedSalePrice = roundUpToNextTen(unitSale);
       const repasseUnit = roundedSalePrice * (percentage / 100);
       const repasseTotal = repasseUnit * qty;
-      return { school, percentage, unitSale, roundedSalePrice, repasseUnit, repasseTotal };
+      return { schoolName, school, percentage, unitSale, roundedSalePrice, repasseUnit, repasseTotal };
     }
 
     function getOrderSchoolRepasse(order){
@@ -436,19 +461,30 @@
       const start = qs('reportStartDate')?.value || '';
       const end = qs('reportEndDate')?.value || '';
       const schoolFilter = (qs('reportSchoolFilter')?.value || '').trim().toLowerCase();
+      const statusFilter = qs('reportStatusFilter')?.value || '';
 
       return orders.filter(order => {
         const orderDate = order.order_date || '';
-        const items = getVisibleItemsForOrder(order);
+        const items = Array.isArray(order.items) ? order.items : [];
         const schoolNames = [order.school_name || '', ...items.map(i => i.school_name || '')]
           .join(' | ')
           .toLowerCase();
 
         const dateOk = (!start || orderDate >= start) && (!end || orderDate <= end);
         const schoolOk = !schoolFilter || schoolNames.includes(schoolFilter);
-        return dateOk && schoolOk;
+
+        const delivered = !!order.delivered_at;
+        const paid = Number(order.total_amount || 0) - Number(order.amount_paid || 0) <= 0;
+
+        let statusOk = true;
+        if(statusFilter === 'pending') statusOk = !delivered;
+        if(statusFilter === 'delivered') statusOk = delivered;
+        if(statusFilter === 'paid') statusOk = paid;
+        if(statusFilter === 'open') statusOk = !paid;
+
+        return dateOk && schoolOk && statusOk;
       });
-    }
+    };
 
     function getVisibleItemsForOrder(order){
       const schoolFilter = (qs('reportSchoolFilter')?.value || '').trim().toLowerCase();
@@ -458,16 +494,14 @@
     }
 
     function getVisibleRepasseForOrder(order){
-      return getVisibleItemsForOrder(order).reduce((sum, item) => sum + getSchoolRepasseForItem(item).repasseTotal, 0);
+      return getVisibleItemsForOrder(order).reduce((sum, item) => sum + getSchoolRepasseForItem(item, order).repasseTotal, 0);
     }
 
     function getProductCostForItem(item){
       const byId = products.find(p => String(p.id) === String(item.productId));
       if (byId) return Number(byId.cost || 0);
 
-      const byName = products.find(p =>
-        String(p.name || '').trim().toLowerCase() === String(item.nome || '').trim().toLowerCase()
-      );
+      const byName = products.find(p => normalizeText(p.name) === normalizeText(item.nome || ''));
       if (byName) return Number(byName.cost || 0);
 
       return Number(item.cost || 0);
@@ -482,6 +516,23 @@
     function getVisibleSubtotalForOrder(order){
       return getVisibleItemsForOrder(order).reduce((sum, item) => sum + Number(item.sale_price || 0) * Number(item.qtd || 0), 0);
     }
+
+    function getAmountPaid(order){
+      return Number(order.amount_paid || 0);
+    }
+
+    function getBalanceDue(order){
+      return Number(order.total_amount || 0) - getAmountPaid(order);
+    }
+
+    function isDelivered(order){
+      return !!order.delivered_at;
+    }
+
+    function isPaid(order){
+      return getBalanceDue(order) <= 0.0001;
+    }
+
 
 
     function populateReportSchoolFilter(){
@@ -500,7 +551,7 @@
       filteredOrders.forEach(order => {
         const items = getVisibleItemsForOrder(order);
         items.forEach(item => {
-          const rep = getSchoolRepasseForItem(item);
+          const rep = getSchoolRepasseForItem(item, order);
           const subtotal = Number(item.sale_price || 0) * Number(item.qtd || 0);
           rows.push({
             'Data': order.order_date || '',
@@ -524,6 +575,75 @@
         });
       });
       return rows;
+    }
+
+
+    function getSchoolTransferRows(){
+      const filtered = getFilteredOrders();
+      const grouped = new Map();
+
+      filtered.forEach(order => {
+        const items = Array.isArray(order.items) ? order.items : [];
+        const visibleItems = getVisibleItemsForOrder(order);
+
+        visibleItems.forEach(item => {
+          const rep = getSchoolRepasseForItem(item, order);
+          const schoolName = rep.schoolName || 'Sem escola';
+          const subtotal = Number(item.sale_price || 0) * Number(item.qtd || 0);
+          const key = `${schoolName}|||${order.id}`;
+
+          if(!grouped.has(key)){
+            grouped.set(key, {
+              escola: schoolName,
+              pedido_id: order.id,
+              data: order.order_date || '',
+              cliente: order.client_name || '',
+              telefone: order.phone || '',
+              pagamento: order.payment_method || '',
+              entregue: order.delivered_at ? 'Sim' : 'Não',
+              pago: (Number(order.total_amount || 0) - Number(order.amount_paid || 0) <= 0) ? 'Sim' : 'Não',
+              valor_pedido_filtrado: 0,
+              repasse_escola: 0,
+              itens: []
+            });
+          }
+
+          const row = grouped.get(key)
+          row.valor_pedido_filtrado += subtotal
+          row.repasse_escola += Number(rep.repasseTotal || 0)
+          row.itens.push(`${item.qtd || 0}x ${item.nome || ''} | Criança: ${item.child_name || '-'} | Turma: ${item.classroom || '-'}`)
+        })
+      })
+
+      return Array.from(grouped.values()).map(r => ({
+        'Escola': r.escola,
+        'Data': r.data,
+        'Cliente': r.cliente,
+        'Telefone': r.telefone,
+        'Pagamento': r.pagamento,
+        'Entregue': r.entregue,
+        'Pago': r.pago,
+        'Valor dos itens da escola': Number(r.valor_pedido_filtrado || 0),
+        'Repasse da escola': Number(r.repasse_escola || 0),
+        'Itens': r.itens.join(' || ')
+      }))
+    }
+
+    function exportSchoolTransferExcel(){
+      const rows = getSchoolTransferRows()
+      if(!rows.length){
+        alert('Não há dados para gerar o relatório de repasse.')
+        return
+      }
+
+      const wb = XLSX.utils.book_new()
+      const ws = XLSX.utils.json_to_sheet(rows)
+      XLSX.utils.book_append_sheet(wb, ws, 'Repasse por escola')
+
+      const school = qs('reportSchoolFilter')?.value?.trim() || 'todas-escolas'
+      const start = qs('reportStartDate')?.value || 'inicio'
+      const end = qs('reportEndDate')?.value || 'fim'
+      XLSX.writeFile(wb, `relatorio-repasse-escolas-${school}-${start}-${end}.xlsx`)
     }
 
     function exportFilteredOrdersExcel(){
@@ -887,9 +1007,10 @@
       const filteredOrders = getFilteredOrders();
       qs('ordersCount').textContent = `${filteredOrders.length} de ${orders.length} pedido(s)`;
       qs('reportRepasseTotal').textContent = `Repasse: ${currency(filteredOrders.reduce((sum, order) => sum + getVisibleRepasseForOrder(order), 0))}`;
+      qs('ordersDeliveredCount').textContent = `Entregues: ${filteredOrders.filter(isDelivered).length}`;
 
       if(!filteredOrders.length){
-        tbody.innerHTML = `<tr><td colspan="9" class="mini">Nenhum pedido recebido no filtro selecionado.</td></tr>`;
+        tbody.innerHTML = `<tr><td colspan="11" class="mini">Nenhum pedido recebido no filtro selecionado.</td></tr>`;
         return;
       }
 
@@ -898,11 +1019,11 @@
         if(!items.length) return '<div class="mini">Sem itens</div>';
 
         return items.map((item, idx) => {
-          const school = item.school_name || order.school_name || '—';
+          const repasse = getSchoolRepasseForItem(item, order);
+          const school = repasse.schoolName || '—';
           const child = item.child_name || '—';
           const classroom = item.classroom || '—';
           const subtotal = Number(item.sale_price || 0) * Number(item.qtd || 0);
-          const repasse = getSchoolRepasseForItem(item);
 
           return `
             <div style="padding:10px 0; ${idx < items.length - 1 ? 'border-bottom:1px solid #e5e7eb;' : ''}">
@@ -927,9 +1048,15 @@
         ].join('');
 
         const visibleSubtotal = getVisibleSubtotalForOrder(order);
-        const orderRepasse = getVisibleRepasseForOrder(order);
         const orderCost = getVisibleCostForOrder(order);
-        const netProfit = visibleSubtotal - orderCost - orderRepasse;
+        const netProfit = visibleSubtotal - orderCost - getVisibleRepasseForOrder(order);
+        const paid = getAmountPaid(order);
+        const balance = getBalanceDue(order);
+        const deliveredText = order.delivered_at ? escapeHtml(order.delivered_at) : 'Pendente';
+        const statusParts = [
+          isDelivered(order) ? 'Entregue' : 'Não entregue',
+          isPaid(order) ? 'Pago' : 'Em aberto'
+        ];
 
         tbody.insertAdjacentHTML('beforeend', `
           <tr>
@@ -938,9 +1065,27 @@
             <td>${escapeHtml(order.order_date || '')}</td>
             <td>${escapeHtml(order.payment_method || '')}</td>
             <td>${itemDetailsHtml(order)}</td>
-            <td>${currency(visibleSubtotal)}</td>
-            <td>${currency(orderRepasse)}</td>
-            <td>${currency(netProfit)}</td>
+            <td>
+              ${currency(visibleSubtotal)}
+              <div class="mini">Lucro: ${currency(netProfit)}</div>
+            </td>
+            <td>${currency(paid)}</td>
+            <td>${currency(balance)}</td>
+            <td>
+              <input class="input" type="date" id="delivered-date-${order.id}" value="${escapeHtml(order.delivered_at || '')}" style="min-width:140px">
+            </td>
+            <td>
+              <div class="mini"><strong>${statusParts.join(' • ')}</strong></div>
+              <div class="toolbar" style="margin-top:6px">
+                <input class="input" type="number" step="0.01" min="0" id="amount-paid-${order.id}" value="${paid}" style="max-width:120px" placeholder="Valor pago">
+                <button class="btn ghost small" onclick="saveOrderFinancialStatus('${order.id}')">Salvar</button>
+              </div>
+              <div class="toolbar" style="margin-top:6px">
+                <button class="btn ghost small" onclick="markOrderDeliveredToday('${order.id}')">Entregue hoje</button>
+                <button class="btn ghost small" onclick="markOrderFullyPaid('${order.id}')">Quitar</button>
+                <button class="btn ghost small" onclick="clearOrderStatus('${order.id}')">Limpar</button>
+              </div>
+            </td>
             <td><button class="btn danger small" onclick="removeOrder('${order.id}')">Excluir</button></td>
           </tr>
         `);
@@ -960,13 +1105,13 @@
           cost += itemCost * Number(item.qtd || 0);
 
           const prod = products.find(p => String(p.id) === String(item.productId)) ||
-                       products.find(p => String(p.name || '').trim().toLowerCase() === String(item.nome || '').trim().toLowerCase());
+                       products.find(p => normalizeText(p.name) === normalizeText(item.nome || ''));
           const saleForMargin = Number(prod?.sale_price || item.sale_price || 0);
           if(saleForMargin > 0){
             marginList.push((saleForMargin - itemCost) / saleForMargin);
           }
 
-          schoolRepasse += getSchoolRepasseForItem(item).repasseTotal;
+          schoolRepasse += getSchoolRepasseForItem(item, order).repasseTotal;
         });
       });
 
@@ -1117,6 +1262,68 @@
       renderDashboard();
     }
 
+
+    window.saveOrderFinancialStatus = async function(id){
+      const amountPaid = Number(qs(`amount-paid-${id}`)?.value || 0);
+      const deliveredAt = qs(`delivered-date-${id}`)?.value || null;
+
+      const { error } = await supabaseClient
+        .from('orders')
+        .update({
+          amount_paid: amountPaid,
+          delivered_at: deliveredAt
+        })
+        .eq('id', id);
+
+      if(error){
+        alert(error.message || 'Erro ao atualizar o pedido.');
+        return;
+      }
+      await fetchOrders();
+    }
+
+    window.markOrderDeliveredToday = async function(id){
+      const today = new Date().toISOString().slice(0,10);
+      const { error } = await supabaseClient
+        .from('orders')
+        .update({ delivered_at: today })
+        .eq('id', id);
+
+      if(error){
+        alert(error.message || 'Erro ao marcar entrega.');
+        return;
+      }
+      await fetchOrders();
+    }
+
+    window.markOrderFullyPaid = async function(id){
+      const order = orders.find(o => String(o.id) === String(id));
+      if(!order) return;
+      const { error } = await supabaseClient
+        .from('orders')
+        .update({ amount_paid: Number(order.total_amount || 0) })
+        .eq('id', id);
+
+      if(error){
+        alert(error.message || 'Erro ao quitar pedido.');
+        return;
+      }
+      await fetchOrders();
+    }
+
+    window.clearOrderStatus = async function(id){
+      const { error } = await supabaseClient
+        .from('orders')
+        .update({ amount_paid: 0, delivered_at: null })
+        .eq('id', id);
+
+      if(error){
+        alert(error.message || 'Erro ao limpar status do pedido.');
+        return;
+      }
+      await fetchOrders();
+    }
+
     window.removeOrder = async function(id){
       if(!confirm('Excluir este pedido?')) return;
       const { error } = await supabaseClient.from('orders').delete().eq('id', id);
@@ -1252,7 +1459,9 @@
       qs('btnRefresh').addEventListener('click', refreshAll);
       qs('btnPreviewCliente').addEventListener('click', () => window.open('index.html', '_blank'));
       qs('applyReportFilter').addEventListener('click', renderOrders);
+      qs('reportStatusFilter').addEventListener('change', renderOrders);
       qs('clearReportFilter').addEventListener('click', () => { qs('reportStartDate').value = ''; qs('reportEndDate').value = ''; qs('reportSchoolFilter').value = ''; renderOrders(); });
+      qs('exportSchoolTransferExcel').addEventListener('click', exportSchoolTransferExcel);
       qs('exportReportExcel').addEventListener('click', exportFilteredOrdersExcel);
       qs('exportReportPdf').addEventListener('click', exportFilteredOrdersPdf);
       qs('saveConfig').addEventListener('click', saveConfig);
