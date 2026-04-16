@@ -135,7 +135,42 @@
           </div>
         </div>
       </div>
-    </section>
+    
+        <div id="cadastro-config" class="cadastro-panel hidden">
+          <div class="grid grid-2">
+            <div class="card">
+              <h2 style="margin-top:0">Configurações rápidas da loja</h2>
+              <div class="form-grid-2">
+                <div><label>Nome da loja</label><input class="input" id="cfgLoja"></div>
+                <div><label>WhatsApp principal</label><input class="input" id="cfgWhatsapp"></div>
+                <div><label>Mensagem inicial</label><input class="input" id="cfgMsg"></div>
+                <div><label>Moeda</label><input class="input" id="cfgMoeda" value="BRL"></div>
+              </div>
+              <div style="margin-top:12px">
+                <label>Texto do banner</label>
+                <textarea class="input" id="cfgBanner" rows="3"></textarea>
+              </div>
+              <div class="toolbar" style="margin-top:14px">
+                <button class="btn success" id="saveConfig">Salvar configurações</button>
+              </div>
+            </div>
+
+            <div class="card">
+              <div class="toolbar">
+                <h2 style="margin:0">Prazo de entrega</h2>
+              </div>
+              <div class="mini" style="margin-top:8px">Defina o prazo padrão de entrega em dias úteis.</div>
+              <div style="margin-top:16px">
+                <label>Prazo de entrega (dias úteis)</label>
+                <input class="input" id="deliveryLeadDays" type="number" min="1" step="1" style="max-width:200px">
+                <div class="toolbar" style="margin-top:10px">
+                  <button class="btn primary small" id="saveDeliveryLeadDays">Salvar</button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
 
     <section id="appView" class="hidden">
       <section id="inicio" class="view">
@@ -170,14 +205,19 @@
 
       <section id="cadastro" class="view hidden">
         <div class="card" style="margin-bottom:18px">
-          <div class="toolbar">
-            <h2 style="margin:0">Cadastro</h2>
+          <div class="toolbar" style="align-items:flex-start">
+            <div>
+              <h2 style="margin:0">Cadastro</h2>
+              <div class="mini" style="margin-top:8px">Selecione um módulo para abrir o cadastro.</div>
+            </div>
             <span class="spacer"></span>
-            <button class="btn ghost small cadastro-tab active" data-cadastro-tab="produtos">Produtos</button>
-            <button class="btn ghost small cadastro-tab" data-cadastro-tab="escolas">Escolas</button>
-            <button class="btn ghost small cadastro-tab" data-cadastro-tab="pagamentos">Pagamentos</button>
           </div>
-          <div class="mini" style="margin-top:8px">Selecione um módulo para abrir o cadastro.</div>
+          <div class="cadastro-tabs" style="margin-top:14px">
+            <button class="cadastro-tab active" data-cadastro-tab="produtos">Produtos</button>
+            <button class="cadastro-tab" data-cadastro-tab="escolas">Escolas</button>
+            <button class="cadastro-tab" data-cadastro-tab="pagamentos">Pagamentos</button>
+            <button class="cadastro-tab" data-cadastro-tab="config">Configurações</button>
+          </div>
         </div>
 
         <div id="cadastro-produtos" class="cadastro-panel">
@@ -219,21 +259,6 @@
             <div id="statusProduto" class="status">Preencha os dados e clique em salvar.</div>
           </div>
 
-          <div class="card">
-            <h2>Configurações rápidas da loja</h2>
-            <div class="form-grid-2">
-              <div><label>Nome da loja</label><input class="input" id="cfgLoja"></div>
-              <div><label>WhatsApp principal</label><input class="input" id="cfgWhatsapp"></div>
-              <div><label>Mensagem inicial</label><input class="input" id="cfgMsg"></div>
-              <div><label>Moeda</label><input class="input" id="cfgMoeda" value="BRL"></div>
-            </div>
-            <div style="margin-top:12px">
-              <label>Texto do banner</label>
-              <textarea class="input" id="cfgBanner" rows="3"></textarea>
-            </div>
-            <div class="toolbar" style="margin-top:14px">
-              <button class="btn success" id="saveConfig">Salvar configurações</button>
-            </div>
           </div>
         </div>
 
@@ -333,17 +358,7 @@
             <span class="pill" id="ordersDeliveredCount">Entregues: 0</span>
           </div>
 
-          <div class="card" style="margin-top:14px;padding:14px">
-            <div class="toolbar">
-              <div>
-                <div class="smallcaps">Configuração de prazo</div>
-                <div class="mini">Defina o prazo padrão em dias úteis. Pedidos atrasados sobem para o topo e ficam em vermelho.</div>
-              </div>
-              <span class="spacer"></span>
-              <input class="input" id="deliveryLeadDays" type="number" min="1" step="1" value="5" style="max-width:120px" placeholder="Dias úteis">
-              <button class="btn ghost small" id="saveDeliveryLeadDays">Salvar prazo</button>
-            </div>
-          </div>
+          
 
           <div class="grid grid-5 report-filters" style="margin-top:14px; align-items:end">
             <div>
