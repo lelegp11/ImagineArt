@@ -101,8 +101,7 @@
         <button data-view="dashboard">Dashboard</button>
         <button data-view="cadastro">Cadastro</button>
         <button data-view="pedidos">Pedidos</button>
-        <button data-view="config">Configurações</button>
-      </div>
+              </div>
       <div class="toolbar">
         <button class="btn ghost small" id="btnPreviewCliente">Visualização do cliente</button>
         <button class="btn ghost small" id="btnRefresh">Atualizar dados</button>
@@ -137,39 +136,22 @@
       </div>
     
         <div id="cadastro-config" class="cadastro-panel hidden">
-          <div class="grid grid-2">
-            <div class="card">
-              <h2 style="margin-top:0">Configurações rápidas da loja</h2>
-              <div class="form-grid-2">
-                <div><label>Nome da loja</label><input class="input" id="cfgLoja"></div>
-                <div><label>WhatsApp principal</label><input class="input" id="cfgWhatsapp"></div>
-                <div><label>Mensagem inicial</label><input class="input" id="cfgMsg"></div>
-                <div><label>Moeda</label><input class="input" id="cfgMoeda" value="BRL"></div>
-              </div>
-              <div style="margin-top:12px">
-                <label>Texto do banner</label>
-                <textarea class="input" id="cfgBanner" rows="3"></textarea>
-              </div>
-              <div class="toolbar" style="margin-top:14px">
-                <button class="btn success" id="saveConfig">Salvar configurações</button>
-              </div>
+          <div class="card">
+            <div class="toolbar">
+              <h2 style="margin:0">Configurações</h2>
             </div>
+            <div class="mini" style="margin-top:8px">Defina o prazo padrão de entrega em dias úteis.</div>
 
-            <div class="card">
-              <div class="toolbar">
-                <h2 style="margin:0">Prazo de entrega</h2>
-              </div>
-              <div class="mini" style="margin-top:8px">Defina o prazo padrão de entrega em dias úteis.</div>
-              <div style="margin-top:16px">
-                <label>Prazo de entrega (dias úteis)</label>
-                <input class="input" id="deliveryLeadDays" type="number" min="1" step="1" style="max-width:200px">
-                <div class="toolbar" style="margin-top:10px">
-                  <button class="btn primary small" id="saveDeliveryLeadDays">Salvar</button>
-                </div>
+            <div style="margin-top:16px">
+              <label>Prazo de entrega (dias úteis)</label>
+              <input class="input" id="deliveryLeadDays" type="number" min="1" step="1" style="max-width:200px">
+              <div class="toolbar" style="margin-top:10px">
+                <button class="btn primary small" id="saveDeliveryLeadDays">Salvar</button>
               </div>
             </div>
           </div>
         </div>
+
       </section>
 
     <section id="appView" class="hidden">
@@ -221,8 +203,8 @@
         </div>
 
         <div id="cadastro-produtos" class="cadastro-panel">
-
-        <div class="grid grid-2">
+          <div class="grid grid-2">
+<div class="grid grid-2">
           <div class="card">
             <div class="toolbar">
               <h2 style="margin:0">Cadastro de produto</h2>
@@ -259,10 +241,12 @@
             <div id="statusProduto" class="status">Preencha os dados e clique em salvar.</div>
           </div>
 
+          
           </div>
         </div>
+          </div>
 
-        <div class="section card">
+<div class="section card">
           <div class="toolbar">
             <h2 style="margin:0">Produtos cadastrados</h2>
             <span class="spacer"></span>
@@ -277,12 +261,10 @@
             </table>
           </div>
         </div>
-      
         </div>
 
         <div id="cadastro-escolas" class="cadastro-panel hidden">
-
-        <div class="grid grid-2">
+<div class="grid grid-2">
           <div class="card">
             <div class="toolbar">
               <h2 style="margin:0">Cadastro de escola</h2>
@@ -310,12 +292,10 @@
             </div>
           </div>
         </div>
-      
         </div>
 
         <div id="cadastro-pagamentos" class="cadastro-panel hidden">
-
-        <div class="grid grid-2">
+<div class="grid grid-2">
           <div class="card">
             <div class="toolbar">
               <h2 style="margin:0">Cadastro de forma de pagamento</h2>
@@ -344,8 +324,41 @@
             </div>
           </div>
         </div>
-      
         </div>
+
+        <div id="cadastro-config" class="cadastro-panel hidden">
+          <div class="grid grid-2">
+            <div class="card">
+            <h2>Configurações rápidas da loja</h2>
+            <div class="form-grid-2">
+              <div><label>Nome da loja</label><input class="input" id="cfgLoja"></div>
+              <div><label>WhatsApp principal</label><input class="input" id="cfgWhatsapp"></div>
+              <div><label>Mensagem inicial</label><input class="input" id="cfgMsg"></div>
+              <div><label>Moeda</label><input class="input" id="cfgMoeda" value="BRL"></div>
+            </div>
+            <div style="margin-top:12px">
+              <label>Texto do banner</label>
+              <textarea class="input" id="cfgBanner" rows="3"></textarea>
+            </div>
+            <div class="toolbar" style="margin-top:14px">
+              <button class="btn success" id="saveConfig">Salvar configurações</button>
+            </div>
+            <div class="card">
+              <div class="toolbar">
+                <h2 style="margin:0">Prazo de entrega</h2>
+              </div>
+              <div class="mini" style="margin-top:8px">Defina o prazo padrão de entrega em dias úteis.</div>
+              <div style="margin-top:16px">
+                <label>Prazo de entrega (dias úteis)</label>
+                <input class="input" id="deliveryLeadDays" type="number" min="1" step="1" style="max-width:200px">
+                <div class="toolbar" style="margin-top:10px">
+                  <button class="btn primary small" id="saveDeliveryLeadDays">Salvar</button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
       </section>
 
       <section id="pedidos" class="view hidden">
@@ -399,19 +412,6 @@
               <tbody id="ordersTable"></tbody>
             </table>
           </div>
-        </div>
-      </section>
-
-
-      
-
-
-      
-
-      <section id="config" class="view hidden">
-        <div class="card">
-          <h2 style="margin-top:0">Informações da conexão</h2>
-          <div class="status ok">Esta versão já está pronta para conectar automaticamente ao seu Supabase após você inserir as credenciais no código.</div>
         </div>
       </section>
     </section>
@@ -1579,6 +1579,7 @@ window.removeOrder = async function(id){
 
     function bindEvents(){
       document.querySelectorAll('.nav button').forEach(btn => btn.addEventListener('click', () => setView(btn.dataset.view)));
+      document.querySelectorAll('.cadastro-tab').forEach(btn => btn.addEventListener('click', () => setCadastroTab(btn.dataset.cadastroTab)));
       document.querySelectorAll('.cadastro-tab').forEach(btn => btn.addEventListener('click', () => setCadastroTab(btn.dataset.cadastroTab)));
       qs('btnLogin').addEventListener('click', login);
       qs('btnSignup').addEventListener('click', signup);
