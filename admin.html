@@ -101,8 +101,6 @@
         <button data-view="dashboard">Dashboard</button>
         <button data-view="cadastro">Cadastro</button>
         <button data-view="pedidos">Pedidos</button>
-        <button data-view="escolas">Escolas</button>
-        <button data-view="pagamentos">Pagamentos</button>
         <button data-view="config">Configurações</button>
       </div>
       <div class="toolbar">
@@ -171,6 +169,19 @@
       </section>
 
       <section id="cadastro" class="view hidden">
+        <div class="card" style="margin-bottom:18px">
+          <div class="toolbar">
+            <h2 style="margin:0">Cadastro</h2>
+            <span class="spacer"></span>
+            <button class="btn ghost small cadastro-tab active" data-cadastro-tab="produtos">Produtos</button>
+            <button class="btn ghost small cadastro-tab" data-cadastro-tab="escolas">Escolas</button>
+            <button class="btn ghost small cadastro-tab" data-cadastro-tab="pagamentos">Pagamentos</button>
+          </div>
+          <div class="mini" style="margin-top:8px">Selecione um módulo para abrir o cadastro.</div>
+        </div>
+
+        <div id="cadastro-produtos" class="cadastro-panel">
+
         <div class="grid grid-2">
           <div class="card">
             <div class="toolbar">
@@ -241,62 +252,11 @@
             </table>
           </div>
         </div>
-      </section>
-
-      <section id="pedidos" class="view hidden">
-        <div class="card">
-          <div class="toolbar">
-            <h2 style="margin:0">Pedidos recebidos</h2>
-            <span class="spacer"></span>
-            <span class="pill" id="ordersCount">0 pedidos</span>
-            <span class="pill" id="reportRepasseTotal">Repasse: R$ 0,00</span>
-            <span class="pill" id="ordersDeliveredCount">Entregues: 0</span>
-          </div>
-
-          <div class="grid grid-5" style="margin-top:14px">
-            <div>
-              <label>Status do pedido</label>
-              <select class="input" id="reportStatusFilter">
-                <option value="">Todos</option>
-                <option value="pending">Pendentes</option>
-                <option value="delivered">Entregues</option>
-                <option value="paid">Pagos</option>
-                <option value="open">Em aberto</option>
-              </select>
-            </div>
-            <div>
-              <label>Data inicial</label>
-              <input class="input" id="reportStartDate" type="date">
-            </div>
-            <div>
-              <label>Data final</label>
-              <input class="input" id="reportEndDate" type="date">
-            </div>
-            <div>
-              <label>Filtrar por escola</label>
-              <select class="input" id="reportSchoolFilter">
-                <option value="">Todas as escolas</option>
-              </select>
-            </div>
-            <div class="toolbar" style="align-items:end">
-              <button class="btn ghost" id="applyReportFilter">Aplicar filtro</button>
-              <button class="btn ghost" id="clearReportFilter">Limpar</button>
-              <button class="btn success" id="exportReportExcel">Exportar Excel</button>
-              <button class="btn primary" id="exportReportPdf">Exportar PDF</button>
-            </div>
-          </div>
-
-          <div class="table-wrap" style="margin-top:14px">
-            <table>
-              <thead><tr><th>Cliente</th><th>Contato</th><th>Data</th><th>Pagamento</th><th>Produtos e personalização</th><th>Total</th><th>Já pago</th><th>Saldo</th><th>Entrega</th><th>Status</th><th>Ação</th></tr></thead>
-              <tbody id="ordersTable"></tbody>
-            </table>
-          </div>
+      
         </div>
-      </section>
 
+        <div id="cadastro-escolas" class="cadastro-panel hidden">
 
-      <section id="escolas" class="view hidden">
         <div class="grid grid-2">
           <div class="card">
             <div class="toolbar">
@@ -325,10 +285,11 @@
             </div>
           </div>
         </div>
-      </section>
+      
+        </div>
 
+        <div id="cadastro-pagamentos" class="cadastro-panel hidden">
 
-      <section id="pagamentos" class="view hidden">
         <div class="grid grid-2">
           <div class="card">
             <div class="toolbar">
@@ -358,7 +319,67 @@
             </div>
           </div>
         </div>
+      
+        </div>
       </section>
+
+      <section id="pedidos" class="view hidden">
+        <div class="card">
+          <div class="toolbar">
+            <h2 style="margin:0">Pedidos recebidos</h2>
+            <span class="spacer"></span>
+            <span class="pill" id="ordersCount">0 pedidos</span>
+            <span class="pill" id="reportRepasseTotal">Repasse: R$ 0,00</span>
+            <span class="pill" id="ordersDeliveredCount">Entregues: 0</span>
+          </div>
+
+          <div class="grid grid-5 report-filters" style="margin-top:14px; align-items:end">
+            <div>
+              <label>Status</label>
+              <select class="input" id="reportStatusFilter">
+                <option value="">Todos</option>
+                <option value="delivered_yes">Entregue ✓</option>
+                <option value="delivered_no">Entregue ✗</option>
+                <option value="paid_yes">Pago ✓</option>
+                <option value="paid_no">Pago ✗</option>
+              </select>
+            </div>
+            <div>
+              <label>Início</label>
+              <input class="input" id="reportStartDate" type="date">
+            </div>
+            <div>
+              <label>Fim</label>
+              <input class="input" id="reportEndDate" type="date">
+            </div>
+            <div>
+              <label>Escola</label>
+              <select class="input" id="reportSchoolFilter">
+                <option value="">Todas as escolas</option>
+              </select>
+            </div>
+            <div class="toolbar" style="align-items:end">
+              <button class="btn ghost small" id="applyReportFilter">Filtrar</button>
+              <button class="btn ghost small" id="clearReportFilter">Limpar</button>
+                            <button class="btn success small" id="exportReportExcel">Excel</button>
+              <button class="btn primary small" id="exportReportPdf">PDF</button>
+            </div>
+          </div>
+
+          <div class="table-wrap" style="margin-top:14px">
+            <table>
+              <thead><tr><th>Cliente</th><th>Contato</th><th>Data</th><th>Pagamento</th><th>Produtos e personalização</th><th>Total</th><th>Já pago</th><th>Saldo</th><th>Entrega</th><th>Status</th><th>Ação</th></tr></thead>
+              <tbody id="ordersTable"></tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+
+      
+
+
+      
 
       <section id="config" class="view hidden">
         <div class="card">
@@ -370,8 +391,8 @@
   </div>
 
   <script>
-    const SUPABASE_URL = 'https://xwaflarqkooltziusmbl.supabase.co';
-    const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inh3YWZsYXJxa29vbHR6aXVzbWJsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzU0ODkyNDgsImV4cCI6MjA5MTA2NTI0OH0.v4YFHMEc8Ryu_97J5UV5nVU7wPjFKetd10WP9MJ60u4';
+    const SUPABASE_URL = 'https://xwaflarqkooltziusmbl.supabase.cobl.supabase.co';
+    const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5ceI6IkpXVCJ9.eyJpc3MiyiJzdXBhYmFzZSIsInJlZiI6Inh3YWZsYXJxa29vbHR6aXVzbWJsIiwicm9sZSI6ImFub24iJCJpYXQiOjh3Nzc0ODkyNDgsImV4cCI6Mji5MTi2JTI0IH0.v4YFHM1c8Ryui97J5UV5nVI7wPjFKetd10WP9MJ60u4R5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inh3YWZsYXJxa29vbHR6aXVzbWJsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzU0ODkyNDgsImV4cCI6MjA5MTA2NTI0OH0.v4YFHMEc8Ryu_97J5UV5nVU7wPjFKetd10WP9MJ60u4';
     const IMAGE_BUCKET = 'product-images';
 
     let supabaseClient = null;
@@ -475,13 +496,13 @@
         const schoolOk = !schoolFilter || schoolNames.includes(schoolFilter);
 
         const delivered = !!order.delivered_at;
-        const paid = Number(order.total_amount || 0) - Number(order.amount_paid || 0) <= 0;
+        const paid = Number(order.total_amount || 0) - Number(order.amount_paid || 0) <= 0.0001;
 
         let statusOk = true;
-        if(statusFilter === 'pending') statusOk = !delivered;
-        if(statusFilter === 'delivered') statusOk = delivered;
-        if(statusFilter === 'paid') statusOk = paid;
-        if(statusFilter === 'open') statusOk = !paid;
+        if(statusFilter === 'delivered_yes') statusOk = delivered;
+        if(statusFilter === 'delivered_no') statusOk = !delivered;
+        if(statusFilter === 'paid_yes') statusOk = paid;
+        if(statusFilter === 'paid_no') statusOk = !paid;
 
         return dateOk && schoolOk && statusOk;
       });
@@ -795,10 +816,18 @@
       qs('btnLogout').classList.add('hidden');
     }
 
+    function setCadastroTab(tab){
+      document.querySelectorAll('.cadastro-tab').forEach(btn => btn.classList.toggle('active', btn.dataset.cadastroTab === tab));
+      document.querySelectorAll('.cadastro-panel').forEach(panel => panel.classList.add('hidden'));
+      const target = qs(`cadastro-${tab}`);
+      if(target) target.classList.remove('hidden');
+    }
+
     function setView(view){
       document.querySelectorAll('#appView .view').forEach(v => v.classList.add('hidden'));
       qs(view).classList.remove('hidden');
       document.querySelectorAll('.nav button').forEach(btn => btn.classList.toggle('active', btn.dataset.view === view));
+      if(view === 'cadastro') setCadastroTab('produtos');
     }
 
     async function initSupabase(){
@@ -1027,10 +1056,10 @@
           const subtotal = Number(item.sale_price || 0) * Number(item.qtd || 0);
 
           return `
-            <div style="padding:10px 0; ${idx < items.length - 1 ? 'border-bottom:1px solid #e5e7eb;' : ''}">
+            <div class="item-block" style="${idx < items.length - 1 ? 'border-bottom:1px solid #e5e7eb;' : ''}">
               <div><strong>${item.qtd || 0}x ${escapeHtml(item.nome || '')}</strong></div>
               <div class="mini" style="margin-top:4px"><strong>Escola:</strong> ${escapeHtml(school)}</div>
-              <div class="mini"><strong>Criança:</strong> ${escapeHtml(child)}</div>
+              <div class="mini"><strong>Criança:</strong></div><div class="child-highlight">${escapeHtml(child)}</div>
               <div class="mini"><strong>Turma/Sala:</strong> ${escapeHtml(classroom)}</div>
               <div class="mini"><strong>Custo un.:</strong> ${currency(getProductCostForItem(item))}</div>
               <div class="mini"><strong>Venda original:</strong> ${currency(repasse.unitSale)}</div>
@@ -1054,10 +1083,6 @@
         const paid = getAmountPaid(order);
         const balance = getBalanceDue(order);
         const deliveredText = order.delivered_at ? escapeHtml(order.delivered_at) : 'Pendente';
-        const statusParts = [
-          isDelivered(order) ? 'Entregue' : 'Não entregue',
-          isPaid(order) ? 'Pago' : 'Em aberto'
-        ];
 
         tbody.insertAdjacentHTML('beforeend', `
           <tr>
@@ -1072,19 +1097,13 @@
             </td>
             <td>${currency(paid)}</td>
             <td>${currency(balance)}</td>
+            <td>${order.delivered_at ? escapeHtml(order.delivered_at) : "Pendente"}</td>
             <td>
-              <input class="input" type="date" id="delivered-date-${order.id}" value="${escapeHtml(order.delivered_at || '')}" style="min-width:140px">
-            </td>
-            <td>
-              <div class="mini"><strong>${statusParts.join(' • ')}</strong></div>
-              <div class="toolbar" style="margin-top:6px">
-                <input class="input" type="number" step="0.01" min="0" id="amount-paid-${order.id}" value="${paid}" style="max-width:120px" placeholder="Valor pago">
+              <div class="status-check mini"><input type="checkbox" id="delivered-check-${order.id}" ${isDelivered(order) ? 'checked' : ''}> <label for="delivered-check-${order.id}">Entregue</label></div>
+              <div class="status-check mini" style="margin-top:6px"><input type="checkbox" id="paid-check-${order.id}" ${isPaid(order) ? 'checked' : ''}> <label for="paid-check-${order.id}">Pago</label></div>
+              <div class="toolbar" style="margin-top:8px">
+                <input class="input" type="number" step="0.01" min="0" id="amount-paid-${order.id}" value="${paid}" style="max-width:120px" placeholder="Pago">
                 <button class="btn ghost small" onclick="saveOrderFinancialStatus('${order.id}')">Salvar</button>
-              </div>
-              <div class="toolbar" style="margin-top:6px">
-                <button class="btn ghost small" onclick="markOrderDeliveredToday('${order.id}')">Entregue hoje</button>
-                <button class="btn ghost small" onclick="markOrderFullyPaid('${order.id}')">Quitar</button>
-                <button class="btn ghost small" onclick="clearOrderStatus('${order.id}')">Limpar</button>
               </div>
             </td>
             <td><button class="btn danger small" onclick="removeOrder('${order.id}')">Excluir</button></td>
@@ -1265,8 +1284,16 @@
 
 
     window.saveOrderFinancialStatus = async function(id){
-      const amountPaid = Number(qs(`amount-paid-${id}`)?.value || 0);
-      const deliveredAt = qs(`delivered-date-${id}`)?.value || null;
+      const order = orders.find(o => String(o.id) === String(id));
+      const amountPaidInput = Number(qs(`amount-paid-${id}`)?.value || 0);
+      const deliveredChecked = !!qs(`delivered-check-${id}`)?.checked;
+      const paidChecked = !!qs(`paid-check-${id}`)?.checked;
+      const total = Number(order?.total_amount || 0);
+
+      let amountPaid = amountPaidInput;
+      if(paidChecked) amountPaid = total;
+      if(amountPaid > total) amountPaid = total;
+      const deliveredAt = deliveredChecked ? (order?.delivered_at || new Date().toISOString().slice(0,10)) : null;
 
       const { error } = await supabaseClient
         .from('orders')
@@ -1374,7 +1401,8 @@
       qs('schoolPercentage').value = Number(s.percentage || 0);
       qs('schoolActive').value = String(!!s.active);
       setSchoolStatus(`Editando: ${s.name}`, 'warn');
-      setView('escolas');
+      setView('cadastro');
+      setCadastroTab('escolas');
     }
 
     window.removeSchool = async function(id){
@@ -1435,7 +1463,8 @@
       qs('paymentMethodFee').value = pm.extra_fee ?? 0;
       qs('paymentMethodDescription').value = pm.description || '';
       setPaymentMethodStatus(`Editando: ${pm.name}`, 'warn');
-      setView('pagamentos');
+      setView('cadastro');
+      setCadastroTab('pagamentos');
     }
 
     window.removePaymentMethod = async function(id){
@@ -1454,12 +1483,14 @@
 
     function bindEvents(){
       document.querySelectorAll('.nav button').forEach(btn => btn.addEventListener('click', () => setView(btn.dataset.view)));
+      document.querySelectorAll('.cadastro-tab').forEach(btn => btn.addEventListener('click', () => setCadastroTab(btn.dataset.cadastroTab)));
       qs('btnLogin').addEventListener('click', login);
       qs('btnSignup').addEventListener('click', signup);
       qs('btnLogout').addEventListener('click', logout);
       qs('btnRefresh').addEventListener('click', refreshAll);
       qs('btnPreviewCliente').addEventListener('click', () => window.open('index.html', '_blank'));
       qs('applyReportFilter').addEventListener('click', renderOrders);
+      qs('reportStatusFilter').addEventListener('change', renderOrders);
       qs('reportStatusFilter').addEventListener('change', renderOrders);
       qs('clearReportFilter').addEventListener('click', () => { qs('reportStartDate').value = ''; qs('reportEndDate').value = ''; qs('reportSchoolFilter').value = ''; renderOrders(); });
       qs('exportReportExcel').addEventListener('click', exportFilteredOrdersExcel);
