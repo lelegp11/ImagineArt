@@ -333,6 +333,18 @@
             <span class="pill" id="ordersDeliveredCount">Entregues: 0</span>
           </div>
 
+          <div class="card" style="margin-top:14px;padding:14px">
+            <div class="toolbar">
+              <div>
+                <div class="smallcaps">Configuração de prazo</div>
+                <div class="mini">Defina o prazo padrão em dias úteis. Pedidos atrasados sobem para o topo e ficam em vermelho.</div>
+              </div>
+              <span class="spacer"></span>
+              <input class="input" id="deliveryLeadDays" type="number" min="1" step="1" value="5" style="max-width:120px" placeholder="Dias úteis">
+              <button class="btn ghost small" id="saveDeliveryLeadDays">Salvar prazo</button>
+            </div>
+          </div>
+
           <div class="grid grid-5 report-filters" style="margin-top:14px; align-items:end">
             <div>
               <label>Status</label>
@@ -368,7 +380,7 @@
 
           <div class="table-wrap" style="margin-top:14px">
             <table>
-              <thead><tr><th>Cliente</th><th>Contato</th><th>Data</th><th>Pagamento</th><th>Produtos e personalização</th><th>Total</th><th>Já pago</th><th>Saldo</th><th>Entrega</th><th>Status</th><th>Ação</th></tr></thead>
+              <thead><tr><th>Cliente / prioridade</th><th>Contato</th><th>Data</th><th>Pagamento</th><th>Produtos e personalização</th><th>Total</th><th>Entrega</th><th>Pago</th><th>Ação</th></tr></thead>
               <tbody id="ordersTable"></tbody>
             </table>
           </div>
@@ -553,6 +565,44 @@
 
     function isPaid(order){
       return getBalanceDue(order) <= 0.0001;
+    }
+
+    function addBusinessDays(startDateStr, businessDays){
+      const date = new Date(`${startDateStr}T12:00:00`);
+      let added = 0;
+      while (added < businessDays) {
+        date.setDate(date.getDate() + 1);
+        const day = date.getDay();
+        if (day !== 0 && day !== 6) added++;
+      }
+      return date.toISOString().slice(0,10);
+    }
+
+    function getDeliveryLeadDays(){
+      const saved = localStorage.getItem('imagine_art_delivery_lead_days');
+      return Number(saved || 5);
+    }
+
+    function saveDeliveryLeadDaysSetting(){
+      const value = Math.max(1, Number(qs('deliveryLeadDays')?.value || 5));
+      localStorage.setItem('imagine_art_delivery_lead_days', String(value));
+      qs('deliveryLeadDays').value = String(value);
+      renderOrders();
+    }
+
+    function getOrderDueDate(order){
+      const leadDays = getDeliveryLeadDays();
+      const baseDate = order.order_date || order.created_at?.slice(0,10);
+      if(!baseDate) return '';
+      return addBusinessDays(baseDate, leadDays);
+    }
+
+    function isOrderOverdue(order){
+      if (isDelivered(order)) return false;
+      const dueDate = getOrderDueDate(order);
+      if(!dueDate) return false;
+      const today = new Date().toISOString().slice(0,10);
+      return dueDate < today;
     }
 
 
@@ -1034,13 +1084,24 @@
     function renderOrders(){
       const tbody = qs('ordersTable');
       tbody.innerHTML = '';
-      const filteredOrders = getFilteredOrders();
+      let filteredOrders = getFilteredOrders();
+
+      filteredOrders = filteredOrders.sort((a,b) => {
+        const aOver = isOrderOverdue(a) ? 1 : 0;
+        const bOver = isOrderOverdue(b) ? 1 : 0;
+        if (aOver !== bOver) return bOver - aOver;
+        const aDate = a.order_date || a.created_at || '';
+        const bDate = b.order_date || b.created_at || '';
+        return aDate.localeCompare(bDate);
+      });
+
       qs('ordersCount').textContent = `${filteredOrders.length} de ${orders.length} pedido(s)`;
       qs('reportRepasseTotal').textContent = `Repasse: ${currency(filteredOrders.reduce((sum, order) => sum + getVisibleRepasseForOrder(order), 0))}`;
       qs('ordersDeliveredCount').textContent = `Entregues: ${filteredOrders.filter(isDelivered).length}`;
+      if(qs('deliveryLeadDays')) qs('deliveryLeadDays').value = String(getDeliveryLeadDays());
 
       if(!filteredOrders.length){
-        tbody.innerHTML = `<tr><td colspan="11" class="mini">Nenhum pedido recebido no filtro selecionado.</td></tr>`;
+        tbody.innerHTML = `<tr><td colspan="9" class="mini">Nenhum pedido recebido no filtro selecionado.</td></tr>`;
         return;
       }
 
@@ -1080,13 +1141,20 @@
         const visibleSubtotal = getVisibleSubtotalForOrder(order);
         const orderCost = getVisibleCostForOrder(order);
         const netProfit = visibleSubtotal - orderCost - getVisibleRepasseForOrder(order);
-        const paid = getAmountPaid(order);
-        const balance = getBalanceDue(order);
-        const deliveredText = order.delivered_at ? escapeHtml(order.delivered_at) : 'Pendente';
+        const dueDate = getOrderDueDate(order);
+        const overdue = isOrderOverdue(order);
+
+        let rowClass = 'order-row-pending';
+        if (overdue) rowClass = 'order-row-overdue';
+        else if (isPaid(order) && isDelivered(order)) rowClass = 'order-row-paid';
+
+        const priority = overdue
+          ? `<span class="priority-badge priority-overdue">Atrasado • venc. ${escapeHtml(dueDate)}</span>`
+          : `<span class="priority-badge priority-ok">Prazo ${escapeHtml(dueDate || '—')}</span>`;
 
         tbody.insertAdjacentHTML('beforeend', `
-          <tr>
-            <td><strong>${escapeHtml(order.client_name || '')}</strong></td>
+          <tr class="${rowClass}">
+            <td><strong>${escapeHtml(order.client_name || '')}</strong><div style="margin-top:6px">${priority}</div></td>
             <td>${contact || '—'}</td>
             <td>${escapeHtml(order.order_date || '')}</td>
             <td>${escapeHtml(order.payment_method || '')}</td>
@@ -1095,16 +1163,13 @@
               ${currency(visibleSubtotal)}
               <div class="mini">Lucro: ${currency(netProfit)}</div>
             </td>
-            <td>${currency(paid)}</td>
-            <td>${currency(balance)}</td>
-            <td>${order.delivered_at ? escapeHtml(order.delivered_at) : "Pendente"}</td>
             <td>
-              <div class="status-check mini"><input type="checkbox" id="delivered-check-${order.id}" ${isDelivered(order) ? 'checked' : ''}> <label for="delivered-check-${order.id}">Entregue</label></div>
-              <div class="status-check mini" style="margin-top:6px"><input type="checkbox" id="paid-check-${order.id}" ${isPaid(order) ? 'checked' : ''}> <label for="paid-check-${order.id}">Pago</label></div>
-              <div class="toolbar" style="margin-top:8px">
-                <input class="input" type="number" step="0.01" min="0" id="amount-paid-${order.id}" value="${paid}" style="max-width:120px" placeholder="Pago">
-                <button class="btn ghost small" onclick="saveOrderFinancialStatus('${order.id}')">Salvar</button>
-              </div>
+              <input type="checkbox" id="delivered-check-${order.id}" ${isDelivered(order) ? 'checked' : ''} 
+              onchange="toggleDelivered('${order.id}', this.checked)">
+            </td>
+            <td>
+              <input type="checkbox" id="paid-check-${order.id}" ${isPaid(order) ? 'checked' : ''} 
+              onchange="togglePaid('${order.id}', this.checked)">
             </td>
             <td><button class="btn danger small" onclick="removeOrder('${order.id}')">Excluir</button></td>
           </tr>
@@ -1352,7 +1417,23 @@
       await fetchOrders();
     }
 
-    window.removeOrder = async function(id){
+    
+    window.toggleDelivered = async function(id, checked){
+      const deliveredAt = checked ? new Date().toISOString().slice(0,10) : null;
+      await supabaseClient.from('orders').update({ delivered_at: deliveredAt }).eq('id', id);
+      await fetchOrders();
+    }
+
+    window.togglePaid = async function(id, checked){
+      const order = orders.find(o => String(o.id) === String(id));
+      const total = Number(order?.total_amount || 0);
+      const amount_paid = checked ? total : 0;
+
+      await supabaseClient.from('orders').update({ amount_paid }).eq('id', id);
+      await fetchOrders();
+    }
+
+window.removeOrder = async function(id){
       if(!confirm('Excluir este pedido?')) return;
       const { error } = await supabaseClient.from('orders').delete().eq('id', id);
       if(error){
@@ -1503,6 +1584,7 @@
       qs('savePaymentMethodBtn').addEventListener('click', savePaymentMethod);
       qs('resetPaymentMethod').addEventListener('click', clearPaymentMethodForm);
       qs('buscaProduto').addEventListener('input', renderProducts);
+      qs('saveDeliveryLeadDays').addEventListener('click', saveDeliveryLeadDaysSetting);
       qs('pFoto').addEventListener('change', e => {
         currentUploadFile = e.target.files[0] || null;
         if(currentUploadFile){
