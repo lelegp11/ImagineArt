@@ -186,6 +186,7 @@
       </section>
 
       
+
 <section id="cadastro" class="view hidden">
   <div class="card" style="margin-bottom:18px">
     <div class="toolbar" style="align-items:flex-start">
@@ -287,6 +288,7 @@
             </div>
           </div>
   </div>
+  </div>
 
   <div id="cadastro-pagamentos" class="cadastro-panel hidden">
     <div class="grid grid-2">
@@ -318,24 +320,27 @@
             </div>
           </div>
   </div>
+  </div>
 
   <div id="cadastro-config" class="cadastro-panel hidden">
     <div class="grid grid-2" style="align-items:start">
       <div class="card">
-            <h2>Configurações rápidas da loja</h2>
-            <div class="form-grid-2">
-              <div><label>Nome da loja</label><input class="input" id="cfgLoja"></div>
-              <div><label>WhatsApp principal</label><input class="input" id="cfgWhatsapp"></div>
-              <div><label>Mensagem inicial</label><input class="input" id="cfgMsg"></div>
-              <div><label>Moeda</label><input class="input" id="cfgMoeda" value="BRL"></div>
-            </div>
-            <div style="margin-top:12px">
-              <label>Texto do banner</label>
-              <textarea class="input" id="cfgBanner" rows="3"></textarea>
-            </div>
-            <div class="toolbar" style="margin-top:14px">
-              <button class="btn success" id="saveConfig">Salvar configurações</button>
-            </div>
+        <h2 style="margin-top:0">Configurações rápidas da loja</h2>
+        <div class="form-grid-2">
+          <div><label>Nome da loja</label><input class="input" id="cfgLoja"></div>
+          <div><label>WhatsApp principal</label><input class="input" id="cfgWhatsapp"></div>
+          <div><label>Mensagem inicial</label><input class="input" id="cfgMsg"></div>
+          <div><label>Moeda</label><input class="input" id="cfgMoeda" value="BRL"></div>
+        </div>
+        <div style="margin-top:12px">
+          <label>Texto do banner</label>
+          <textarea class="input" id="cfgBanner" rows="3"></textarea>
+        </div>
+        <div class="toolbar" style="margin-top:14px">
+          <button class="btn success" id="saveConfig">Salvar configurações</button>
+        </div>
+      </div>
+
       <div class="card">
         <div class="toolbar">
           <h2 style="margin:0">Prazo de entrega</h2>
@@ -876,7 +881,7 @@
 
     function setCadastroTab(tab){
       document.querySelectorAll('.cadastro-tab').forEach(btn => btn.classList.toggle('active', btn.dataset.cadastroTab === tab));
-      document.querySelectorAll('.cadastro-panel').forEach(panel => panel.classList.add('hidden'));
+      document.querySelectorAll('#cadastro .cadastro-panel').forEach(panel => panel.classList.add('hidden'));
       const target = qs(`cadastro-${tab}`);
       if(target) target.classList.remove('hidden');
     }
