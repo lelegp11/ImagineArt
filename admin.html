@@ -135,26 +135,7 @@
         </div>
       </div>
     
-        <div id="cadastro-config" class="cadastro-panel hidden">
-          <div class="card">
-            <div class="toolbar">
-              <h2 style="margin:0">Configurações</h2>
-            </div>
-            <div class="mini" style="margin-top:8px">Defina o prazo padrão de entrega em dias úteis.</div>
-
-            <div style="margin-top:16px">
-              <label>Prazo de entrega (dias úteis)</label>
-              <input class="input" id="deliveryLeadDays" type="number" min="1" step="1" style="max-width:200px">
-              <div class="toolbar" style="margin-top:10px">
-                <button class="btn primary small" id="saveDeliveryLeadDays">Salvar</button>
-              </div>
-            </div>
-          </div>
-        </div>
-
-      </section>
-
-    <section id="appView" class="hidden">
+        <section id="appView" class="hidden">
       <section id="inicio" class="view">
         <div class="hero">
           <div class="hero-content">
@@ -1578,14 +1559,12 @@ window.removeOrder = async function(id){
     function bindEvents(){
       document.querySelectorAll('.nav button').forEach(btn => btn.addEventListener('click', () => setView(btn.dataset.view)));
       document.querySelectorAll('.cadastro-tab').forEach(btn => btn.addEventListener('click', () => setCadastroTab(btn.dataset.cadastroTab)));
-      document.querySelectorAll('.cadastro-tab').forEach(btn => btn.addEventListener('click', () => setCadastroTab(btn.dataset.cadastroTab)));
       qs('btnLogin').addEventListener('click', login);
       qs('btnSignup').addEventListener('click', signup);
       qs('btnLogout').addEventListener('click', logout);
       qs('btnRefresh').addEventListener('click', refreshAll);
       qs('btnPreviewCliente').addEventListener('click', () => window.open('index.html', '_blank'));
       qs('applyReportFilter').addEventListener('click', renderOrders);
-      qs('reportStatusFilter').addEventListener('change', renderOrders);
       qs('reportStatusFilter').addEventListener('change', renderOrders);
       qs('clearReportFilter').addEventListener('click', () => { qs('reportStartDate').value = ''; qs('reportEndDate').value = ''; qs('reportSchoolFilter').value = ''; renderOrders(); });
       qs('exportReportExcel').addEventListener('click', exportFilteredOrdersExcel);
